@@ -4,7 +4,6 @@
 
 ### Protótipo
 
-- [ ] Telas do professor para criar cursos, módulos e aulas
 - [ ] Conteúdo das aulas: texto, vídeos do YouTube, arquivos do Drive, áudio, links e provas do Google Forms
 - [ ] Cadastro de alunos, matrícula nos cursos e regra para menores de 12 anos
 - [ ] Área do aluno, com os cursos dele, as aulas e o progresso
@@ -46,6 +45,7 @@
 - [x] Base do site, com verificação de código, testes e configuração da hospedagem
 - [x] Banco de dados com as regras de quem pode ver o quê e verificações automáticas a cada envio de código
 - [x] Login dos alunos e do professor por convite, com Google ou link por e-mail
+- [x] Telas do professor para criar, editar, publicar e reordenar cursos, módulos e aulas
 
 ## Decisões
 
@@ -61,3 +61,6 @@
 - O botão de sair envia um formulário em vez de ser um link, para que o navegador não deslogue ninguém ao pré-carregar a página.
 - As páginas que leem a sessão ficam dentro de `<Suspense>`, exigência do modo de cache ligado no Next.js.
 - O script de usuários de teste só roda quando o endereço do Supabase é local, para nunca criar contas de teste na nuvem.
+- A ordem de módulos e aulas muda com botões de subir e descer. A cada clique a lista é renumerada de 0 em diante, o que corrige sozinho ordens repetidas ou com buracos. As gravações não ficam numa transação única; se uma falhar no meio, o próximo clique arruma a ordem.
+- O nível do curso é escolhido numa lista (Iniciante, Intermediário, Avançado) ou deixado em branco, para os cursos ficarem com nomes padronizados.
+- A capa do curso só aceita links que começam com http:// ou https://, para bloquear endereços perigosos como `javascript:`.

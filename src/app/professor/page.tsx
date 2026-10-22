@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Suspense } from "react";
 import { BotaoSair } from "@/components/botao-sair";
 import { exigirProfessor } from "@/lib/auth";
@@ -9,6 +10,9 @@ async function Painel() {
     <>
       <h1 className="text-2xl font-bold">Olá, {sessao.nome}</h1>
       <p>Painel do professor.</p>
+      <Link href="/professor/cursos" className="underline">
+        Cursos, módulos e aulas
+      </Link>
       <BotaoSair />
     </>
   );
