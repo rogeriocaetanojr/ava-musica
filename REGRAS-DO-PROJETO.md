@@ -22,20 +22,21 @@ Os guias passo a passo ficam em `guias/`, como o fluxo de deploy, a restauraçã
 
 ## 4. Comandos
 
-| Comando                                    | Para quê                                                                                                           | Situação   |
-| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------ | ---------- |
-| `npm run dev`                              | servidor local em http://localhost:3000                                                                            | disponível |
-| `npm run check`                            | roda format:check, lint, typecheck, test e build em sequência, parando no primeiro erro; usar antes de cada commit | disponível |
-| `npm run format`                           | formata o código com Prettier                                                                                      | disponível |
-| `npm run format:check`                     | confere a formatação sem alterar arquivos                                                                          | disponível |
-| `npm run lint`                             | ESLint (`eslint .`)                                                                                                | disponível |
-| `npm run typecheck`                        | checagem de tipos (`tsc --noEmit`)                                                                                 | disponível |
-| `npm test`                                 | testes unitários (`vitest run`)                                                                                    | disponível |
-| `npm run test:db`                          | testes SQL das regras de acesso contra o Supabase local; com `DATABASE_URL`, contra outro Postgres                 | disponível |
-| `npm run seed:dev`                         | cria professor@teste.local e aluno@teste.local no Supabase local (recusa rodar fora dele)                          | disponível |
-| `npm run build`                            | build de produção                                                                                                  | disponível |
-| `npx supabase start` / `npx supabase stop` | sobe e derruba o Supabase local (requer Docker)                                                                    | disponível |
-| `npx supabase db reset`                    | recria o banco local aplicando todas as migrações                                                                  | disponível |
+| Comando                                    | Para quê                                                                                                                                                      | Situação   |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
+| `npm run dev`                              | servidor local em http://localhost:3000                                                                                                                       | disponível |
+| `npm run check`                            | roda format:check, lint, typecheck, test e build em sequência, parando no primeiro erro; usar antes de cada commit                                            | disponível |
+| `npm run format`                           | formata o código com Prettier                                                                                                                                 | disponível |
+| `npm run format:check`                     | confere a formatação sem alterar arquivos                                                                                                                     | disponível |
+| `npm run lint`                             | ESLint (`eslint .`)                                                                                                                                           | disponível |
+| `npm run typecheck`                        | checagem de tipos (`tsc --noEmit`)                                                                                                                            | disponível |
+| `npm test`                                 | testes unitários (`vitest run`)                                                                                                                               | disponível |
+| `npm run test:db`                          | testes SQL das regras de acesso contra o Supabase local; com `DATABASE_URL`, contra outro Postgres                                                            | disponível |
+| `npm run seed:dev`                         | cria professor@teste.local e aluno@teste.local no Supabase local (recusa rodar fora dele)                                                                     | disponível |
+| `npm run test:e2e`                         | testes de ponta a ponta (Playwright) no computador e no celular; recria o banco local e precisa do Supabase local rodando; fica fora do `check` por ser lento | disponível |
+| `npm run build`                            | build de produção                                                                                                                                             | disponível |
+| `npx supabase start` / `npx supabase stop` | sobe e derruba o Supabase local (requer Docker)                                                                                                               | disponível |
+| `npx supabase db reset`                    | recria o banco local aplicando todas as migrações                                                                                                             | disponível |
 
 Com o Supabase local rodando: Studio em http://localhost:54323 e caixa de e-mail de teste em http://localhost:54324.
 

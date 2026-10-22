@@ -2,10 +2,6 @@
 
 ## Pendente
 
-### Protótipo
-
-- [ ] Testes automáticos que usam o site como um aluno e um professor usariam
-
 ### Revisão
 
 - [ ] Revisão do protótipo e demonstração para o professor
@@ -50,6 +46,7 @@
 - [x] Avisos do professor e painel com o progresso de cada aluno
 - [x] Autorização do responsável, política de privacidade, termos de uso, exclusão de dados e identidade visual
 - [x] Limite de tentativas de login, limite de convites por hora e registro dos acessos aos dados de menores de 18 anos
+- [x] Testes automáticos que usam o site como um aluno e um professor usariam, no computador e no celular
 
 ## Decisões
 
@@ -100,3 +97,7 @@
 - Se o registro falhar, a ação não acontece e a ficha não abre.
 - A auditoria guarda só o id do aluno, sem nome nem e-mail, e não tem ligação com o perfil, para continuar valendo depois da exclusão. Um gatilho impede alterar ou apagar registros, mesmo com a chave de serviço.
 - Atualizar a ficha depois de matricular conta como abrir de novo e gera outro registro de abertura.
+- Os testes de ponta a ponta usam o Playwright só com o Chromium, nos perfis de computador e de celular (Pixel 7). Ficam fora do `npm run check` por serem lentos e vão rodar nas verificações automáticas da publicação.
+- Antes dos testes de ponta a ponta o banco local é recriado (`npx supabase db reset`) e recebe os usuários de teste (`seed:dev`). Isso apaga tudo o que estava no banco local.
+- No login dos testes, o link mágico é lido pela API da caixa de e-mail local (Mailpit) e aberto no navegador do teste.
+- Os testes rodam um por vez e cada perfil cria o próprio curso, porque todos dividem o mesmo banco e os limites de login por endereço.
