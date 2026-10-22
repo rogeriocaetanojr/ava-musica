@@ -19,7 +19,12 @@ async function registrar(
   marcar: boolean,
 ): Promise<void> {
   const sessao = await exigirAluno();
-  if (!ehUuid(aulaId) || (conteudoId !== null && !ehUuid(conteudoId))) return;
+  if (
+    !ehUuid(aulaId) ||
+    (conteudoId !== null && !ehUuid(conteudoId)) ||
+    typeof marcar !== "boolean"
+  )
+    return;
 
   const supabase = await criarClienteServidor();
   if (marcar) {

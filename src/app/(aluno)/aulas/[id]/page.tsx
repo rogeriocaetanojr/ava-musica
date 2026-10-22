@@ -46,7 +46,7 @@ function BotaoProva({
   return (
     <form action={marcarProva.bind(null, aulaId, conteudoId, !enviada)}>
       {enviada && (
-        <p className="mb-2 text-base font-semibold text-green-800">
+        <p className="mb-2 text-base font-semibold text-sucesso">
           ✓ Prova enviada
         </p>
       )}
@@ -124,7 +124,7 @@ async function PaginaDaAula({ params }: { params: Promise<{ id: string }> }) {
           {aula.titulo}
         </h1>
         {concluida && (
-          <p className="text-base font-semibold text-green-800">
+          <p className="text-base font-semibold text-sucesso">
             ✓ Aula concluída
           </p>
         )}

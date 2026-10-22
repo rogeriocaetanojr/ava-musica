@@ -160,7 +160,7 @@ export function FormularioAluno({ cursos }: { cursos: Curso[] }) {
         </p>
       )}
       {estado.sucesso && (
-        <div role="status" className="space-y-2 text-sm text-green-700">
+        <div role="status" className="space-y-2 text-sm text-sucesso">
           <p>{estado.sucesso}</p>
           {estado.linkAceite && (
             <BotaoCopiar

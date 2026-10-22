@@ -6,6 +6,8 @@
   --foreground: #171717;
   --primaria: #1f4e79;
   --secundaria: #e0a526;
+  /* Texto e barra de "concluído": contraste de pelo menos 4,5:1 com o fundo. */
+  --sucesso: #166534;
 }
 
 @theme inline {
@@ -13,14 +15,14 @@
   --color-foreground: var(--foreground);
   --color-primaria: var(--primaria);
   --color-secundaria: var(--secundaria);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-sucesso: var(--sucesso);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
+    --sucesso: #4ade80;
   }
 }
 
@@ -31,7 +33,10 @@ body {
   accent-color: var(--primaria);
 }
 
+/* Contorno duplo: o azul aparece no fundo claro, o amarelo no escuro e no
+   cabeçalho azul. */
 :focus-visible {
-  outline: 2px solid var(--secundaria);
+  outline: 2px solid var(--primaria);
   outline-offset: 2px;
+  box-shadow: 0 0 0 4px var(--secundaria);
 }

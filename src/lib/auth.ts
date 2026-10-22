@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { connection } from "next/server";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 
 export type Papel = "professor" | "aluno";
@@ -15,7 +16,10 @@ export function destinoDoPapel(papel: Papel): string {
 }
 
 // Usuário logado com o perfil lido do banco (o papel nunca vem dos metadados).
+// Só roda na hora da requisição: o Supabase compara a validade da sessão com
+// o relógio (Date.now()), o que não pode acontecer na pré-renderização.
 export async function obterSessao(): Promise<Sessao | null> {
+  await connection();
   const supabase = await criarClienteServidor();
   const {
     data: { user },

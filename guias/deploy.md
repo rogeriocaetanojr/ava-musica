@@ -2,6 +2,17 @@
 
 Guia de publicação do site. As seções serão completadas à medida que as etapas de publicação forem feitas.
 
+## Endereço do site (`NEXT_PUBLIC_SITE_URL`)
+
+Os links enviados por e-mail (convite, link de acesso e autorização do responsável) são montados com essa variável. Configure-a na Netlify, em **Site configuration → Environment variables**, com o endereço de cada ambiente, sem barra no final:
+
+| Ambiente    | Valor                                  |
+| ----------- | -------------------------------------- |
+| Homologação | endereço da versão de teste na Netlify |
+| Produção    | endereço oficial do site               |
+
+Sem ela, o `npm run build` para com o erro "NEXT_PUBLIC_SITE_URL não está definida", para evitar e-mails com links apontando para `localhost`. No computador, ela fica no `.env.local` (`http://localhost:3000`).
+
 ## Limites de tentativas do login (D2)
 
 O Supabase local lê esses limites do `supabase/config.toml` (`[auth.rate_limit]`). Na nuvem eles não vêm do arquivo: configure os mesmos valores à mão **nos dois projetos (homologação e produção)**, em **Authentication → Rate Limits** do painel do Supabase.

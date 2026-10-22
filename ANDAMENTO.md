@@ -16,6 +16,7 @@
 - [ ] Verificações automáticas completas a cada mudança no código
 - [ ] Publicação automática da versão de teste e promoção para a oficial
 - [ ] Endereço próprio do site e proteções de segurança do navegador
+  - Na política de segurança do navegador (CSP), limitar de onde o bloco de áudio pode tocar: hoje ele aceita qualquer endereço https (`lerAudio` em `src/lib/embeds.ts`), e o navegador do aluno acessa servidores de terceiros.
 - [ ] Cópias de segurança do banco de dados
 - [ ] Alertas quando o site cair ou apresentar erros
 - [ ] Cuidados com os dados pessoais no dia a dia, conforme a LGPD

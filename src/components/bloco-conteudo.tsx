@@ -112,7 +112,8 @@ function Conteudo({ bloco, email }: Omit<Props, "children">) {
           className={`${botao} break-all`}
         >
           {embed.tipo === "forms-botao" ? "Abrir a prova" : titulo || embed.url}{" "}
-          ↗
+          <span aria-hidden="true">↗</span>
+          <span className="sr-only">(abre em nova aba)</span>
         </a>
       );
   }
@@ -125,7 +126,7 @@ export function BlocoConteudo({ bloco, email, children }: Props) {
   return (
     <article className="space-y-3">
       {mostrarTitulo && (
-        <h3 className="font-semibold break-words">{bloco.titulo}</h3>
+        <h2 className="font-semibold break-words">{bloco.titulo}</h2>
       )}
       <Conteudo bloco={bloco} email={email} />
       {children}

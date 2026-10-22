@@ -51,7 +51,7 @@ export function FormularioTitulo({
         </p>
       )}
       {estado.sucesso && (
-        <p role="status" className="text-sm text-green-700">
+        <p role="status" className="text-sm text-sucesso">
           {estado.sucesso}
         </p>
       )}

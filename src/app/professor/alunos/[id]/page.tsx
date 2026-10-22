@@ -165,7 +165,7 @@ async function FichaDoAluno({ params }: { params: Promise<{ id: string }> }) {
                       <span className="text-sm"> (rascunho)</span>
                     )}
                     {matriculado && (
-                      <span className="block text-sm text-green-700">
+                      <span className="block text-sm text-sucesso">
                         Matriculado
                       </span>
                     )}

@@ -89,7 +89,7 @@ async function DetalheDoAluno({ params }: { params: Promise<{ id: string }> }) {
                         <li key={aula.id} className="space-y-1 p-3">
                           <p className="break-words">{aula.titulo}</p>
                           <p
-                            className={`text-sm ${concluida ? "text-green-700" : ""}`}
+                            className={`text-sm ${concluida ? "text-sucesso" : ""}`}
                           >
                             {concluida
                               ? `Concluída em ${formatarDataHora(concluida)}`

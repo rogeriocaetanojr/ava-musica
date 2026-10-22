@@ -210,9 +210,9 @@ export async function excluirAluno(
 // Reenvia o acesso a quem ainda não entrou. Quem tem 12 anos ou mais recebe o
 // convite de novo; o menor de 12 já autorizado recebe o link de acesso, como
 // no aceite. Conta no mesmo limite por hora dos convites.
+// O estado anterior do formulário não é usado, por isso fica fora da assinatura.
 export async function reenviarConvite(
   alunoId: string,
-  _estado: EstadoFormulario,
 ): Promise<EstadoFormulario> {
   await exigirProfessor();
   if (!ehUuid(alunoId)) return { erro: ERRO_BANCO };

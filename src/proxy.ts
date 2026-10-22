@@ -7,6 +7,7 @@ const ROTAS_PUBLICAS = [
   "/aceite",
   "/privacidade",
   "/termos",
+  "/robots.txt",
 ];
 
 function ehPublica(caminho: string): boolean {
