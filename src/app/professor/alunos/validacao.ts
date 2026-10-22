@@ -94,27 +94,32 @@ export function validarAluno(
   };
 }
 
-export type StatusDoAluno = "aguardando" | "convidado" | "ativo";
+export type StatusDoAluno = "bloqueado" | "aguardando" | "convidado" | "ativo";
 
 export const NOMES_DOS_STATUS: Record<StatusDoAluno, string> = {
+  bloqueado: "Bloqueado",
   aguardando: "Aguardando responsável",
   convidado: "Convidado",
   ativo: "Ativo",
 };
 
 export const CORES_DOS_STATUS: Record<StatusDoAluno, string> = {
+  bloqueado: "bg-red-100 text-red-800",
   aguardando: "bg-yellow-100 text-yellow-800",
   convidado: "bg-blue-100 text-blue-800",
   ativo: "bg-green-100 text-green-800",
 };
 
+// Bloqueado: o professor pausou o acesso (vale acima dos outros).
 // Aguardando: menor de 12 sem aceite. Convidado: ainda não entrou nenhuma vez.
 // Ativo: já entrou.
 export function statusDoAluno(aluno: {
+  bloqueado?: boolean;
   menor_de_12: boolean;
   aceito: boolean;
   ultimo_acesso: string | null | undefined;
 }): StatusDoAluno {
+  if (aluno.bloqueado) return "bloqueado";
   if (aluno.menor_de_12 && !aluno.aceito) return "aguardando";
   return aluno.ultimo_acesso ? "ativo" : "convidado";
 }

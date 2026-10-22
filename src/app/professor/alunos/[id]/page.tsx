@@ -13,6 +13,7 @@ import { criarClienteAdmin } from "@/lib/supabase/admin";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 import { ehUuid } from "../../cursos/validacao";
 import { desmatricular, matricular } from "../acoes";
+import { BotaoBloqueio } from "../botao-bloqueio";
 import { BotaoCopiar } from "../botao-copiar";
 import { BotaoReenviar } from "../botao-reenviar";
 import { FormularioExclusao } from "../formulario-exclusao";
@@ -28,6 +29,7 @@ type Aluno = {
   email: string;
   data_nascimento: string | null;
   menor_de_12: boolean;
+  bloqueado_em: string | null;
   responsaveis: {
     nome: string;
     email: string;
@@ -70,7 +72,7 @@ async function FichaDoAluno({ params }: { params: Promise<{ id: string }> }) {
       supabase
         .from("perfis")
         .select(
-          "id, nome, email, data_nascimento, menor_de_12, responsaveis (nome, email, token, aceito_em), matriculas (curso_id)",
+          "id, nome, email, data_nascimento, menor_de_12, bloqueado_em, responsaveis (nome, email, token, aceito_em), matriculas (curso_id)",
         )
         .eq("id", id)
         .eq("papel", "aluno")
@@ -89,6 +91,7 @@ async function FichaDoAluno({ params }: { params: Promise<{ id: string }> }) {
   const aluno = data as unknown as Aluno;
   const responsavel = aluno.responsaveis;
   const status = statusDoAluno({
+    bloqueado: aluno.bloqueado_em !== null,
     menor_de_12: aluno.menor_de_12,
     aceito: Boolean(responsavel?.aceito_em),
     ultimo_acesso: usuario?.user?.last_sign_in_at,
@@ -205,6 +208,20 @@ async function FichaDoAluno({ params }: { params: Promise<{ id: string }> }) {
             ))}
           </ul>
         )}
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="text-xl font-semibold">Acesso</h2>
+        {aluno.bloqueado_em && (
+          <p className="text-sm">
+            Bloqueado desde {formatarDataHora(aluno.bloqueado_em)}.
+          </p>
+        )}
+        <BotaoBloqueio
+          alunoId={aluno.id}
+          nome={aluno.nome}
+          bloqueado={aluno.bloqueado_em !== null}
+        />
       </section>
 
       <section className="space-y-3 rounded-md border border-red-700 p-4">

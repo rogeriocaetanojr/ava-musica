@@ -1,7 +1,13 @@
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 
 export type AcaoAuditada =
-  "abrir" | "editar" | "matricular" | "desmatricular" | "excluir";
+  | "abrir"
+  | "editar"
+  | "matricular"
+  | "desmatricular"
+  | "excluir"
+  | "bloquear"
+  | "desbloquear";
 
 export const NOMES_DAS_ACOES: Record<AcaoAuditada, string> = {
   abrir: "Abriu a ficha",
@@ -9,6 +15,8 @@ export const NOMES_DAS_ACOES: Record<AcaoAuditada, string> = {
   matricular: "Matriculou em um curso",
   desmatricular: "Desmatriculou de um curso",
   excluir: "Excluiu os dados",
+  bloquear: "Bloqueou o acesso",
+  desbloquear: "Desbloqueou o acesso",
 };
 
 // Registra o acesso do professor ao aluno. O banco decide se registra (só

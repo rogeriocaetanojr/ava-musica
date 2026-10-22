@@ -11,6 +11,7 @@ type Aluno = {
   nome: string;
   email: string;
   menor_de_12: boolean;
+  bloqueado_em: string | null;
   responsaveis: { aceito_em: string | null } | null;
   matriculas: { curso_id: string }[];
 };
@@ -35,7 +36,7 @@ async function ListaDeAlunos() {
     supabase
       .from("perfis")
       .select(
-        "id, nome, email, menor_de_12, responsaveis (aceito_em), matriculas (curso_id)",
+        "id, nome, email, menor_de_12, bloqueado_em, responsaveis (aceito_em), matriculas (curso_id)",
       )
       .eq("papel", "aluno")
       .order("nome"),
@@ -56,6 +57,7 @@ async function ListaDeAlunos() {
           <ul className="space-y-3">
             {lista.map((aluno) => {
               const status = statusDoAluno({
+                bloqueado: aluno.bloqueado_em !== null,
                 menor_de_12: aluno.menor_de_12,
                 aceito: Boolean(aluno.responsaveis?.aceito_em),
                 ultimo_acesso: acessos.get(aluno.id),

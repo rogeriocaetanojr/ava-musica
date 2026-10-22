@@ -139,6 +139,33 @@ describe("statusDoAluno", () => {
       }),
     ).toBe("ativo");
   });
+
+  it("o bloqueio vale acima de qualquer outro status", () => {
+    expect(
+      statusDoAluno({
+        bloqueado: true,
+        menor_de_12: false,
+        aceito: false,
+        ultimo_acesso: "2026-10-01T10:00:00Z",
+      }),
+    ).toBe("bloqueado");
+    expect(
+      statusDoAluno({
+        bloqueado: true,
+        menor_de_12: true,
+        aceito: false,
+        ultimo_acesso: null,
+      }),
+    ).toBe("bloqueado");
+    expect(
+      statusDoAluno({
+        bloqueado: false,
+        menor_de_12: false,
+        aceito: false,
+        ultimo_acesso: null,
+      }),
+    ).toBe("convidado");
+  });
 });
 
 describe("confirmaExclusao", () => {

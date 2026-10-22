@@ -23,6 +23,8 @@ export type EstadoCadastro = EstadoFormulario & {
 
 const ERRO_EMAIL_EXISTE = "Já existe uma conta com este e-mail.";
 const ERRO_BANCO = "Não foi possível salvar. Tente de novo.";
+// O Auth não tem ban sem prazo; 100 anos fazem esse papel.
+const BLOQUEIO_SEM_PRAZO = "876000h";
 const ERRO_AUDITORIA =
   "Não foi possível registrar o acesso, então nada foi feito. Tente de novo.";
 
@@ -221,13 +223,15 @@ export async function reenviarConvite(
   const { data: aluno, error } = await supabase
     .from("perfis")
     .select(
-      "email, nome, data_nascimento, menor_de_12, responsaveis (aceito_em)",
+      "email, nome, data_nascimento, menor_de_12, bloqueado_em, responsaveis (aceito_em)",
     )
     .eq("id", alunoId)
     .eq("papel", "aluno")
     .maybeSingle();
   if (error) return { erro: ERRO_BANCO };
   if (!aluno) return { erro: "Aluno não encontrado." };
+  if (aluno.bloqueado_em)
+    return { erro: "O acesso deste aluno está bloqueado; desbloqueie antes." };
   const responsavel = aluno.responsaveis as unknown as {
     aceito_em: string | null;
   } | null;
@@ -260,4 +264,57 @@ export async function reenviarConvite(
     return { erro: "Não foi possível reenviar o convite. Tente de novo." };
 
   return { sucesso: `Convite reenviado para ${aluno.email}.` };
+}
+
+// Bloqueia o acesso do aluno sem apagar nada. O banco corta o acesso na hora
+// e registra a ação na auditoria; o ban do Auth recusa novos logins e a
+// renovação da sessão. Repetir a ação é seguro.
+export async function bloquearAluno(
+  alunoId: string,
+): Promise<EstadoFormulario> {
+  await exigirProfessor();
+  if (!ehUuid(alunoId)) return { erro: ERRO_BANCO };
+
+  const supabase = await criarClienteServidor();
+  const { error } = await supabase.rpc("definir_bloqueio", {
+    aluno: alunoId,
+    bloquear: true,
+  });
+  if (error) return { erro: "Não foi possível bloquear. Tente de novo." };
+
+  const { error: erroAuth } =
+    await criarClienteAdmin().auth.admin.updateUserById(alunoId, {
+      ban_duration: BLOQUEIO_SEM_PRAZO,
+    });
+  atualizarTelas();
+  if (erroAuth)
+    return {
+      erro: "O acesso foi cortado, mas não foi possível impedir novos logins. Tente bloquear de novo.",
+    };
+  return { sucesso: "Acesso bloqueado." };
+}
+
+// Desfaz o ban do Auth antes de liberar no banco: se o banco falhar, o aluno
+// entra mas continua sem ver nada até a nova tentativa.
+export async function desbloquearAluno(
+  alunoId: string,
+): Promise<EstadoFormulario> {
+  await exigirProfessor();
+  if (!ehUuid(alunoId)) return { erro: ERRO_BANCO };
+
+  const { error: erroAuth } =
+    await criarClienteAdmin().auth.admin.updateUserById(alunoId, {
+      ban_duration: "none",
+    });
+  if (erroAuth) return { erro: "Não foi possível desbloquear. Tente de novo." };
+
+  const supabase = await criarClienteServidor();
+  const { error } = await supabase.rpc("definir_bloqueio", {
+    aluno: alunoId,
+    bloquear: false,
+  });
+  if (error) return { erro: "Não foi possível desbloquear. Tente de novo." };
+
+  atualizarTelas();
+  return { sucesso: "Acesso desbloqueado." };
 }

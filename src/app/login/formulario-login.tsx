@@ -3,7 +3,9 @@
 import { useState } from "react";
 import { criarClienteNavegador } from "@/lib/supabase/navegador";
 import {
+  ehBloqueado,
   ehLimiteDeTentativas,
+  MENSAGEM_BLOQUEADO,
   MENSAGEM_MUITAS_TENTATIVAS,
   MENSAGEM_NAO_CONVIDADO,
 } from "./mensagens";
@@ -54,6 +56,8 @@ export function FormularioLogin() {
       setEstado({ tipo: "enviado", email: enderecoDigitado });
     } else if (ehLimiteDeTentativas(error)) {
       setEstado({ tipo: "erro", mensagem: MENSAGEM_MUITAS_TENTATIVAS });
+    } else if (ehBloqueado(error)) {
+      setEstado({ tipo: "erro", mensagem: MENSAGEM_BLOQUEADO });
     } else if (
       error.code === "otp_disabled" ||
       error.code === "signup_disabled" ||

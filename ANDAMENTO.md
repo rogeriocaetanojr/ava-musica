@@ -48,6 +48,7 @@
 - [x] Autorização do responsável, política de privacidade, termos de uso, exclusão de dados e identidade visual
 - [x] Limite de tentativas de login, limite de convites por hora e registro dos acessos aos dados de menores de 18 anos
 - [x] Testes automáticos que usam o site como um aluno e um professor usariam, no computador e no celular
+- [x] Professor pode bloquear e desbloquear o acesso de um aluno, sem perder os dados nem o progresso
 
 ## Decisões
 
@@ -102,3 +103,9 @@
 - Antes dos testes de ponta a ponta o banco local é recriado (`npx supabase db reset`) e recebe os usuários de teste (`seed:dev`). Isso apaga tudo o que estava no banco local.
 - No login dos testes, o link mágico é lido pela API da caixa de e-mail local (Mailpit) e aberto no navegador do teste.
 - Os testes rodam um por vez e cada perfil cria o próprio curso, porque todos dividem o mesmo banco e os limites de login por endereço.
+- O bloqueio do aluno age em duas frentes. No banco, a coluna `bloqueado_em` faz a regra de acesso do aluno recusar tudo na mesma hora, mesmo com a sessão ainda aberta. No login, o Supabase passa a recusar a entrada e a renovação da sessão. Nada é apagado: ao desbloquear, o aluno volta a ver os cursos e o progresso.
+- O bloqueio não tem prazo: vale até o professor desbloquear.
+- Bloquear e desbloquear sempre ficam registrados na auditoria, em qualquer idade, porque são ações do professor e não acessos a dados. O banco só aceita mudar o bloqueio pela função que também grava o registro.
+- O Supabase aceita o pedido de link de um aluno bloqueado e só recusa quando ele clica no link. A mensagem de acesso pausado aparece nessa hora.
+- Com a sessão aberta, o Supabase já recusa o aluno bloqueado na página seguinte. O site apaga a sessão e mostra o aviso na tela de login. A página `/bloqueado` cobre o caso em que o banco já bloqueou, mas o login ainda não.
+- O status "bloqueado" vale acima dos outros, e o reenvio de convite fica indisponível enquanto o aluno estiver bloqueado.

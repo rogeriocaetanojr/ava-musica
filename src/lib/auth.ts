@@ -9,6 +9,7 @@ export type Sessao = {
   email: string;
   nome: string;
   papel: Papel;
+  bloqueado: boolean;
 };
 
 export function destinoDoPapel(papel: Papel): string {
@@ -28,7 +29,7 @@ export async function obterSessao(): Promise<Sessao | null> {
 
   const { data: perfil } = await supabase
     .from("perfis")
-    .select("nome, email, papel")
+    .select("nome, email, papel, bloqueado_em")
     .eq("id", user.id)
     .single();
   if (!perfil) return null;
@@ -38,6 +39,7 @@ export async function obterSessao(): Promise<Sessao | null> {
     email: perfil.email,
     nome: perfil.nome,
     papel: perfil.papel as Papel,
+    bloqueado: perfil.bloqueado_em !== null,
   };
 }
 
@@ -56,11 +58,13 @@ export async function alunoLiberado(): Promise<boolean> {
   return !error && data === true;
 }
 
-// O menor de 12 sem aceite vai para a tela de espera.
+// O aluno bloqueado vai para o aviso de bloqueio; o menor de 12 sem aceite,
+// para a tela de espera.
 export async function exigirAluno(): Promise<Sessao> {
   const sessao = await obterSessao();
   if (!sessao) redirect("/login");
   if (sessao.papel !== "aluno") redirect(destinoDoPapel(sessao.papel));
+  if (sessao.bloqueado) redirect("/bloqueado");
   if (!(await alunoLiberado())) redirect("/aguardando");
   return sessao;
 }
@@ -69,6 +73,7 @@ export async function exigirAluno(): Promise<Sessao> {
 export async function exigirAlunoOuProfessor(): Promise<Sessao> {
   const sessao = await obterSessao();
   if (!sessao) redirect("/login");
+  if (sessao.papel === "aluno" && sessao.bloqueado) redirect("/bloqueado");
   if (sessao.papel === "aluno" && !(await alunoLiberado()))
     redirect("/aguardando");
   return sessao;

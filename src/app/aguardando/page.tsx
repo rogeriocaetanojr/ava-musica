@@ -12,6 +12,7 @@ export const metadata: Metadata = {
 async function Aviso() {
   const sessao = await obterSessao();
   if (!sessao) redirect("/login");
+  if (sessao.papel === "aluno" && sessao.bloqueado) redirect("/bloqueado");
   if (sessao.papel !== "aluno" || (await alunoLiberado()))
     redirect(destinoDoPapel(sessao.papel));
 

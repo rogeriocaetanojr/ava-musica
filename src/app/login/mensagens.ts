@@ -5,6 +5,9 @@ export const MENSAGEM_NAO_CONVIDADO =
 export const MENSAGEM_MUITAS_TENTATIVAS =
   "Muitas tentativas de entrar em pouco tempo. Por segurança, o acesso foi pausado: espere alguns minutos e tente de novo. Se o problema continuar, avise o professor.";
 
+export const MENSAGEM_BLOQUEADO =
+  "Seu acesso foi pausado pelo professor. Seus dados e seu progresso continuam guardados. Fale com o professor para voltar a estudar.";
+
 const CODIGOS_DE_LIMITE = [
   "over_email_send_rate_limit",
   "over_request_rate_limit",
@@ -17,4 +20,11 @@ export function ehLimiteDeTentativas(
     !!erro &&
     (erro.status === 429 || CODIGOS_DE_LIMITE.includes(erro.code ?? ""))
   );
+}
+
+// Conta bloqueada pelo professor (ban do Supabase Auth).
+export function ehBloqueado(
+  erro: { code?: string } | null | undefined,
+): boolean {
+  return erro?.code === "user_banned";
 }

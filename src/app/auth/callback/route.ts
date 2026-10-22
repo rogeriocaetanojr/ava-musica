@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { destinoDoPapel, obterSessao } from "@/lib/auth";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
-import { ehLimiteDeTentativas } from "../../login/mensagens";
+import { ehBloqueado, ehLimiteDeTentativas } from "../../login/mensagens";
 
 // Tipos de link aceitos com token_hash: o convite e o link mágico.
 const TIPOS_DE_LINK = ["invite", "email"] as const;
@@ -20,7 +20,11 @@ export async function GET(request: NextRequest) {
   const tokenHash = searchParams.get("token_hash");
   const tipo = searchParams.get("type");
 
-  // Com o cadastro aberto desligado, o Google volta com erro para quem não foi convidado.
+  // Com o cadastro aberto desligado, o Google volta com erro para quem não foi
+  // convidado; a conta bloqueada volta com error_code=user_banned.
+  if (searchParams.get("error_code") === "user_banned") {
+    return NextResponse.redirect(`${origin}/login?erro=bloqueado`);
+  }
   if (searchParams.get("error")) {
     return NextResponse.redirect(`${origin}/login?erro=nao-convidado`);
   }
@@ -40,6 +44,9 @@ export async function GET(request: NextRequest) {
   } else {
     falhou = true;
   }
+  if (ehBloqueado(erro)) {
+    return NextResponse.redirect(`${origin}/login?erro=bloqueado`);
+  }
   if (ehLimiteDeTentativas(erro)) {
     return NextResponse.redirect(`${origin}/login?erro=muitas-tentativas`);
   }
@@ -51,6 +58,10 @@ export async function GET(request: NextRequest) {
   if (!sessao) {
     await supabase.auth.signOut();
     return NextResponse.redirect(`${origin}/login?erro=nao-convidado`);
+  }
+  if (sessao.bloqueado) {
+    await supabase.auth.signOut();
+    return NextResponse.redirect(`${origin}/login?erro=bloqueado`);
   }
 
   return NextResponse.redirect(`${origin}${destinoDoPapel(sessao.papel)}`);
