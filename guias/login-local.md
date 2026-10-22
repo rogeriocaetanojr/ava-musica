@@ -25,6 +25,16 @@ Para conferir a recusa, peça o link com um e-mail que não foi convidado: a tel
 
 O Supabase local limita o envio de e-mails por hora (`email_sent` em `supabase/config.toml`). Se aparecer "Muitas tentativas", espere ou reinicie com `npx supabase stop` e `npx supabase start`.
 
+## Convite de aluno
+
+1. Entre como `professor@teste.local` e abra **Alunos e matrículas**.
+2. Cadastre um aluno com 12 anos ou mais. O convite chega na caixa de teste (http://localhost:54324) com o assunto "Seu convite para o AVA de Música".
+3. Clique em **Entrar no AVA** (funciona em qualquer navegador). O aluno cai em `/cursos`.
+
+Um aluno com menos de 12 anos não recebe convite: a tela mostra o link de autorização para enviar ao responsável. Se esse aluno entrar pelo link mágico antes da autorização, ele só vê a tela "aguardando o responsável".
+
+Depois de mudar `supabase/config.toml` ou os modelos em `supabase/templates/`, reinicie com `npx supabase stop` e `npx supabase start`.
+
 ## Google
 
 Fica desligado no ambiente local. Para ligar, crie um cliente OAuth no Google Cloud com o endereço de retorno `http://127.0.0.1:54321/auth/v1/callback`, coloque `SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID` e `SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET` em `supabase/.env`, mude `enabled` para `true` em `[auth.external.google]` e reinicie o Supabase.

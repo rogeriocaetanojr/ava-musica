@@ -1,0 +1,178 @@
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { Suspense } from "react";
+import { exigirProfessor } from "@/lib/auth";
+import { calcularIdade, hojeNoBrasil } from "@/lib/idade";
+import { urlDoSite } from "@/lib/site";
+import { criarClienteAdmin } from "@/lib/supabase/admin";
+import { criarClienteServidor } from "@/lib/supabase/servidor";
+import { ehUuid } from "../../cursos/validacao";
+import { desmatricular, matricular } from "../acoes";
+import { BotaoCopiar } from "../botao-copiar";
+import {
+  CORES_DOS_STATUS,
+  NOMES_DOS_STATUS,
+  statusDoAluno,
+} from "../validacao";
+
+type Aluno = {
+  id: string;
+  nome: string;
+  email: string;
+  data_nascimento: string | null;
+  menor_de_12: boolean;
+  responsaveis: {
+    nome: string;
+    email: string;
+    token: string;
+    aceito_em: string | null;
+  } | null;
+  matriculas: { curso_id: string }[];
+};
+type Curso = { id: string; titulo: string; publicado: boolean };
+
+const botaoPequeno =
+  "shrink-0 rounded-md border border-current px-3 py-2 text-sm";
+
+function formatarData(data: string): string {
+  return new Intl.DateTimeFormat("pt-BR", {
+    timeZone: data.length === 10 ? "UTC" : "America/Sao_Paulo",
+  }).format(new Date(data));
+}
+
+async function FichaDoAluno({ params }: { params: Promise<{ id: string }> }) {
+  await exigirProfessor();
+  const { id } = await params;
+  if (!ehUuid(id)) notFound();
+
+  const supabase = await criarClienteServidor();
+  const [{ data }, { data: cursos }, { data: usuario }] = await Promise.all([
+    supabase
+      .from("perfis")
+      .select(
+        "id, nome, email, data_nascimento, menor_de_12, responsaveis (nome, email, token, aceito_em), matriculas (curso_id)",
+      )
+      .eq("id", id)
+      .eq("papel", "aluno")
+      .maybeSingle(),
+    supabase.from("cursos").select("id, titulo, publicado").order("titulo"),
+    criarClienteAdmin().auth.admin.getUserById(id),
+  ]);
+  if (!data) notFound();
+
+  const aluno = data as unknown as Aluno;
+  const responsavel = aluno.responsaveis;
+  const status = statusDoAluno({
+    menor_de_12: aluno.menor_de_12,
+    aceito: Boolean(responsavel?.aceito_em),
+    ultimo_acesso: usuario?.user?.last_sign_in_at,
+  });
+  const matriculados = new Set(aluno.matriculas.map((m) => m.curso_id));
+
+  return (
+    <>
+      <header className="space-y-2">
+        <h1 className="text-2xl font-bold break-words">{aluno.nome}</h1>
+        <span
+          className={`inline-block rounded px-2 py-1 text-xs font-medium ${CORES_DOS_STATUS[status]}`}
+        >
+          {NOMES_DOS_STATUS[status]}
+        </span>
+        <dl className="space-y-1 text-sm">
+          <div>
+            <dt className="inline font-medium">E-mail: </dt>
+            <dd className="inline break-all">{aluno.email}</dd>
+          </div>
+          {aluno.data_nascimento && (
+            <div>
+              <dt className="inline font-medium">Nascimento: </dt>
+              <dd className="inline">
+                {formatarData(aluno.data_nascimento)} (
+                {calcularIdade(aluno.data_nascimento, hojeNoBrasil())} anos)
+              </dd>
+            </div>
+          )}
+        </dl>
+      </header>
+
+      {responsavel && (
+        <section className="space-y-3">
+          <h2 className="text-xl font-semibold">Responsável</h2>
+          <p className="text-sm break-words">
+            {responsavel.nome} · {responsavel.email}
+          </p>
+          {responsavel.aceito_em ? (
+            <p className="text-sm">
+              Autorizou o acesso em {formatarData(responsavel.aceito_em)}.
+            </p>
+          ) : (
+            <div className="space-y-2">
+              <p className="text-sm">
+                Ainda não autorizou. Envie este link ao responsável:
+              </p>
+              <BotaoCopiar
+                texto={urlDoSite(`/aceite/${responsavel.token}`)}
+                rotulo="Link de autorização do responsável"
+              />
+            </div>
+          )}
+        </section>
+      )}
+
+      <section className="space-y-3">
+        <h2 className="text-xl font-semibold">Matrículas</h2>
+        {(cursos ?? []).length === 0 ? (
+          <p>Nenhum curso criado ainda.</p>
+        ) : (
+          <ul className="space-y-2">
+            {((cursos ?? []) as Curso[]).map((curso) => {
+              const matriculado = matriculados.has(curso.id);
+              return (
+                <li
+                  key={curso.id}
+                  className="flex items-center justify-between gap-2 rounded-md border border-current/30 p-3"
+                >
+                  <span className="min-w-0 break-words">
+                    {curso.titulo}
+                    {!curso.publicado && (
+                      <span className="text-sm"> (rascunho)</span>
+                    )}
+                    {matriculado && (
+                      <span className="block text-sm text-green-700">
+                        Matriculado
+                      </span>
+                    )}
+                  </span>
+                  <form
+                    action={(matriculado ? desmatricular : matricular).bind(
+                      null,
+                      aluno.id,
+                      curso.id,
+                    )}
+                  >
+                    <button type="submit" className={botaoPequeno}>
+                      {matriculado ? "Desmatricular" : "Matricular"}
+                    </button>
+                  </form>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </section>
+    </>
+  );
+}
+
+export default function Aluno({ params }: { params: Promise<{ id: string }> }) {
+  return (
+    <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-8 px-4 py-8">
+      <Link href="/professor/alunos" className="text-sm underline">
+        ← Alunos
+      </Link>
+      <Suspense fallback={<p>Carregando…</p>}>
+        <FichaDoAluno params={params} />
+      </Suspense>
+    </main>
+  );
+}

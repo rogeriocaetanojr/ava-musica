@@ -44,9 +44,19 @@ export async function exigirProfessor(): Promise<Sessao> {
   return sessao;
 }
 
+// Pergunta ao banco se o aluno logado já pode acessar (12 anos ou mais, ou
+// menor com aceite do responsável). Em caso de erro, trata como bloqueado.
+export async function alunoLiberado(): Promise<boolean> {
+  const supabase = await criarClienteServidor();
+  const { data, error } = await supabase.rpc("aluno_liberado");
+  return !error && data === true;
+}
+
+// O menor de 12 sem aceite vai para a tela de espera.
 export async function exigirAluno(): Promise<Sessao> {
   const sessao = await obterSessao();
   if (!sessao) redirect("/login");
   if (sessao.papel !== "aluno") redirect(destinoDoPapel(sessao.papel));
+  if (!(await alunoLiberado())) redirect("/aguardando");
   return sessao;
 }

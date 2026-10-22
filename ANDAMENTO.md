@@ -4,7 +4,6 @@
 
 ### Protótipo
 
-- [ ] Cadastro de alunos, matrícula nos cursos e regra para menores de 12 anos
 - [ ] Área do aluno, com os cursos dele, as aulas e o progresso
 - [ ] Avisos do professor e painel com o progresso de cada aluno
 - [ ] Autorização do responsável, política de privacidade, exclusão de dados e identidade visual
@@ -50,6 +49,7 @@
 - [x] Login dos alunos e do professor por convite, com Google ou link por e-mail
 - [x] Telas do professor para criar, editar, publicar e reordenar cursos, módulos e aulas
 - [x] Conteúdo das aulas: texto, vídeos do YouTube, arquivos do Drive, áudio, links e provas do Google Forms, com pré-visualização
+- [x] Cadastro de alunos por convite, matrícula nos cursos e regra para menores de 12 anos
 
 ## Decisões
 
@@ -74,3 +74,8 @@
 - Links curtos do Forms (forms.gle) não podem ser exibidos dentro da página, então aparecem como um botão que abre a prova em outra aba, e nesse caso o e-mail não é preenchido sozinho.
 - Áudio pode vir do Google Drive (exibido pelo visualizador do Drive) ou de um link direto para o arquivo (tocado pelo próprio navegador).
 - O bloco de texto mostra o texto puro, com as quebras de linha, sem formatação, para não abrir brecha para código malicioso.
+- A idade é calculada pela data de hoje no horário de Brasília. O aluno faz aniversário no próprio dia; quem nasceu em 29 de fevereiro faz aniversário em 1º de março nos anos que não são bissextos.
+- O e-mail de convite foi personalizado (`supabase/templates/convite.html`) para levar um código que o site confere no servidor. O convite padrão do Supabase não funciona com o jeito de login do site.
+- O cadastro confere antes se o e-mail já existe. Se gravar o responsável de um menor de 12 falhar, a conta recém-criada é apagada, para não sobrar aluno sem responsável.
+- O status do aluno é "aguardando responsável" (menor de 12 sem autorização), "convidado" (ainda não entrou nenhuma vez) ou "ativo" (já entrou).
+- A página de autorização do responsável (`/aceite/...`) é da etapa 9. Até lá o link copiado pelo professor abre uma página de "não encontrado".
