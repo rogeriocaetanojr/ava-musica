@@ -9,6 +9,7 @@ import { criarClienteServidor } from "@/lib/supabase/servidor";
 import { ehUuid } from "../../cursos/validacao";
 import { desmatricular, matricular } from "../acoes";
 import { BotaoCopiar } from "../botao-copiar";
+import { FormularioExclusao } from "../formulario-exclusao";
 import {
   CORES_DOS_STATUS,
   NOMES_DOS_STATUS,
@@ -159,6 +160,11 @@ async function FichaDoAluno({ params }: { params: Promise<{ id: string }> }) {
             })}
           </ul>
         )}
+      </section>
+
+      <section className="space-y-3 rounded-md border border-red-700 p-4">
+        <h2 className="text-xl font-semibold">Excluir todos os dados</h2>
+        <FormularioExclusao alunoId={aluno.id} nome={aluno.nome} />
       </section>
     </>
   );

@@ -17,7 +17,7 @@ export function BarraProgresso({
         className="h-3 w-full overflow-hidden rounded-full bg-current/15"
       >
         <div
-          className="h-full rounded-full bg-green-600"
+          className="h-full rounded-full bg-secundaria"
           style={{ width: `${percentual}%` }}
         />
       </div>

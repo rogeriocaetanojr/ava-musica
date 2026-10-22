@@ -4,7 +4,6 @@
 
 ### Protótipo
 
-- [ ] Autorização do responsável, política de privacidade, exclusão de dados e identidade visual
 - [ ] Limite de tentativas de login e registro de acessos
 - [ ] Testes automáticos que usam o site como um aluno e um professor usariam
 
@@ -50,6 +49,7 @@
 - [x] Cadastro de alunos por convite, matrícula nos cursos e regra para menores de 12 anos
 - [x] Área do aluno, com os cursos dele, as aulas, a conclusão de aulas, o envio de provas e o progresso
 - [x] Avisos do professor e painel com o progresso de cada aluno
+- [x] Autorização do responsável, política de privacidade, termos de uso, exclusão de dados e identidade visual
 
 ## Decisões
 
@@ -78,7 +78,6 @@
 - O e-mail de convite foi personalizado (`supabase/templates/convite.html`) para levar um código que o site confere no servidor. O convite padrão do Supabase não funciona com o jeito de login do site.
 - O cadastro confere antes se o e-mail já existe. Se gravar o responsável de um menor de 12 falhar, a conta recém-criada é apagada, para não sobrar aluno sem responsável.
 - O status do aluno é "aguardando responsável" (menor de 12 sem autorização), "convidado" (ainda não entrou nenhuma vez) ou "ativo" (já entrou).
-- A página de autorização do responsável (`/aceite/...`) é da etapa 9. Até lá o link copiado pelo professor abre uma página de "não encontrado".
 - O progresso do curso conta só as aulas publicadas marcadas como concluídas; o "Enviei a prova" fica registrado à parte e não muda a porcentagem. A porcentagem é arredondada para baixo, então 100% só aparece com todas as aulas concluídas.
 - O botão "Continuar" leva à primeira aula ainda não concluída, na ordem dos módulos e das aulas. Com tudo concluído, vira "Rever o curso".
 - O professor abre as telas do aluno ("Ver como aluno") para pré-visualizar os cursos publicados, sem os botões de concluir e sem rascunhos.
@@ -87,3 +86,9 @@
 - O painel do professor conta só as aulas publicadas, com a mesma regra da tela do aluno. As provas contadas são as das aulas publicadas.
 - A última atividade do aluno é o registro de progresso mais recente (aula concluída ou prova enviada), não o último login.
 - O detalhe do progresso de cada aluno fica em `/professor/progresso/...`, separado da ficha de cadastro e matrículas em `/professor/alunos/...`.
+- O "autorizo" do responsável é recebido por uma rota (`/aceite/.../autorizar`), não por server action, porque quem envia não tem login: a proteção é o token. A gravação só acontece onde o aceite ainda está vazio, então o mesmo link não vale duas vezes.
+- O link de acesso enviado depois do aceite usa um modelo próprio de e-mail (`supabase/templates/link-magico.html`) com o mesmo formato do convite, porque o pedido feito pelo servidor não guarda código no navegador. Depois de mudar o `config.toml`, é preciso reiniciar o Supabase local.
+- A versão dos termos gravada no aceite fica em `src/lib/site.ts` (`VERSAO_DOS_TERMOS`). Mudou o texto da política ou dos termos, muda a versão.
+- A política de privacidade e os termos de uso são rascunhos para revisão jurídica e avisam isso no topo.
+- A exclusão de um aluno pede o nome digitado (sem contar maiúsculas e espaços nas pontas), conferido de novo no servidor. Ela apaga a conta de login, e o banco apaga em cascata perfil, responsável, matrículas e progresso.
+- Nome, logo e cores ainda são provisórios. As cores ficam como variáveis do tema em `src/app/globals.css` (`primaria` e `secundaria`), o nome e o logo em `src/lib/site.ts`, e o logo em `public/logo.svg`. As cores de aviso (vermelho, verde, amarelo) não mudam com a identidade.

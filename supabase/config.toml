@@ -251,6 +251,10 @@ otp_expiry = 3600
 subject = "Seu convite para o AVA de Música"
 content_path = "./supabase/templates/convite.html"
 
+[auth.email.template.magic_link]
+subject = "Seu link para entrar no AVA de Música"
+content_path = "./supabase/templates/link-magico.html"
+
 # Uncomment to customize notification email template
 # [auth.email.notification.password_changed]
 # enabled = true

@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { exigirProfessor } from "@/lib/auth";
 import { hojeNoBrasil } from "@/lib/idade";
 import { urlDoSite } from "@/lib/site";
@@ -11,7 +12,7 @@ import {
   type EstadoFormulario,
   valoresDigitados,
 } from "../cursos/validacao";
-import { validarAluno } from "./validacao";
+import { confirmaExclusao, validarAluno } from "./validacao";
 
 export type EstadoCadastro = EstadoFormulario & {
   // Link /aceite/<token> que o professor envia ao responsável do menor de 12.
@@ -156,4 +157,35 @@ export async function desmatricular(
     .eq("aluno_id", alunoId)
     .eq("curso_id", cursoId);
   atualizarTelas();
+}
+
+// Apaga a conta do aluno no login; o banco apaga em cascata o perfil, o
+// responsável, as matrículas e o progresso. Não tem volta.
+export async function excluirAluno(
+  alunoId: string,
+  _estado: EstadoFormulario,
+  formData: FormData,
+): Promise<EstadoFormulario> {
+  await exigirProfessor();
+  if (!ehUuid(alunoId)) return { erro: ERRO_BANCO };
+
+  const supabase = await criarClienteServidor();
+  const { data: aluno, error } = await supabase
+    .from("perfis")
+    .select("nome")
+    .eq("id", alunoId)
+    .eq("papel", "aluno")
+    .maybeSingle();
+  if (error) return { erro: ERRO_BANCO };
+  if (!aluno) return { erro: "Aluno não encontrado." };
+  if (!confirmaExclusao(formData.get("confirmacao"), aluno.nome))
+    return { erro: "O nome digitado não confere com o nome do aluno." };
+
+  const { error: erroExclusao } =
+    await criarClienteAdmin().auth.admin.deleteUser(alunoId);
+  if (erroExclusao)
+    return { erro: "Não foi possível excluir os dados. Tente de novo." };
+
+  revalidatePath("/professor", "layout");
+  redirect("/professor/alunos");
 }

@@ -118,3 +118,13 @@ export function statusDoAluno(aluno: {
   if (aluno.menor_de_12 && !aluno.aceito) return "aguardando";
   return aluno.ultimo_acesso ? "ativo" : "convidado";
 }
+
+// A exclusão só vale com o nome do aluno digitado igual, sem contar espaços
+// nas pontas nem maiúsculas.
+export function confirmaExclusao(digitado: unknown, nome: string): boolean {
+  return (
+    typeof digitado === "string" &&
+    digitado.trim().toLocaleLowerCase("pt-BR") ===
+      nome.trim().toLocaleLowerCase("pt-BR")
+  );
+}

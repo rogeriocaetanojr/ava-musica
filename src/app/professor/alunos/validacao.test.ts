@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { statusDoAluno, validarAluno } from "./validacao";
+import { confirmaExclusao, statusDoAluno, validarAluno } from "./validacao";
 
 const HOJE = "2026-10-22";
 const CURSO = "11111111-1111-4111-8111-111111111111";
@@ -138,5 +138,17 @@ describe("statusDoAluno", () => {
         ultimo_acesso: "2026-10-01T10:00:00Z",
       }),
     ).toBe("ativo");
+  });
+});
+
+describe("confirmaExclusao", () => {
+  it("aceita o nome igual, sem contar espaços e maiúsculas", () => {
+    expect(confirmaExclusao(" ana souza ", "Ana Souza")).toBe(true);
+  });
+
+  it("recusa nome diferente, vazio ou ausente", () => {
+    expect(confirmaExclusao("Ana", "Ana Souza")).toBe(false);
+    expect(confirmaExclusao("", "Ana Souza")).toBe(false);
+    expect(confirmaExclusao(null, "Ana Souza")).toBe(false);
   });
 });
