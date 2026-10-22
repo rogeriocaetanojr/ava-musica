@@ -4,7 +4,6 @@
 
 ### Protótipo
 
-- [ ] Área do aluno, com os cursos dele, as aulas e o progresso
 - [ ] Avisos do professor e painel com o progresso de cada aluno
 - [ ] Autorização do responsável, política de privacidade, exclusão de dados e identidade visual
 - [ ] Limite de tentativas de login e registro de acessos
@@ -50,6 +49,7 @@
 - [x] Telas do professor para criar, editar, publicar e reordenar cursos, módulos e aulas
 - [x] Conteúdo das aulas: texto, vídeos do YouTube, arquivos do Drive, áudio, links e provas do Google Forms, com pré-visualização
 - [x] Cadastro de alunos por convite, matrícula nos cursos e regra para menores de 12 anos
+- [x] Área do aluno, com os cursos dele, as aulas, a conclusão de aulas, o envio de provas e o progresso
 
 ## Decisões
 
@@ -79,3 +79,6 @@
 - O cadastro confere antes se o e-mail já existe. Se gravar o responsável de um menor de 12 falhar, a conta recém-criada é apagada, para não sobrar aluno sem responsável.
 - O status do aluno é "aguardando responsável" (menor de 12 sem autorização), "convidado" (ainda não entrou nenhuma vez) ou "ativo" (já entrou).
 - A página de autorização do responsável (`/aceite/...`) é da etapa 9. Até lá o link copiado pelo professor abre uma página de "não encontrado".
+- O progresso do curso conta só as aulas publicadas marcadas como concluídas; o "Enviei a prova" fica registrado à parte e não muda a porcentagem. A porcentagem é arredondada para baixo, então 100% só aparece com todas as aulas concluídas.
+- O botão "Continuar" leva à primeira aula ainda não concluída, na ordem dos módulos e das aulas. Com tudo concluído, vira "Rever o curso".
+- O professor abre as telas do aluno ("Ver como aluno") para pré-visualizar os cursos publicados, sem os botões de concluir e sem rascunhos.

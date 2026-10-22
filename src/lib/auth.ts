@@ -60,3 +60,12 @@ export async function exigirAluno(): Promise<Sessao> {
   if (!(await alunoLiberado())) redirect("/aguardando");
   return sessao;
 }
+
+// Telas do aluno: o aluno liberado estuda e o professor pré-visualiza.
+export async function exigirAlunoOuProfessor(): Promise<Sessao> {
+  const sessao = await obterSessao();
+  if (!sessao) redirect("/login");
+  if (sessao.papel === "aluno" && !(await alunoLiberado()))
+    redirect("/aguardando");
+  return sessao;
+}

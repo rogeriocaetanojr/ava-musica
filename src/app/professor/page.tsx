@@ -16,6 +16,9 @@ async function Painel() {
       <Link href="/professor/alunos" className="underline">
         Alunos e matrículas
       </Link>
+      <Link href="/cursos" className="underline">
+        Ver como aluno
+      </Link>
       <BotaoSair />
     </>
   );
