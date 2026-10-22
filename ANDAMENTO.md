@@ -4,7 +4,6 @@
 
 ### Protótipo
 
-- [ ] Conteúdo das aulas: texto, vídeos do YouTube, arquivos do Drive, áudio, links e provas do Google Forms
 - [ ] Cadastro de alunos, matrícula nos cursos e regra para menores de 12 anos
 - [ ] Área do aluno, com os cursos dele, as aulas e o progresso
 - [ ] Avisos do professor e painel com o progresso de cada aluno
@@ -32,6 +31,10 @@
 - [ ] Manual do professor e documentação do projeto
 - [ ] Lançamento com um primeiro grupo de alunos
 
+### Melhorias futuras
+
+- [ ] Professor poder excluir cursos, módulos e aulas
+
 ## Concluído
 
 ### Preparação
@@ -46,6 +49,7 @@
 - [x] Banco de dados com as regras de quem pode ver o quê e verificações automáticas a cada envio de código
 - [x] Login dos alunos e do professor por convite, com Google ou link por e-mail
 - [x] Telas do professor para criar, editar, publicar e reordenar cursos, módulos e aulas
+- [x] Conteúdo das aulas: texto, vídeos do YouTube, arquivos do Drive, áudio, links e provas do Google Forms, com pré-visualização
 
 ## Decisões
 
@@ -64,3 +68,9 @@
 - A ordem de módulos e aulas muda com botões de subir e descer. A cada clique a lista é renumerada de 0 em diante, o que corrige sozinho ordens repetidas ou com buracos. As gravações não ficam numa transação única; se uma falhar no meio, o próximo clique arruma a ordem.
 - O nível do curso é escolhido numa lista (Iniciante, Intermediário, Avançado) ou deixado em branco, para os cursos ficarem com nomes padronizados.
 - A capa do curso só aceita links que começam com http:// ou https://, para bloquear endereços perigosos como `javascript:`.
+- Os links de conteúdo só aceitam https://. Qualquer outro começo, como `http://` ou `javascript:`, é recusado ao salvar e também ao exibir.
+- Os vídeos do YouTube são exibidos pelo endereço youtube-nocookie.com, que não grava cookies de propaganda nos alunos.
+- O link da prova é guardado do jeito que o professor colou, com o texto EMAIL_DO_ALUNO. A troca pelo e-mail de quem está logado acontece só na hora de exibir; na pré-visualização do professor entra o e-mail dele.
+- Links curtos do Forms (forms.gle) não podem ser exibidos dentro da página, então aparecem como um botão que abre a prova em outra aba, e nesse caso o e-mail não é preenchido sozinho.
+- Áudio pode vir do Google Drive (exibido pelo visualizador do Drive) ou de um link direto para o arquivo (tocado pelo próprio navegador).
+- O bloco de texto mostra o texto puro, com as quebras de linha, sem formatação, para não abrir brecha para código malicioso.

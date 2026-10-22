@@ -104,6 +104,9 @@ function ItemAula({
               {aula.publicada ? "Despublicar" : "Publicar"}
             </button>
           </form>
+          <Link href={`/professor/aulas/${aula.id}`} className={botaoPequeno}>
+            Conteúdo
+          </Link>
         </div>
         <BotoesDeOrdem
           mover={moverAula.bind(null, aula.id)}
