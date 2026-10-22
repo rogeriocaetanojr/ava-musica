@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { destinoDoPapel, obterSessao } from "@/lib/auth";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
+import { ehLimiteDeTentativas } from "../../login/mensagens";
 
 // Tipos de link aceitos com token_hash: o convite e o link mágico.
 const TIPOS_DE_LINK = ["invite", "email"] as const;
@@ -25,18 +26,22 @@ export async function GET(request: NextRequest) {
   }
 
   const supabase = await criarClienteServidor();
+  let erro: { status?: number; code?: string } | null = null;
   let falhou: boolean;
   if (codigo) {
-    const { error } = await supabase.auth.exchangeCodeForSession(codigo);
-    falhou = Boolean(error);
+    ({ error: erro } = await supabase.auth.exchangeCodeForSession(codigo));
+    falhou = Boolean(erro);
   } else if (tokenHash && ehTipoDeLink(tipo)) {
-    const { error } = await supabase.auth.verifyOtp({
+    ({ error: erro } = await supabase.auth.verifyOtp({
       token_hash: tokenHash,
       type: tipo,
-    });
-    falhou = Boolean(error);
+    }));
+    falhou = Boolean(erro);
   } else {
     falhou = true;
+  }
+  if (ehLimiteDeTentativas(erro)) {
+    return NextResponse.redirect(`${origin}/login?erro=muitas-tentativas`);
   }
   if (falhou) {
     return NextResponse.redirect(`${origin}/login?erro=link-invalido`);

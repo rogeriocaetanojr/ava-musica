@@ -3,7 +3,9 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { exigirProfessor } from "@/lib/auth";
+import { registrarAcesso } from "@/lib/auditoria";
 import { hojeNoBrasil } from "@/lib/idade";
+import { reservarEnvioDeConvite } from "@/lib/limite-convites";
 import { urlDoSite } from "@/lib/site";
 import { criarClienteAdmin } from "@/lib/supabase/admin";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
@@ -21,6 +23,8 @@ export type EstadoCadastro = EstadoFormulario & {
 
 const ERRO_EMAIL_EXISTE = "Já existe uma conta com este e-mail.";
 const ERRO_BANCO = "Não foi possível salvar. Tente de novo.";
+const ERRO_AUDITORIA =
+  "Não foi possível registrar o acesso, então nada foi feito. Tente de novo.";
 
 function atualizarTelas() {
   revalidatePath("/professor/alunos");
@@ -62,6 +66,8 @@ export async function cadastrarAluno(
   let linkAceite: string | undefined;
 
   if (!aluno.responsavel) {
+    const reserva = await reservarEnvioDeConvite(supabase);
+    if (!reserva.ok) return { erro: reserva.erro, valores };
     const { data, error } = await admin.auth.admin.inviteUserByEmail(
       aluno.email,
       { data: metadados, redirectTo: urlDoSite("/auth/callback") },
@@ -108,11 +114,15 @@ export async function cadastrarAluno(
 
   let aviso = "";
   if (aluno.cursos.length > 0) {
-    const { error } = await supabase
-      .from("matriculas")
-      .insert(
-        aluno.cursos.map((curso_id) => ({ aluno_id: alunoId, curso_id })),
-      );
+    // Sem o registro do acesso, a matrícula não é feita.
+    const registrado = await registrarAcesso("matricular", alunoId);
+    const { error } = registrado
+      ? await supabase
+          .from("matriculas")
+          .insert(
+            aluno.cursos.map((curso_id) => ({ aluno_id: alunoId, curso_id })),
+          )
+      : { error: true };
     if (error)
       aviso = " As matrículas não foram gravadas; faça-as na página do aluno.";
   }
@@ -132,6 +142,8 @@ export async function matricular(
 ): Promise<void> {
   await exigirProfessor();
   if (!ehUuid(alunoId) || !ehUuid(cursoId)) return;
+  if (!(await registrarAcesso("matricular", alunoId)))
+    throw new Error(ERRO_AUDITORIA);
 
   const supabase = await criarClienteServidor();
   await supabase
@@ -149,6 +161,8 @@ export async function desmatricular(
 ): Promise<void> {
   await exigirProfessor();
   if (!ehUuid(alunoId) || !ehUuid(cursoId)) return;
+  if (!(await registrarAcesso("desmatricular", alunoId)))
+    throw new Error(ERRO_AUDITORIA);
 
   const supabase = await criarClienteServidor();
   await supabase
@@ -180,6 +194,9 @@ export async function excluirAluno(
   if (!aluno) return { erro: "Aluno não encontrado." };
   if (!confirmaExclusao(formData.get("confirmacao"), aluno.nome))
     return { erro: "O nome digitado não confere com o nome do aluno." };
+  // Registra antes de apagar: depois não haveria mais a data de nascimento.
+  if (!(await registrarAcesso("excluir", alunoId)))
+    return { erro: ERRO_AUDITORIA };
 
   const { error: erroExclusao } =
     await criarClienteAdmin().auth.admin.deleteUser(alunoId);
@@ -188,4 +205,59 @@ export async function excluirAluno(
 
   revalidatePath("/professor", "layout");
   redirect("/professor/alunos");
+}
+
+// Reenvia o acesso a quem ainda não entrou. Quem tem 12 anos ou mais recebe o
+// convite de novo; o menor de 12 já autorizado recebe o link de acesso, como
+// no aceite. Conta no mesmo limite por hora dos convites.
+export async function reenviarConvite(
+  alunoId: string,
+  _estado: EstadoFormulario,
+): Promise<EstadoFormulario> {
+  await exigirProfessor();
+  if (!ehUuid(alunoId)) return { erro: ERRO_BANCO };
+
+  const supabase = await criarClienteServidor();
+  const { data: aluno, error } = await supabase
+    .from("perfis")
+    .select(
+      "email, nome, data_nascimento, menor_de_12, responsaveis (aceito_em)",
+    )
+    .eq("id", alunoId)
+    .eq("papel", "aluno")
+    .maybeSingle();
+  if (error) return { erro: ERRO_BANCO };
+  if (!aluno) return { erro: "Aluno não encontrado." };
+  const responsavel = aluno.responsaveis as unknown as {
+    aceito_em: string | null;
+  } | null;
+  if (aluno.menor_de_12 && !responsavel?.aceito_em)
+    return { erro: "O responsável ainda não autorizou o acesso." };
+
+  const admin = criarClienteAdmin();
+  const { data: usuario } = await admin.auth.admin.getUserById(alunoId);
+  if (usuario?.user?.last_sign_in_at)
+    return { erro: `${aluno.nome} já entrou no site; não é preciso reenviar.` };
+
+  const reserva = await reservarEnvioDeConvite(supabase);
+  if (!reserva.ok) return { erro: reserva.erro };
+
+  const redirectTo = urlDoSite("/auth/callback");
+  const { error: erroEnvio } = aluno.menor_de_12
+    ? await admin.auth.signInWithOtp({
+        email: aluno.email,
+        options: { shouldCreateUser: false, emailRedirectTo: redirectTo },
+      })
+    : await admin.auth.admin.inviteUserByEmail(aluno.email, {
+        data: {
+          nome: aluno.nome,
+          data_nascimento: aluno.data_nascimento,
+          menor_de_12: false,
+        },
+        redirectTo,
+      });
+  if (erroEnvio)
+    return { erro: "Não foi possível reenviar o convite. Tente de novo." };
+
+  return { sucesso: `Convite reenviado para ${aluno.email}.` };
 }

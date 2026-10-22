@@ -4,7 +4,6 @@
 
 ### Protótipo
 
-- [ ] Limite de tentativas de login e registro de acessos
 - [ ] Testes automáticos que usam o site como um aluno e um professor usariam
 
 ### Revisão
@@ -50,6 +49,7 @@
 - [x] Área do aluno, com os cursos dele, as aulas, a conclusão de aulas, o envio de provas e o progresso
 - [x] Avisos do professor e painel com o progresso de cada aluno
 - [x] Autorização do responsável, política de privacidade, termos de uso, exclusão de dados e identidade visual
+- [x] Limite de tentativas de login, limite de convites por hora e registro dos acessos aos dados de menores de 18 anos
 
 ## Decisões
 
@@ -92,3 +92,11 @@
 - A política de privacidade e os termos de uso são rascunhos para revisão jurídica e avisam isso no topo.
 - A exclusão de um aluno pede o nome digitado (sem contar maiúsculas e espaços nas pontas), conferido de novo no servidor. Ela apaga a conta de login, e o banco apaga em cascata perfil, responsável, matrículas e progresso.
 - Nome, logo e cores ainda são provisórios. As cores ficam como variáveis do tema em `src/app/globals.css` (`primaria` e `secundaria`), o nome e o logo em `src/lib/site.ts`, e o logo em `public/logo.svg`. As cores de aviso (vermelho, verde, amarelo) não mudam com a identidade.
+- Os limites do login ficam no `supabase/config.toml` e, na nuvem, são configurados à mão no painel do Supabase com os mesmos valores (`guias/deploy.md`). O Supabase só conta verificações de código em janelas de 5 minutos por endereço, não por hora.
+- O professor envia no máximo 20 convites por hora, contando os reenvios. Quem garante é o banco (tabela `envios_convite`); a vaga é gasta antes do envio, mesmo que o e-mail falhe. Cadastrar um menor de 12 não conta, porque não envia e-mail.
+- O reenvio de convite aparece só para quem ainda não entrou. O menor de 12 só recebe depois da autorização do responsável, e recebe o link de acesso em vez do convite.
+- A auditoria registra quando o professor abre a ficha, matricula, desmatricula ou exclui um aluno menor de 18 anos (sem data de nascimento, registra por precaução). Quem decide a idade e grava é o banco, pela função `registrar_acesso`; a aplicação não grava direto na tabela.
+- Ainda não existe tela para editar os dados do aluno; a ação "editar" já é aceita pela auditoria para quando ela existir.
+- Se o registro falhar, a ação não acontece e a ficha não abre.
+- A auditoria guarda só o id do aluno, sem nome nem e-mail, e não tem ligação com o perfil, para continuar valendo depois da exclusão. Um gatilho impede alterar ou apagar registros, mesmo com a chave de serviço.
+- Atualizar a ficha depois de matricular conta como abrir de novo e gera outro registro de abertura.

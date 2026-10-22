@@ -2,7 +2,11 @@
 
 import { useState } from "react";
 import { criarClienteNavegador } from "@/lib/supabase/navegador";
-import { MENSAGEM_NAO_CONVIDADO } from "./mensagens";
+import {
+  ehLimiteDeTentativas,
+  MENSAGEM_MUITAS_TENTATIVAS,
+  MENSAGEM_NAO_CONVIDADO,
+} from "./mensagens";
 
 type Estado =
   | { tipo: "inicial" }
@@ -27,7 +31,9 @@ export function FormularioLogin() {
     if (error) {
       setEstado({
         tipo: "erro",
-        mensagem: "Não foi possível entrar com o Google. Tente pelo e-mail.",
+        mensagem: ehLimiteDeTentativas(error)
+          ? MENSAGEM_MUITAS_TENTATIVAS
+          : "Não foi possível entrar com o Google. Tente pelo e-mail.",
       });
     }
   }
@@ -46,17 +52,14 @@ export function FormularioLogin() {
 
     if (!error) {
       setEstado({ tipo: "enviado", email: enderecoDigitado });
+    } else if (ehLimiteDeTentativas(error)) {
+      setEstado({ tipo: "erro", mensagem: MENSAGEM_MUITAS_TENTATIVAS });
     } else if (
       error.code === "otp_disabled" ||
       error.code === "signup_disabled" ||
       error.code === "user_not_found"
     ) {
       setEstado({ tipo: "erro", mensagem: MENSAGEM_NAO_CONVIDADO });
-    } else if (error.status === 429) {
-      setEstado({
-        tipo: "erro",
-        mensagem: "Muitas tentativas. Espere um minuto e tente de novo.",
-      });
     } else {
       setEstado({
         tipo: "erro",

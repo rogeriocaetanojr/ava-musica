@@ -4,12 +4,16 @@ import { redirect } from "next/navigation";
 import { destinoDoPapel, obterSessao } from "@/lib/auth";
 import { tituloDaPagina } from "@/lib/site";
 import { FormularioLogin } from "./formulario-login";
-import { MENSAGEM_NAO_CONVIDADO } from "./mensagens";
+import {
+  MENSAGEM_MUITAS_TENTATIVAS,
+  MENSAGEM_NAO_CONVIDADO,
+} from "./mensagens";
 
 export const metadata: Metadata = { title: tituloDaPagina("Entrar") };
 
 const MENSAGENS_DE_ERRO: Record<string, string> = {
   "nao-convidado": MENSAGEM_NAO_CONVIDADO,
+  "muitas-tentativas": MENSAGEM_MUITAS_TENTATIVAS,
   "link-invalido":
     "O link de acesso expirou ou já foi usado. Peça um novo abaixo.",
 };

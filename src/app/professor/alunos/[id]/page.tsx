@@ -2,6 +2,11 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { exigirProfessor } from "@/lib/auth";
+import {
+  type AcaoAuditada,
+  NOMES_DAS_ACOES,
+  registrarAcesso,
+} from "@/lib/auditoria";
 import { calcularIdade, hojeNoBrasil } from "@/lib/idade";
 import { urlDoSite } from "@/lib/site";
 import { criarClienteAdmin } from "@/lib/supabase/admin";
@@ -9,6 +14,7 @@ import { criarClienteServidor } from "@/lib/supabase/servidor";
 import { ehUuid } from "../../cursos/validacao";
 import { desmatricular, matricular } from "../acoes";
 import { BotaoCopiar } from "../botao-copiar";
+import { BotaoReenviar } from "../botao-reenviar";
 import { FormularioExclusao } from "../formulario-exclusao";
 import {
   CORES_DOS_STATUS,
@@ -31,9 +37,18 @@ type Aluno = {
   matriculas: { curso_id: string }[];
 };
 type Curso = { id: string; titulo: string; publicado: boolean };
+type Acesso = { id: number; acao: AcaoAuditada; criado_em: string };
 
 const botaoPequeno =
   "shrink-0 rounded-md border border-current px-3 py-2 text-sm";
+
+function formatarDataHora(data: string): string {
+  return new Intl.DateTimeFormat("pt-BR", {
+    timeZone: "America/Sao_Paulo",
+    dateStyle: "short",
+    timeStyle: "short",
+  }).format(new Date(data));
+}
 
 function formatarData(data: string): string {
   return new Intl.DateTimeFormat("pt-BR", {
@@ -45,20 +60,30 @@ async function FichaDoAluno({ params }: { params: Promise<{ id: string }> }) {
   await exigirProfessor();
   const { id } = await params;
   if (!ehUuid(id)) notFound();
+  // Menor de 18: sem o registro do acesso, a ficha não é mostrada.
+  if (!(await registrarAcesso("abrir", id)))
+    throw new Error("Não foi possível registrar o acesso à ficha do aluno.");
 
   const supabase = await criarClienteServidor();
-  const [{ data }, { data: cursos }, { data: usuario }] = await Promise.all([
-    supabase
-      .from("perfis")
-      .select(
-        "id, nome, email, data_nascimento, menor_de_12, responsaveis (nome, email, token, aceito_em), matriculas (curso_id)",
-      )
-      .eq("id", id)
-      .eq("papel", "aluno")
-      .maybeSingle(),
-    supabase.from("cursos").select("id, titulo, publicado").order("titulo"),
-    criarClienteAdmin().auth.admin.getUserById(id),
-  ]);
+  const [{ data }, { data: cursos }, { data: usuario }, { data: acessos }] =
+    await Promise.all([
+      supabase
+        .from("perfis")
+        .select(
+          "id, nome, email, data_nascimento, menor_de_12, responsaveis (nome, email, token, aceito_em), matriculas (curso_id)",
+        )
+        .eq("id", id)
+        .eq("papel", "aluno")
+        .maybeSingle(),
+      supabase.from("cursos").select("id, titulo, publicado").order("titulo"),
+      criarClienteAdmin().auth.admin.getUserById(id),
+      supabase
+        .from("auditoria")
+        .select("id, acao, criado_em")
+        .eq("aluno_id", id)
+        .order("criado_em", { ascending: false })
+        .limit(10),
+    ]);
   if (!data) notFound();
 
   const aluno = data as unknown as Aluno;
@@ -94,6 +119,7 @@ async function FichaDoAluno({ params }: { params: Promise<{ id: string }> }) {
             </div>
           )}
         </dl>
+        {status === "convidado" && <BotaoReenviar alunoId={aluno.id} />}
       </header>
 
       {responsavel && (
@@ -158,6 +184,25 @@ async function FichaDoAluno({ params }: { params: Promise<{ id: string }> }) {
                 </li>
               );
             })}
+          </ul>
+        )}
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="text-xl font-semibold">Últimos acessos</h2>
+        {(acessos ?? []).length === 0 ? (
+          <p className="text-sm">
+            Nenhum acesso registrado. Só são registrados os acessos aos dados de
+            alunos menores de 18 anos.
+          </p>
+        ) : (
+          <ul className="space-y-1 text-sm">
+            {((acessos ?? []) as Acesso[]).map((acesso) => (
+              <li key={acesso.id}>
+                {formatarDataHora(acesso.criado_em)} ·{" "}
+                {NOMES_DAS_ACOES[acesso.acao] ?? acesso.acao}
+              </li>
+            ))}
           </ul>
         )}
       </section>
