@@ -2,7 +2,7 @@
 
 -- O gatilho ignora um papel enviado nos metadados do convite.
 insert into auth.users (id, email, raw_user_meta_data) values
-  ('00000000-0000-0000-0000-0000000000c1', 'esperto@teste.local',
+  ('00000000-0000-0000-0000-0000000000c1', 'esperto@testes-banco.local',
    '{"nome": "Esperto", "papel": "professor"}');
 
 do $$

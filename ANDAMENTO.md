@@ -4,7 +4,6 @@
 
 ### Protótipo
 
-- [ ] Avisos do professor e painel com o progresso de cada aluno
 - [ ] Autorização do responsável, política de privacidade, exclusão de dados e identidade visual
 - [ ] Limite de tentativas de login e registro de acessos
 - [ ] Testes automáticos que usam o site como um aluno e um professor usariam
@@ -50,6 +49,7 @@
 - [x] Conteúdo das aulas: texto, vídeos do YouTube, arquivos do Drive, áudio, links e provas do Google Forms, com pré-visualização
 - [x] Cadastro de alunos por convite, matrícula nos cursos e regra para menores de 12 anos
 - [x] Área do aluno, com os cursos dele, as aulas, a conclusão de aulas, o envio de provas e o progresso
+- [x] Avisos do professor e painel com o progresso de cada aluno
 
 ## Decisões
 
@@ -82,3 +82,8 @@
 - O progresso do curso conta só as aulas publicadas marcadas como concluídas; o "Enviei a prova" fica registrado à parte e não muda a porcentagem. A porcentagem é arredondada para baixo, então 100% só aparece com todas as aulas concluídas.
 - O botão "Continuar" leva à primeira aula ainda não concluída, na ordem dos módulos e das aulas. Com tudo concluído, vira "Rever o curso".
 - O professor abre as telas do aluno ("Ver como aluno") para pré-visualizar os cursos publicados, sem os botões de concluir e sem rascunhos.
+- Os avisos são publicados na hora em que são criados. Editar um aviso não muda a data dele, então ele não volta ao topo da lista.
+- O aluno vê os avisos gerais e os dos cursos publicados em que está matriculado, do mais novo para o mais antigo; quem decide isso é o banco. Na pré-visualização, o professor vê todos.
+- O painel do professor conta só as aulas publicadas, com a mesma regra da tela do aluno. As provas contadas são as das aulas publicadas.
+- A última atividade do aluno é o registro de progresso mais recente (aula concluída ou prova enviada), não o último login.
+- O detalhe do progresso de cada aluno fica em `/professor/progresso/...`, separado da ficha de cadastro e matrículas em `/professor/alunos/...`.

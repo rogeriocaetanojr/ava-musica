@@ -23,8 +23,8 @@ begin
   assert not exists (select 1 from public.responsaveis where aluno_id = any (alunos)),
     'os dados do responsável deveriam ter sido apagados';
 
-  -- O conteúdo do professor continua intacto.
-  assert (select count(*) from public.cursos) = 3, 'os cursos não deveriam ser afetados';
-  assert (select count(*) from public.perfis) = 1, 'só o perfil do professor deveria restar';
+  -- O conteúdo do professor continua intacto (contando só os dados de teste).
+  assert (select count(*) from public.cursos where id::text like 'c0000000-%') = 3, 'os cursos não deveriam ser afetados';
+  assert (select count(*) from public.perfis where id::text like '00000000-0000-0000-0000-%') = 1, 'só o perfil do professor deveria restar';
 end;
 $$;

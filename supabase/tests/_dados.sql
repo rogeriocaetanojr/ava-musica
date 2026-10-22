@@ -5,18 +5,18 @@
 --           c2 publicado sem matrícula, c3 em rascunho com o aluno de 14 matriculado.
 
 insert into auth.users (id, email, raw_user_meta_data) values
-  ('00000000-0000-0000-0000-000000000001', 'professor@teste.local',
+  ('00000000-0000-0000-0000-000000000001', 'professor@testes-banco.local',
    '{"nome": "Professor"}'),
-  ('00000000-0000-0000-0000-0000000000a1', 'aluno@teste.local',
+  ('00000000-0000-0000-0000-0000000000a1', 'aluno@testes-banco.local',
    '{"nome": "Aluno", "data_nascimento": "2012-03-10", "menor_de_12": false}'),
-  ('00000000-0000-0000-0000-0000000000b1', 'menor@teste.local',
+  ('00000000-0000-0000-0000-0000000000b1', 'menor@testes-banco.local',
    '{"nome": "Menor", "data_nascimento": "2016-05-20", "menor_de_12": true}');
 
 update public.perfis set papel = 'professor'
 where id = '00000000-0000-0000-0000-000000000001';
 
 insert into public.responsaveis (aluno_id, nome, email) values
-  ('00000000-0000-0000-0000-0000000000b1', 'Responsável', 'responsavel@teste.local');
+  ('00000000-0000-0000-0000-0000000000b1', 'Responsável', 'responsavel@testes-banco.local');
 
 insert into public.cursos (id, titulo, instrumento, publicado) values
   ('c0000000-0000-0000-0000-000000000001', 'Violão I', 'violão', true),

@@ -36,14 +36,15 @@ exception
 end;
 $$;
 
--- Professor vê tudo.
+-- Professor vê tudo. As contagens olham só os dados de teste, porque o
+-- banco local pode ter também as contas do seed:dev.
 reset role;
 set local role authenticated;
 select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-000000000001', true);
 
 do $$
 begin
-  assert (select count(*) from public.cursos) = 3, 'professor deveria ver os 3 cursos';
-  assert (select count(*) from public.perfis) = 3, 'professor deveria ver os 3 perfis';
+  assert (select count(*) from public.cursos where id::text like 'c0000000-%') = 3, 'professor deveria ver os 3 cursos';
+  assert (select count(*) from public.perfis where id::text like '00000000-0000-0000-0000-%') = 3, 'professor deveria ver os 3 perfis';
 end;
 $$;
