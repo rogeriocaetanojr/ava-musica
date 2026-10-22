@@ -32,6 +32,7 @@ Os guias passo a passo ficam em `guias/`, como o fluxo de deploy, a restauraçã
 | `npm run typecheck`                        | checagem de tipos (`tsc --noEmit`)                                                                                 | disponível |
 | `npm test`                                 | testes unitários (`vitest run`)                                                                                    | disponível |
 | `npm run test:db`                          | testes SQL das regras de acesso contra o Supabase local; com `DATABASE_URL`, contra outro Postgres                 | disponível |
+| `npm run seed:dev`                         | cria professor@teste.local e aluno@teste.local no Supabase local (recusa rodar fora dele)                          | disponível |
 | `npm run build`                            | build de produção                                                                                                  | disponível |
 | `npx supabase start` / `npx supabase stop` | sobe e derruba o Supabase local (requer Docker)                                                                    | disponível |
 | `npx supabase db reset`                    | recria o banco local aplicando todas as migrações                                                                  | disponível |

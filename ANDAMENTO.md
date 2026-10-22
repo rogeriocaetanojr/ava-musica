@@ -4,7 +4,6 @@
 
 ### Protótipo
 
-- [ ] Login dos alunos e do professor por convite
 - [ ] Telas do professor para criar cursos, módulos e aulas
 - [ ] Conteúdo das aulas: texto, vídeos do YouTube, arquivos do Drive, áudio, links e provas do Google Forms
 - [ ] Cadastro de alunos, matrícula nos cursos e regra para menores de 12 anos
@@ -46,6 +45,7 @@
 
 - [x] Base do site, com verificação de código, testes e configuração da hospedagem
 - [x] Banco de dados com as regras de quem pode ver o quê e verificações automáticas a cada envio de código
+- [x] Login dos alunos e do professor por convite, com Google ou link por e-mail
 
 ## Decisões
 
@@ -56,3 +56,8 @@
 - O aluno menor de 12 anos ainda sem autorização do responsável vê só o próprio nome, para a tela de espera saber quem ele é; todo o resto fica bloqueado.
 - Os testes do banco vão além do mínimo pedido (por exemplo, visitante sem login não vê nada e o aluno não registra progresso em nome de outro), porque cobrem brechas reais.
 - Os testes do banco rodam por um script em Node, sem exigir o `psql` instalado, e funcionam tanto no banco local quanto nas verificações automáticas.
+- O cadastro aberto fica desligado na configuração geral do login (`[auth] enable_signup = false`). O cadastro por e-mail continua ligado porque, no Supabase local, desligá-lo desativa também o link mágico; quem não foi convidado é recusado do mesmo jeito.
+- O login com Google fica desligado no Supabase local até existirem chaves do Google; lá o teste é feito pelo link mágico.
+- O botão de sair envia um formulário em vez de ser um link, para que o navegador não deslogue ninguém ao pré-carregar a página.
+- As páginas que leem a sessão ficam dentro de `<Suspense>`, exigência do modo de cache ligado no Next.js.
+- O script de usuários de teste só roda quando o endereço do Supabase é local, para nunca criar contas de teste na nuvem.
