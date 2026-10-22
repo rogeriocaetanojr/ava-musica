@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  app:
+    name: Lint, tipos, testes e build
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:54321
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: chave-anon-de-exemplo
+      SUPABASE_SERVICE_ROLE_KEY: chave-service-role-de-exemplo
+      NEXT_PUBLIC_SITE_URL: http://localhost:3000
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run format:check
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+
+  banco:
+    name: Testes SQL das regras de acesso
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Stubs do Supabase
+        run: psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/tests/_stubs.sql
+      - name: Migrações
+        run: |
+          for arquivo in supabase/migrations/*.sql; do
+            echo "Aplicando $arquivo"
+            psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -q -f "$arquivo"
+          done
+      - run: npm run test:db

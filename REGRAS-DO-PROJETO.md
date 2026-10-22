@@ -31,7 +31,7 @@ Os guias passo a passo ficam em `guias/`, como o fluxo de deploy, a restauraçã
 | `npm run lint`                             | ESLint (`eslint .`)                                                                                                | disponível |
 | `npm run typecheck`                        | checagem de tipos (`tsc --noEmit`)                                                                                 | disponível |
 | `npm test`                                 | testes unitários (`vitest run`)                                                                                    | disponível |
-| `npm run test:db`                          | testes SQL das regras de acesso                                                                                    | a criar    |
+| `npm run test:db`                          | testes SQL das regras de acesso contra o Supabase local; com `DATABASE_URL`, contra outro Postgres                 | disponível |
 | `npm run build`                            | build de produção                                                                                                  | disponível |
 | `npx supabase start` / `npx supabase stop` | sobe e derruba o Supabase local (requer Docker)                                                                    | disponível |
 | `npx supabase db reset`                    | recria o banco local aplicando todas as migrações                                                                  | disponível |
@@ -56,6 +56,7 @@ Com o Supabase local rodando: Studio em http://localhost:54323 e caixa de e-mail
 - O lint roda com `eslint .`, **não** com `next lint`.
 - **Tailwind 4:** uma classe própria que usa `@apply` precisa ser declarada com `@utility`.
 - **Login Google para menores de 13 anos** depende do Family Link dos pais; para esses alunos, o caminho padrão é o link mágico por e-mail.
+- **`npm install <pacote>` pode apagar o binário nativo do rolldown** (bug do npm com dependências opcionais), e o `npm test` passa a falhar com "Cannot find native binding". Para corrigir, apague `node_modules` e `package-lock.json` e rode `npm install`.
 
 ## 7. Jeito de trabalhar
 
@@ -72,44 +73,6 @@ Com o Supabase local rodando: Studio em http://localhost:54323 e caixa de e-mail
 
 - O histórico nunca é reescrito: nada de `git reset --hard` nem `git push --force`. Para desfazer algo, use `git revert`.
 
-## 8. Progresso
+## 8. Andamento
 
-**Preparação**
-
-- [x] S1. Ferramentas instaladas
-- [x] S2. Pasta, Git e documentos do projeto
-- [ ] S3. Regras do projeto
-
-**Protótipo**
-
-- [ ] P1. Base do projeto
-- [ ] P2. Banco, regras de acesso e CI mínimo
-- [ ] P3. Login por convite
-- [ ] P4. Cursos, módulos e aulas
-- [ ] P5. Conteúdo da aula
-- [ ] P6. Alunos e matrículas
-- [ ] P7. Área do aluno
-- [ ] P8. Avisos e painel de progresso
-- [ ] P9. LGPD e acabamento
-- [ ] P10. Proteções extras: limite de tentativas e registro de acessos
-- [ ] P11. Testes de ponta a ponta com Playwright
-
-**Revisão**
-
-- [ ] R1. Revisão do protótipo e demonstração
-
-**Deploy**
-
-- [ ] D1. Contas e acessos
-- [ ] D2. Projetos Supabase na nuvem
-- [ ] D3. Variáveis de ambiente e segredos
-- [ ] D4. Site na Netlify
-- [ ] D5. Login Google e e-mail de verdade
-- [ ] D6. CI completo e rede de proteção
-- [ ] D7. Deploy contínuo e promoção
-- [ ] D8. Domínio, DNS e cabeçalhos de segurança
-- [ ] D9. Backups
-- [ ] D10. Monitoramento
-- [ ] D11. LGPD na operação
-- [ ] D12. Manual do professor, README e CHANGELOG
-- [ ] D13. Go-live com alunos piloto
+Andamento: o estado de cada etapa fica no ANDAMENTO.md; toda etapa o atualiza, sem datas.
