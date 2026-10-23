@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BotaoVoltar } from "@/components/botao-voltar";
 import { CONTEINER } from "@/components/conteiner";
 import { LogoDoAva } from "@/components/logo-do-ava";
 import { notFound } from "next/navigation";
@@ -8,6 +9,11 @@ import { type Bloco } from "@/components/bloco-conteudo";
 import { classesDoBotao } from "@/components/botao";
 import { BotaoEnviar } from "@/components/botao-enviar";
 import { Cordas } from "@/components/cordas";
+import {
+  MarcadorDaAula,
+  type Situacao,
+  TEXTO_DA_SITUACAO,
+} from "@/components/marcador-da-aula";
 import { MaterialDaAula } from "@/components/material-da-aula";
 import { exigirAlunoOuProfessor } from "@/lib/auth";
 import { lerConteudo } from "@/lib/embeds";
@@ -45,25 +51,6 @@ type AulaDoCurso = {
 };
 type Modulo = ModuloDoCurso<AulaDoCurso> & { titulo: string };
 
-const VISTO = "M5 12.5l4.5 4.5L19 7.5";
-
-function Visto({ className }: { className: string }) {
-  return (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-    >
-      <path d={VISTO} />
-    </svg>
-  );
-}
-
 function BotaoProva({
   aulaId,
   conteudoId,
@@ -91,56 +78,6 @@ function BotaoProva({
     </form>
   );
 }
-
-type Situacao = "concluida" | "atual" | "prova" | "pendente";
-
-function Marcador({
-  situacao,
-  numero,
-}: {
-  situacao: Situacao;
-  numero: number;
-}) {
-  const base =
-    "grid size-7 shrink-0 place-items-center rounded-full text-xs font-bold";
-  switch (situacao) {
-    case "concluida":
-      return (
-        <span className={`${base} bg-bordo text-amarelo`}>
-          <Visto className="size-4" />
-        </span>
-      );
-    case "atual":
-      return (
-        <span className={`${base} bg-amarelo text-texto-sobre-amarelo`}>
-          {numero}
-        </span>
-      );
-    case "prova":
-      return (
-        <span
-          className={`${base} border-2 border-dashed border-borda-campo text-texto-secundario`}
-        >
-          <Visto className="size-3.5" />
-        </span>
-      );
-    case "pendente":
-      return (
-        <span
-          className={`${base} border-2 border-borda-campo text-texto-secundario`}
-        >
-          {numero}
-        </span>
-      );
-  }
-}
-
-const TEXTO_DA_SITUACAO: Record<Situacao, string> = {
-  concluida: "concluída",
-  atual: "aula atual",
-  prova: "prova",
-  pendente: "pendente",
-};
 
 async function PaginaDaAula({ params }: { params: Promise<{ id: string }> }) {
   const sessao = await exigirAlunoOuProfessor();
@@ -246,7 +183,7 @@ async function PaginaDaAula({ params }: { params: Promise<{ id: string }> }) {
                     : "text-texto hover:bg-fundo"
                 }`}
               >
-                <Marcador situacao={situacao} numero={numero} />
+                <MarcadorDaAula situacao={situacao} numero={numero} />
                 <span className="min-w-0 break-words">
                   {prova ? item.titulo : `Aula ${numero} · ${item.titulo}`}
                   <span className="sr-only">
@@ -268,24 +205,7 @@ async function PaginaDaAula({ params }: { params: Promise<{ id: string }> }) {
         <div
           className={`${CONTEINER} flex max-w-6xl items-center gap-x-4 md:flex-wrap md:gap-x-6 gap-y-2 py-3`}
         >
-          <Link
-            href={linkDoCurso}
-            aria-label={`Voltar para ${curso}`}
-            className="grid size-12 shrink-0 place-items-center rounded-xl border border-linha bg-superficie text-texto hover:border-borda-campo"
-          >
-            <svg
-              aria-hidden="true"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="size-5"
-            >
-              <path d="M19 12H5M11 6l-6 6 6 6" />
-            </svg>
-          </Link>
+          <BotaoVoltar href={linkDoCurso} rotulo={`Voltar para ${curso}`} />
           <div className="min-w-0 flex-1 md:hidden">
             <p className="text-base font-bold text-bordo">
               {numeroDoModulo > 0 && `Módulo ${numeroDoModulo}`}

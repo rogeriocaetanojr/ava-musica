@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { BotaoVoltar } from "@/components/botao-voltar";
 import { Suspense } from "react";
 import { TelaDoProfessor } from "@/components/tela-do-professor";
 import { CONTEINER } from "@/components/conteiner";
@@ -32,24 +32,11 @@ export default function ConvidarAluno() {
         className={`${CONTEINER} flex flex-1 flex-col gap-5 py-6 md:gap-6 md:py-8`}
       >
         <div className="flex items-center gap-4">
-          <Link
+          <BotaoVoltar
             href="/professor/alunos"
-            aria-label="Voltar para Alunos"
-            className="inline-flex size-12 shrink-0 items-center justify-center rounded-xl border border-linha bg-superficie text-texto hover:border-borda-campo"
-          >
-            <svg
-              aria-hidden="true"
-              viewBox="0 0 24 24"
-              className="size-5"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M19 12H5 M12 19l-7-7 7-7" />
-            </svg>
-          </Link>
+            rotulo="Voltar para Alunos"
+            fino
+          />
           <div className="min-w-0">
             <p className="font-bold text-bordo md:hidden">Alunos</p>
             <h1 className="font-titulo text-3xl break-words text-texto md:text-5xl">

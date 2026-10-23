@@ -4,6 +4,15 @@
 
 ### Telas
 
+- [ ] Curso do aluno no celular
+- [ ] Cursos do professor no computador
+- [ ] Cursos do professor no celular
+- [ ] Alunos do professor no computador
+- [ ] Alunos do professor no celular
+- [ ] Recados do professor no computador
+- [ ] Recados do professor no celular
+- [ ] Política de privacidade e Termos no computador
+- [ ] Política de privacidade e Termos no celular
 - [ ] Tema escuro no computador
 - [ ] Tema escuro no celular
 
@@ -76,6 +85,7 @@
 - [x] Painel do professor no celular, com a barra de abas do professor
 - [x] Convite de aluno no computador
 - [x] Convite de aluno no celular
+- [x] Curso do aluno no computador
 
 ## Decisões
 
