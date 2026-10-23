@@ -165,6 +165,7 @@ export function FormularioLogin() {
               type="email"
               required
               autoComplete="email"
+              inputMode="email"
               placeholder="nome@email.com"
               value={email}
               onChange={(evento) => setEmail(evento.target.value)}
@@ -234,13 +235,16 @@ export function FormularioLogin() {
         </Aviso>
       )}
 
+      {/* No celular, a versão curta deste aviso fica no rodapé da página. */}
       {etapa.tipo === "email" && (
-        <Aviso>
-          <p>
-            Acesso só por convite do professor. Para menores de 12 anos, o
-            convite vai primeiro ao responsável.
-          </p>
-        </Aviso>
+        <div className="hidden md:block">
+          <Aviso>
+            <p>
+              Acesso só por convite do professor. Para menores de 12 anos, o
+              convite vai primeiro ao responsável.
+            </p>
+          </Aviso>
+        </div>
       )}
     </div>
   );

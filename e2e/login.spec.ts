@@ -24,7 +24,7 @@ test("a tela de login oferece o e-mail e o Google", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Entrar" })).toBeVisible();
   await expect(page.getByLabel("E-mail")).toBeVisible();
   await expect(
-    page.getByRole("button", { name: "Entrar", exact: true }),
+    page.getByRole("button", { name: "Receber código de acesso" }),
   ).toBeVisible();
   await expect(
     page.getByRole("button", { name: "Entrar com Google" }),

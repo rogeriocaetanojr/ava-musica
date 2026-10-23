@@ -76,7 +76,7 @@ export async function pedirCodigo(page: Page, email: string): Promise<void> {
   await expect(page.locator('input[name="cf-turnstile-response"]')).toHaveValue(
     /.+/,
   );
-  await page.getByRole("button", { name: "Entrar", exact: true }).click();
+  await page.getByRole("button", { name: "Receber código de acesso" }).click();
 }
 
 export const AVISO_DE_ENVIO = "Enviamos um código";

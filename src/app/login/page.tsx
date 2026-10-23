@@ -57,19 +57,22 @@ export default function PaginaLogin({
   return (
     <main
       data-tela-cheia
-      className="grid flex-1 lg:min-h-screen lg:grid-cols-[13fr_11fr]"
+      className="flex flex-1 flex-col md:grid md:min-h-screen md:grid-cols-[13fr_11fr]"
     >
-      <section className="relative flex flex-col overflow-hidden bg-bordo px-6 py-6 text-superficie lg:px-15 lg:py-12">
-        <Cordas className="absolute inset-y-0 left-[70%] hidden w-28 -translate-x-1/2 lg:flex" />
-        <BocaDoViolao className="absolute top-1/2 left-[70%] hidden size-56 -translate-x-1/2 -translate-y-1/2 lg:block" />
+      <section className="relative flex h-56 shrink-0 flex-col justify-end overflow-hidden bg-bordo px-6 py-6 text-superficie md:h-auto md:justify-start md:px-15 md:py-12">
+        {/* No celular, os enfeites ficam no canto direito do topo. */}
+        <Cordas className="absolute inset-y-0 right-10 flex w-28 md:hidden" />
+        <BocaDoViolao className="absolute top-10 right-5 size-30 md:hidden" />
+        <Cordas className="absolute inset-y-0 left-[78%] hidden w-28 -translate-x-1/2 md:flex lg:left-[70%]" />
+        <BocaDoViolao className="absolute top-1/2 left-[78%] hidden size-40 -translate-x-1/2 -translate-y-1/2 md:block lg:left-[70%] lg:size-56" />
 
         <div className="relative flex items-center gap-3">
           <Image src={LOGO_DO_AVA} alt="" width={44} height={44} priority />
           <span className="font-titulo text-2xl">{NOME_DO_AVA}</span>
         </div>
 
-        <div className="relative my-auto hidden max-w-md space-y-6 py-12 lg:block">
-          <p className="font-titulo text-6xl leading-[1.1] tracking-tight">
+        <div className="relative my-auto hidden max-w-md space-y-6 py-12 md:block">
+          <p className="font-titulo text-5xl leading-[1.1] tracking-tight lg:text-6xl">
             Afine e entre.
             <span className="block text-amarelo">
               A aula de hoje te espera.
@@ -81,14 +84,14 @@ export default function PaginaLogin({
           </p>
         </div>
 
-        <p className="relative hidden text-sm lg:block">Aulas de música</p>
+        <p className="relative hidden text-sm md:block">Aulas de música</p>
       </section>
 
-      <section className="flex items-center justify-center px-6 py-10 lg:px-16">
-        <div className="w-full max-w-100 space-y-6">
+      <section className="flex flex-1 flex-col px-6 pt-8 pb-6 md:items-center md:justify-center md:px-16 md:py-10">
+        <div className="flex w-full flex-1 flex-col gap-6 md:max-w-100 md:flex-none">
           <div className="space-y-4">
             <h1 className="font-titulo text-4xl text-texto">Entrar</h1>
-            <p className="leading-relaxed text-texto-secundario">
+            <p className="hidden leading-relaxed text-texto-secundario md:block">
               Use sua conta Google ou receba um código de acesso no e-mail. Sem
               senha para lembrar.
             </p>
@@ -98,12 +101,18 @@ export default function PaginaLogin({
             <AvisoDeErro searchParams={searchParams} />
           </Suspense>
           <FormularioLogin />
-          <Link
-            href="/privacidade"
-            className="inline-flex min-h-12 items-center text-sm font-bold text-bordo underline"
-          >
-            Política de privacidade
-          </Link>
+          <footer className="mt-auto space-y-1 pt-6 md:mt-0 md:pt-0">
+            <p className="text-sm leading-relaxed text-texto-secundario md:hidden">
+              Acesso só por convite. Para menores de 12 anos, o responsável
+              aceita primeiro.
+            </p>
+            <Link
+              href="/privacidade"
+              className="inline-flex min-h-12 items-center text-sm font-bold text-bordo underline"
+            >
+              Política de privacidade
+            </Link>
+          </footer>
         </div>
       </section>
     </main>

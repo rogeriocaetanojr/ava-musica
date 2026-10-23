@@ -4,7 +4,6 @@
 
 ### Telas
 
-- [ ] Tela de entrada no celular
 - [ ] Meus cursos no computador
 - [ ] Meus cursos no celular
 - [ ] Tela da aula no computador
@@ -75,6 +74,7 @@
 ### Telas
 
 - [x] Tela de entrada no computador, com as cores e fontes aprovadas
+- [x] Tela de entrada no celular
 
 ## Decisões
 
@@ -157,3 +157,5 @@
 - O convite do professor não traz link nem código: explica que o aluno deve abrir a página de login e pedir o código. O convidado ainda não confirmado recebe o código pelo modelo de confirmação (`confirmacao.html`, mesmo texto de `codigo.html`).
 - A sessão não fica salva, para alunos, professor e quem entra com o Google: os cookies do login são gravados sem `maxAge`/`expires` (cookies de sessão) nos três clientes do Supabase, e o proxy encerra a sessão (`signOut` com `scope: "local"`) depois de 2 horas sem uso, guardando a hora do último uso no cookie `ultimo-uso`. A regra fica no site porque o `inactivity_timeout` do Supabase só existe nos planos pagos. A versão dos termos passou a `4-rascunho` com a mudança na política de privacidade.
 - Revisto: as cores aprovadas ficam no bloco `@theme` de `src/app/globals.css` (fundo creme, bordô, vinho e amarelo; `primaria` e `secundaria` não existem mais), as fontes são Bricolage Grotesque nos títulos e Manrope no texto, e as telas novas usam os componentes de `src/components/` (botão, campo, aviso, cordas e moldura); o tema escuro automático saiu e volta na sua própria etapa.
+- O layout de celular vale até 767 px; a partir de 768 px a tela de entrada usa o layout do computador. Entre 768 e 1023 px, o título e a boca do violão ficam menores para não se sobreporem.
+- No celular, a tela de entrada mantém o título "Entrar" e o botão "Receber código de acesso", porque o acesso é por código de 6 dígitos e os testes procuram o título "Entrar". O aviso de convite aparece em versão curta no rodapé, junto do link da política de privacidade.
