@@ -1,6 +1,6 @@
-import Image from "next/image";
 import Link from "next/link";
-import { LOGO_DO_AVA, NOME_DO_AVA } from "@/lib/site";
+import { LogoDoAva } from "@/components/logo-do-ava";
+
 import { iniciais } from "@/lib/nomes";
 
 export type SecaoDoProfessor = "painel" | "cursos" | "alunos" | "recados";
@@ -30,8 +30,10 @@ export function CabecalhoDoProfessor({
           href="/professor"
           className="flex min-h-12 items-center gap-3 font-titulo text-2xl text-texto"
         >
-          <Image src={LOGO_DO_AVA} alt="" width={40} height={40} priority />
-          <span>{NOME_DO_AVA}</span>
+          <LogoDoAva
+            semSubtitulo
+            className="[--altura:46px] md:[--altura:60px]"
+          />
           <span className="rounded-full bg-amarelo-claro px-3 py-1 font-sans text-xs font-bold text-texto-sobre-amarelo">
             Professor
           </span>

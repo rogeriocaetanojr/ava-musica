@@ -1,6 +1,5 @@
-import Image from "next/image";
 import Link from "next/link";
-import { LOGO_DO_AVA, NOME_DO_AVA } from "@/lib/site";
+import { LogoDoAva } from "@/components/logo-do-ava";
 
 // Cabeçalho e rodapé somem nas telas de página inteira, marcadas com
 // data-tela-cheia (ver globals.css).
@@ -13,8 +12,10 @@ export function Cabecalho() {
     >
       <div className="mx-auto flex w-full max-w-4xl items-center px-4 py-3">
         <Link href="/" className="flex min-h-12 items-center gap-3 font-bold">
-          <Image src={LOGO_DO_AVA} alt="" width={36} height={36} priority />
-          <span className="text-lg">{NOME_DO_AVA}</span>
+          <LogoDoAva
+            semSubtitulo
+            className="[--altura:46px] md:[--altura:56px]"
+          />
         </Link>
       </div>
     </header>

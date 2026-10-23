@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
-import Image from "next/image";
 import Link from "next/link";
+import { LogoDoAva } from "@/components/logo-do-ava";
 import { Aviso } from "@/components/aviso";
 import { BocaDoViolao, Cordas } from "@/components/cordas";
 import { destinoDoPapel, obterSessao } from "@/lib/auth";
-import { LOGO_DO_AVA, NOME_DO_AVA, tituloDaPagina } from "@/lib/site";
+import { tituloDaPagina } from "@/lib/site";
 import { FormularioLogin } from "./formulario-login";
 import {
   MENSAGEM_BLOQUEADO,
@@ -67,8 +67,7 @@ export default function PaginaLogin({
         <BocaDoViolao className="absolute top-1/2 left-[78%] hidden size-40 -translate-x-1/2 -translate-y-1/2 md:block lg:left-[70%] lg:size-56" />
 
         <div className="relative flex items-center gap-3">
-          <Image src={LOGO_DO_AVA} alt="" width={44} height={44} priority />
-          <span className="font-titulo text-2xl">{NOME_DO_AVA}</span>
+          <LogoDoAva className="[--altura:80px] md:[--altura:120px]" />
         </div>
 
         <div className="relative my-auto hidden max-w-md space-y-6 py-12 md:block">

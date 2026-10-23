@@ -1,5 +1,5 @@
-import Image from "next/image";
 import Link from "next/link";
+import { LogoDoAva } from "@/components/logo-do-ava";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { BarraProgresso } from "@/components/barra-progresso";
@@ -16,7 +16,7 @@ import {
   percentualDeProgresso,
   type ModuloDoCurso,
 } from "@/lib/progresso";
-import { LOGO_DO_AVA, NOME_DO_AVA } from "@/lib/site";
+
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 import { ehUuid } from "../../../professor/cursos/validacao";
 import { aulasConcluidas } from "../../dados";
@@ -297,8 +297,7 @@ async function PaginaDaAula({ params }: { params: Promise<{ id: string }> }) {
             href="/cursos"
             className="hidden min-h-12 items-center gap-3 font-titulo text-2xl text-texto md:flex"
           >
-            <Image src={LOGO_DO_AVA} alt="" width={40} height={40} priority />
-            <span>{NOME_DO_AVA}</span>
+            <LogoDoAva semSubtitulo className="[--altura:60px]" />
           </Link>
           <nav aria-label="Trilha da aula" className="hidden min-w-0 md:block">
             <ol className="flex flex-wrap items-center gap-x-2 text-base">

@@ -1,6 +1,23 @@
 // Nome e logo provisórios, até o professor enviar os definitivos.
 export const NOME_DO_AVA = "AVA de Música";
 export const LOGO_DO_AVA = "/logo.svg";
+// O logo traz o nome escrito; o texto alternativo repete o que está nele.
+export const ALT_DO_LOGO = "John Meyer, Escola de Música";
+// Onde fica o desenho dentro do logo.svg (quadro de 1024 × 1024), para
+// cortar a margem em volta. Trocou o logo, meça de novo.
+export const RECORTE_DO_LOGO = {
+  x: 146.6,
+  y: 219,
+  largura: 736.3,
+  altura: 304,
+};
+// Linha "Escola de Música", escondida quando o logo fica pequeno.
+export const RECORTE_DO_SUBTITULO = {
+  x: 304,
+  y: 474,
+  largura: 274,
+  altura: 38,
+};
 
 export function tituloDaPagina(titulo?: string): string {
   return titulo ? `${titulo} · ${NOME_DO_AVA}` : NOME_DO_AVA;

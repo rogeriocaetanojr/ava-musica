@@ -19,6 +19,10 @@ const manrope = Manrope({
 export const metadata: Metadata = {
   title: NOME_DO_AVA,
   description: "Ambiente virtual de aprendizagem para aulas de música.",
+  icons: {
+    icon: { url: "/icones/favicon-bordo.png", type: "image/png" },
+    apple: "/icones/apple-icon.png",
+  },
 };
 
 export default function RootLayout({
