@@ -1,6 +1,9 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { Aviso } from "@/components/aviso";
+import { Botao } from "@/components/botao";
+import { Campo } from "@/components/campo";
 import { criarClienteNavegador } from "@/lib/supabase/navegador";
 import { Captcha, type ControleDoCaptcha } from "./captcha";
 import {
@@ -135,47 +138,55 @@ export function FormularioLogin() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {etapa.tipo === "email" ? (
-        <form onSubmit={pedirCodigo} className="space-y-3">
-          <label htmlFor="email" className="block text-sm font-medium">
-            E-mail
-          </label>
-          <input
-            id="email"
-            type="email"
-            required
-            autoComplete="email"
-            value={email}
-            onChange={(evento) => setEmail(evento.target.value)}
-            className="w-full rounded-md border border-current bg-transparent px-3 py-3"
-          />
-          <button
-            type="submit"
-            disabled={ocupado}
-            className="w-full rounded-md border border-current px-4 py-3 font-medium disabled:opacity-60"
+        <>
+          <Botao variante="secundario" onClick={entrarComGoogle}>
+            <span
+              aria-hidden="true"
+              className="flex size-7 items-center justify-center rounded-full border border-linha text-sm font-extrabold"
+            >
+              G
+            </span>
+            Entrar com Google
+          </Botao>
+          <div
+            aria-hidden="true"
+            className="flex items-center gap-4 text-sm text-texto-secundario"
           >
-            {ocupado ? "Enviando…" : "Entrar"}
-          </button>
-        </form>
+            <span className="h-px flex-1 bg-linha" />
+            ou
+            <span className="h-px flex-1 bg-linha" />
+          </div>
+          <form onSubmit={pedirCodigo} className="space-y-5">
+            <Campo
+              id="email"
+              rotulo="Seu e-mail"
+              type="email"
+              required
+              autoComplete="email"
+              placeholder="nome@email.com"
+              value={email}
+              onChange={(evento) => setEmail(evento.target.value)}
+            />
+            <Botao type="submit" disabled={ocupado}>
+              {ocupado ? "Enviando…" : "Receber código de acesso"}
+            </Botao>
+          </form>
+        </>
       ) : (
-        <div className="space-y-3">
-          <h2 className="text-lg font-semibold">Digite o código</h2>
-          <p
-            role="status"
-            className="rounded-md bg-green-100 p-3 text-green-800"
-          >
-            {etapa.aviso}
-          </p>
+        <div className="space-y-5">
+          <h2 className="font-titulo text-2xl text-texto">Digite o código</h2>
+          <Aviso role="status">
+            <p>{etapa.aviso}</p>
+          </Aviso>
           <form
             onSubmit={(evento) => confirmarCodigo(evento, etapa.email)}
-            className="space-y-3"
+            className="space-y-5"
           >
-            <label htmlFor="codigo" className="block text-sm font-medium">
-              Código
-            </label>
-            <input
+            <Campo
               id="codigo"
+              rotulo="Código"
               type="text"
               required
               inputMode="numeric"
@@ -187,22 +198,18 @@ export function FormularioLogin() {
               onChange={(evento) =>
                 setCodigo(evento.target.value.replace(/\D/g, ""))
               }
-              className="w-full rounded-md border border-current bg-transparent px-3 py-3 text-center text-2xl tracking-[0.5em]"
+              className="text-center text-2xl tracking-[0.5em]"
             />
-            <button
-              type="submit"
-              disabled={ocupado}
-              className="w-full rounded-md border border-current px-4 py-3 font-medium disabled:opacity-60"
-            >
+            <Botao type="submit" disabled={ocupado}>
               {ocupado ? "Confirmando…" : "Confirmar"}
-            </button>
+            </Botao>
           </form>
-          <div className="flex justify-between gap-3 text-sm">
+          <div className="flex justify-between gap-3 text-sm font-bold text-bordo">
             <button
               type="button"
               disabled={ocupado}
               onClick={() => enviarCodigo(etapa.email, true)}
-              className="underline disabled:opacity-60"
+              className="min-h-12 underline disabled:opacity-60"
             >
               Reenviar código
             </button>
@@ -210,7 +217,7 @@ export function FormularioLogin() {
               type="button"
               disabled={ocupado}
               onClick={usarOutroEmail}
-              className="underline disabled:opacity-60"
+              className="min-h-12 underline disabled:opacity-60"
             >
               Usar outro e-mail
             </button>
@@ -221,23 +228,19 @@ export function FormularioLogin() {
       {/* Fica nas duas etapas: o reenvio do código também passa pelo captcha. */}
       <Captcha ref={captcha} aoMudarToken={setTokenCaptcha} />
 
-      {etapa.tipo === "email" && (
-        <>
-          <p className="text-center text-sm">ou</p>
-          <button
-            type="button"
-            onClick={entrarComGoogle}
-            className="w-full rounded-md border border-current px-4 py-3 font-medium"
-          >
-            Entrar com Google
-          </button>
-        </>
+      {erro && (
+        <Aviso role="alert">
+          <p>{erro}</p>
+        </Aviso>
       )}
 
-      {erro && (
-        <p role="alert" className="rounded-md bg-red-100 p-3 text-red-800">
-          {erro}
-        </p>
+      {etapa.tipo === "email" && (
+        <Aviso>
+          <p>
+            Acesso só por convite do professor. Para menores de 12 anos, o
+            convite vai primeiro ao responsável.
+          </p>
+        </Aviso>
       )}
     </div>
   );

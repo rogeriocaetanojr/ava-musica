@@ -2,6 +2,21 @@
 
 ## Pendente
 
+### Telas
+
+- [ ] Tela de entrada no computador, com as cores e fontes aprovadas
+- [ ] Tela de entrada no celular
+- [ ] Meus cursos no computador
+- [ ] Meus cursos no celular
+- [ ] Tela da aula no computador
+- [ ] Tela da aula no celular
+- [ ] Painel do professor no computador
+- [ ] Painel do professor no celular
+- [ ] Convite de aluno no computador
+- [ ] Convite de aluno no celular
+- [ ] Tema escuro no computador
+- [ ] Tema escuro no celular
+
 ### Revisão
 
 - [ ] Revisão do protótipo e demonstração para o professor
