@@ -502,7 +502,8 @@ async function FaixaDePedidos() {
     .select("id", { count: "exact", head: true })
     .eq("papel", "aluno")
     .is("liberado_em", null)
-    .not("pedido_em", "is", null);
+    .not("pedido_em", "is", null)
+    .not("nome", "is", null);
   if (error || !count) return null;
   return (
     <Link href="/professor/alunos" className={faixa}>

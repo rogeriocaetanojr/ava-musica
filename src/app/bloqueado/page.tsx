@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { BotaoSair } from "@/components/botao-sair";
-import { destinoDoPapel, obterSessao } from "@/lib/auth";
+import { destinoDaSessao, obterSessao } from "@/lib/auth";
 import { tituloDaPagina } from "@/lib/site";
 import { MENSAGEM_BLOQUEADO } from "../login/mensagens";
 
@@ -12,11 +12,13 @@ async function Aviso() {
   const sessao = await obterSessao();
   if (!sessao) redirect("/login?erro=bloqueado");
   if (sessao.papel !== "aluno" || !sessao.bloqueado)
-    redirect(destinoDoPapel(sessao.papel));
+    redirect(destinoDaSessao(sessao));
 
   return (
     <>
-      <h1 className="text-2xl font-bold break-words">Olá, {sessao.nome}</h1>
+      <h1 className="text-2xl font-bold break-words">
+        {sessao.nome ? `Olá, ${sessao.nome}` : "Olá"}
+      </h1>
       <p role="alert">{MENSAGEM_BLOQUEADO}</p>
       <BotaoSair />
     </>

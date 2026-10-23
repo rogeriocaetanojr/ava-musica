@@ -87,6 +87,13 @@ export async function digitarCodigo(page: Page, codigo: string): Promise<void> {
   await page.getByRole("button", { name: "Confirmar" }).click();
 }
 
+// Quem entra sem nome cai na tela "Como você se chama?" e informa o nome.
+export async function informarNome(page: Page, nome: string): Promise<void> {
+  await expect(page).toHaveURL(/\/seu-nome$/);
+  await page.getByLabel("Nome completo").fill(nome);
+  await page.getByRole("button", { name: "Continuar" }).click();
+}
+
 // Entra com o código enviado por e-mail, como o aluno e o professor fazem.
 export async function entrar(page: Page, email: string): Promise<void> {
   // Apaga e-mails antigos para não usar um código já vencido.

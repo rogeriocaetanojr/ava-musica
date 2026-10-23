@@ -2,7 +2,12 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { BotaoSair } from "@/components/botao-sair";
-import { alunoLiberado, destinoDoPapel, obterSessao } from "@/lib/auth";
+import {
+  alunoLiberado,
+  destinoDaSessao,
+  destinoDoPapel,
+  obterSessao,
+} from "@/lib/auth";
 import { tituloDaPagina } from "@/lib/site";
 import { textoDaEspera } from "./textos";
 
@@ -14,6 +19,7 @@ async function Aviso() {
   const sessao = await obterSessao();
   if (!sessao) redirect("/login");
   if (sessao.papel === "aluno" && sessao.bloqueado) redirect("/bloqueado");
+  if (sessao.nome === null) redirect(destinoDaSessao(sessao));
   if (sessao.papel !== "aluno" || (await alunoLiberado()))
     redirect(destinoDoPapel(sessao.papel));
   const texto = textoDaEspera(sessao.pendente);

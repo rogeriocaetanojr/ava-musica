@@ -10,6 +10,7 @@ import {
   registrarAcesso,
 } from "@/lib/auditoria";
 import { calcularIdade, hojeNoBrasil } from "@/lib/idade";
+import { nomeParaExibir } from "@/lib/nomes";
 import { urlDoSite } from "@/lib/site";
 import { criarClienteAdmin } from "@/lib/supabase/admin";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
@@ -19,6 +20,7 @@ import { BotaoBloqueio } from "../botao-bloqueio";
 import { BotaoCopiar } from "../botao-copiar";
 import { BotaoReenviar } from "../botao-reenviar";
 import { FormularioExclusao } from "../formulario-exclusao";
+import { FormularioNome } from "../formulario-nome";
 import {
   CORES_DOS_STATUS,
   NOMES_DOS_STATUS,
@@ -27,7 +29,7 @@ import {
 
 type Aluno = {
   id: string;
-  nome: string;
+  nome: string | null;
   email: string;
   data_nascimento: string | null;
   menor_de_12: boolean;
@@ -101,11 +103,12 @@ async function FichaDoAluno({ params }: { params: Promise<{ id: string }> }) {
     ultimo_acesso: usuario?.user?.last_sign_in_at,
   });
   const matriculados = new Set(aluno.matriculas.map((m) => m.curso_id));
+  const nome = nomeParaExibir(aluno.nome);
 
   return (
     <>
       <header className="space-y-2">
-        <h1 className="text-2xl font-bold break-words">{aluno.nome}</h1>
+        <h1 className="text-2xl font-bold break-words">{nome}</h1>
         <span
           className={`inline-block rounded px-2 py-1 text-xs font-medium ${CORES_DOS_STATUS[status]}`}
         >
@@ -137,6 +140,11 @@ async function FichaDoAluno({ params }: { params: Promise<{ id: string }> }) {
           </p>
         )}
       </header>
+
+      <section className="space-y-3">
+        <h2 className="text-xl font-semibold">Nome</h2>
+        <FormularioNome alunoId={aluno.id} nome={aluno.nome ?? ""} />
+      </section>
 
       {responsavel && (
         <section className="space-y-3">
@@ -232,14 +240,14 @@ async function FichaDoAluno({ params }: { params: Promise<{ id: string }> }) {
         )}
         <BotaoBloqueio
           alunoId={aluno.id}
-          nome={aluno.nome}
+          nome={nome}
           bloqueado={aluno.bloqueado_em !== null}
         />
       </section>
 
       <section className="space-y-3 rounded-md border border-red-700 p-4">
         <h2 className="text-xl font-semibold">Excluir todos os dados</h2>
-        <FormularioExclusao alunoId={aluno.id} nome={aluno.nome} />
+        <FormularioExclusao alunoId={aluno.id} nome={nome} />
       </section>
     </>
   );

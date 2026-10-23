@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { exigirProfessor } from "@/lib/auth";
 import { registrarAcesso } from "@/lib/auditoria";
 import { hojeNoBrasil } from "@/lib/idade";
+import { nomeParaExibir, validarNome } from "@/lib/nomes";
 import { reservarEnvioDeConvite } from "@/lib/limite-convites";
 import { urlDoSite } from "@/lib/site";
 import { criarClienteAdmin } from "@/lib/supabase/admin";
@@ -231,7 +232,9 @@ export async function excluirAluno(
     .maybeSingle();
   if (error) return { erro: ERRO_BANCO };
   if (!aluno) return { erro: "Aluno não encontrado." };
-  if (!confirmaExclusao(formData.get("confirmacao"), aluno.nome))
+  if (
+    !confirmaExclusao(formData.get("confirmacao"), nomeParaExibir(aluno.nome))
+  )
     return { erro: "O nome digitado não confere com o nome do aluno." };
   // Registra antes de apagar: depois não haveria mais a data de nascimento.
   if (!(await registrarAcesso("excluir", alunoId)))
@@ -244,6 +247,30 @@ export async function excluirAluno(
 
   revalidatePath("/professor", "layout");
   redirect("/professor/alunos");
+}
+
+// Muda o nome do aluno. O banco grava o nome e o registro na auditoria juntos,
+// para qualquer idade.
+export async function renomearAluno(
+  alunoId: string,
+  _estado: EstadoFormulario,
+  formData: FormData,
+): Promise<EstadoFormulario> {
+  await exigirProfessor();
+  if (!ehUuid(alunoId)) return { erro: ERRO_BANCO };
+  const valores = valoresDigitados(formData);
+  const resultado = validarNome(formData.get("nome"));
+  if (!resultado.ok) return { erro: resultado.erro, valores };
+
+  const supabase = await criarClienteServidor();
+  const { error } = await supabase.rpc("definir_nome_do_aluno", {
+    aluno: alunoId,
+    p_nome: resultado.nome,
+  });
+  if (error) return { erro: ERRO_BANCO, valores };
+
+  revalidatePath("/professor", "layout");
+  return { sucesso: "Nome salvo." };
 }
 
 // Reenvia o acesso a quem ainda não entrou. Quem tem 12 anos ou mais recebe o
@@ -278,7 +305,9 @@ export async function reenviarConvite(
   const admin = criarClienteAdmin();
   const { data: usuario } = await admin.auth.admin.getUserById(alunoId);
   if (usuario?.user?.last_sign_in_at)
-    return { erro: `${aluno.nome} já entrou no site; não é preciso reenviar.` };
+    return {
+      erro: `${nomeParaExibir(aluno.nome)} já entrou no site; não é preciso reenviar.`,
+    };
 
   const reserva = await reservarEnvioDeConvite(supabase);
   if (!reserva.ok) return { erro: reserva.erro };

@@ -1,4 +1,5 @@
 import "server-only";
+import { nomeParaExibir } from "@/lib/nomes";
 import type { AulaComProvas, RegistroDeProgresso } from "@/lib/painel";
 import type { ModuloDoCurso } from "@/lib/progresso";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
@@ -49,7 +50,10 @@ export async function dadosDoPainel(alunoId?: string) {
   if (r1.error || r2.error || r3.error) return null;
 
   return {
-    alunos: r1.data as unknown as AlunoDoPainel[],
+    alunos: (r1.data as unknown as AlunoDoPainel[]).map((aluno) => ({
+      ...aluno,
+      nome: nomeParaExibir(aluno.nome),
+    })),
     cursos: r2.data as unknown as CursoDoPainel[],
     progresso: r3.data as ProgressoDoPainel[],
   };

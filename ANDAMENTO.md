@@ -34,10 +34,6 @@
 - [ ] Manual do professor e documentação do projeto
 - [ ] Lançamento com um primeiro grupo de alunos
 
-### Pendências
-
-- [ ] Sempre ter o nome do aluno: tela 'Como você se chama?' no pedido pelo código
-
 ### Melhorias futuras
 
 - [ ] Professor poder excluir cursos, módulos e aulas
@@ -66,6 +62,7 @@
 - [x] Professor pode bloquear e desbloquear o acesso de um aluno, sem perder os dados nem o progresso
 - [x] Aluno sem convite pode pedir acesso entrando com o Google; o professor libera ou recusa no painel e recebe um e-mail a cada pedido novo
 - [x] Pedido de acesso também pelo e-mail, com captcha, e bloqueio de 7 dias para quem foi recusado, com a lista "Recusados recentemente" no painel
+- [x] Nome do aluno sempre preenchido: tela "Como você se chama?" para quem entra sem nome, e o professor pode corrigir o nome na ficha do aluno
 
 ### Telas
 
@@ -181,3 +178,8 @@
 - No painel do celular: os indicadores são alunos ativos e cursos no ar; os aceites pendentes viram uma faixa amarela que leva a Alunos e só aparece quando há algum. Nova aula e Convidar ficam lado a lado abaixo dos indicadores. O progresso vira uma lista de cartões, um por matrícula, com o curso abaixo do nome e a barra com o percentual, ou a etiqueta Aguardando responsável ou Bloqueado. Pedidos de acesso, Recusados recentemente e Último recado continuam na tela: os pedidos acima da lista, os outros dois abaixo dela.
 - O convite de aluno fica numa página própria (`/professor/alunos/convidar`) e confere os campos na tela antes de enviar, mas quem valida de verdade, inclusive a regra dos 12 anos, continua sendo o servidor.
 - No celular, o convite tem no topo o botão voltar, "Alunos" e o título; "Como funciona o convite" vira um bloco recolhível, fechado por padrão. Os campos ficam numa coluna, com o bloco do responsável logo abaixo da data de nascimento, e Cancelar e o botão de enviar ficam fixos no rodapé, sem a barra de abas. Para o bloco mudar de lugar sem repetir campos, a tela consulta a largura no navegador (`matchMedia`) e mostra o bloco numa só posição.
+- O e-mail nunca faz as vezes do nome. Sem nome nos metadados (pedido pelo código no e-mail, ou Google sem nome), o perfil nasce com `nome` nulo, e a migração `20261024000000_nome_obrigatorio.sql` limpou os nomes iguais ao e-mail. Os pedidos pendentes nessa situação saíram da lista do professor até a pessoa informar o nome.
+- Quem não tem nome vai para `/seu-nome` ("Como você se chama?") logo depois do código ou da volta do Google, antes de qualquer outra tela: `exigirProfessor`, `exigirAluno` e `exigirAlunoOuProfessor` levam para lá. Só depois do nome o pedido é confirmado (`pedido_em`) e o professor é avisado por e-mail, já com o nome. A tela usa o mesmo visual da tela de entrada, no computador e no celular.
+- A action da tela do nome começa com `exigirAluno({ semNome: true })`, que aceita só quem está logado, sem bloqueio e ainda sem nome, mesmo com o pedido pendente.
+- O nome só muda pelas funções do banco: `definir_meu_nome`, que grava o nome uma vez só, e `definir_nome_do_aluno`, que só o professor usa e que registra `renomear` na auditoria para qualquer idade. Um gatilho barra a mudança direta da coluna, como no bloqueio e na liberação. Na ficha do aluno, o professor corrige o nome, e a mudança aparece em "Últimos acessos" como "Alterou o nome".
+- O nome tem até 120 caracteres, sem espaços sobrando e sem `@`, para ninguém digitar o e-mail no lugar. Uma conta antiga ainda sem nome aparece como "Sem nome" nas telas do professor, nunca com o e-mail.

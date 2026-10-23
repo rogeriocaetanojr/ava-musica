@@ -6,6 +6,7 @@ import {
   contarEmails,
   digitarCodigo,
   entrar,
+  informarNome,
   pedirCodigo,
   PROFESSOR,
 } from "./apoio";
@@ -28,6 +29,7 @@ test("pedido pelo e-mail só conta depois do código, avisa uma vez e é liberad
   browser,
 }, testInfo) => {
   const email = emailNovo("pedido", testInfo.project.name);
+  const nome = `Pedido ${testInfo.project.name} ${Date.now()}`;
 
   // Digitar o e-mail cria a conta, mas o pedido ainda não aparece.
   const aluno = await browser.newPage();
@@ -42,8 +44,10 @@ test("pedido pelo e-mail só conta depois do código, avisa uma vez e é liberad
   const pedidos = secao(professor, "Pedidos de acesso");
   await expect(pedidos.getByText(email)).toHaveCount(0);
 
-  // O código confirma o pedido e avisa o professor.
+  // Depois do código vem o nome; só então o pedido conta e o professor é
+  // avisado, com o nome.
   await digitarCodigo(aluno, codigo);
+  await informarNome(aluno, nome);
   await expect(aluno).toHaveURL(/\/aguardando$/);
   await expect(
     aluno.getByRole("heading", { name: "Aguardando liberação do professor" }),
@@ -55,8 +59,10 @@ test("pedido pelo e-mail só conta depois do código, avisa uma vez e é liberad
       message: "o aviso de pedido novo não chegou",
     })
     .toBe(1);
+  expect(await contarEmails(PROFESSOR, "Novo pedido de acesso", nome)).toBe(1);
 
-  // Pedir de novo e entrar de novo não gera outro aviso nem outro pedido.
+  // Pedir de novo e entrar de novo não pede o nome de novo nem gera outro
+  // aviso ou outro pedido.
   await aluno.context().clearCookies();
   await apagarEmailsDe(email);
   await pedirCodigo(aluno, email);
@@ -71,6 +77,7 @@ test("pedido pelo e-mail só conta depois do código, avisa uma vez e é liberad
   await expect(professor).toHaveURL(/\/professor\/alunos$/);
   const pedido = pedidos.getByRole("listitem").filter({ hasText: email });
   await expect(pedido).toHaveCount(1);
+  await expect(pedido.getByText(nome)).toBeVisible();
   await pedido.getByRole("button", { name: "Liberar" }).click();
   await pedido.getByLabel("Data de nascimento").fill("2000-01-01");
   await pedido.getByRole("button", { name: "Confirmar liberação" }).click();
@@ -98,6 +105,7 @@ test("recusado não pede de novo até o professor permitir", async ({
   const aluno = await browser.newPage();
   await pedirCodigo(aluno, email);
   await digitarCodigo(aluno, await codigoDoEmail(email));
+  await informarNome(aluno, "Pessoa Recusada");
   await expect(aluno).toHaveURL(/\/aguardando$/);
 
   const professor = await browser.newPage();

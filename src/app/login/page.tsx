@@ -5,7 +5,7 @@ import Link from "next/link";
 import { LogoDoAva } from "@/components/logo-do-ava";
 import { Aviso } from "@/components/aviso";
 import { BocaDoViolao, Cordas } from "@/components/cordas";
-import { destinoDoPapel, obterSessao } from "@/lib/auth";
+import { destinoDaSessao, obterSessao } from "@/lib/auth";
 import { tituloDaPagina } from "@/lib/site";
 import { FormularioLogin } from "./formulario-login";
 import {
@@ -33,7 +33,7 @@ type Parametros = Promise<{ erro?: string }>;
 // Quem já está logado vai direto para a sua área.
 async function RedirecionarLogado() {
   const sessao = await obterSessao();
-  if (sessao) redirect(destinoDoPapel(sessao.papel));
+  if (sessao) redirect(destinoDaSessao(sessao));
   return null;
 }
 

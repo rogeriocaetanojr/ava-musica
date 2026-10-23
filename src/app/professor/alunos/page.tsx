@@ -5,6 +5,7 @@ import { Suspense } from "react";
 import { Aviso } from "@/components/aviso";
 import { classesDoBotao } from "@/components/botao";
 import { exigirProfessor } from "@/lib/auth";
+import { nomeParaExibir } from "@/lib/nomes";
 import { criarClienteAdmin } from "@/lib/supabase/admin";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 import { PedidosDeAcesso } from "./pedidos-de-acesso";
@@ -13,7 +14,7 @@ import { CORES_DOS_STATUS, NOMES_DOS_STATUS, statusDoAluno } from "./validacao";
 
 type Aluno = {
   id: string;
-  nome: string;
+  nome: string | null;
   email: string;
   menor_de_12: boolean;
   bloqueado_em: string | null;
@@ -76,7 +77,7 @@ async function ListaDeAlunos() {
                 >
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <span className="font-medium break-words">
-                      {aluno.nome}
+                      {nomeParaExibir(aluno.nome)}
                     </span>
                     <span
                       className={`rounded px-2 py-1 text-xs font-medium ${CORES_DOS_STATUS[status]}`}
@@ -110,6 +111,7 @@ async function Pedidos() {
     .eq("papel", "aluno")
     .is("liberado_em", null)
     .not("pedido_em", "is", null)
+    .not("nome", "is", null)
     .order("pedido_em");
   if (error || !pedidos)
     return (

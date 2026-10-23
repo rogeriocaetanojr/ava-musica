@@ -189,6 +189,10 @@ async function garantirUsuario(
     .maybeSingle();
   if (existente) return existente.id;
 
+  // Toda conta do seed tem nome: o banco nunca usa o e-mail no lugar dele.
+  if (!String(metadados.nome ?? metadados.full_name ?? "").trim())
+    throw new Error(`A conta ${email} do seed precisa de nome.`);
+
   const { data, error } = await supabase.auth.admin.createUser({
     email,
     email_confirm: true,
@@ -217,13 +221,6 @@ async function main() {
     data_nascimento: dataHaAnos(15),
     menor_de_12: false,
   });
-
-  // O nome dos metadados só vale na criação; aqui ele é acertado sempre.
-  const { error: erroNome } = await supabase
-    .from("perfis")
-    .update({ nome: NOME_DO_ALUNO })
-    .eq("id", idAluno);
-  if (erroNome) throw erroNome;
 
   await garantirCursoDeExemplo(idAluno);
 

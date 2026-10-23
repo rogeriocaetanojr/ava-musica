@@ -7,15 +7,33 @@ export type Papel = "professor" | "aluno";
 export type Sessao = {
   id: string;
   email: string;
-  nome: string;
+  // Nulo enquanto a pessoa não informa o nome (tela "Como você se chama?").
+  nome: string | null;
   papel: Papel;
   bloqueado: boolean;
   // Entrou pelo Google sem cadastro do professor e ainda não foi liberado.
   pendente: boolean;
 };
 
+// Sessão de quem já informou o nome: o que as telas e ações recebem.
+export type SessaoComNome = Sessao & { nome: string };
+
+export const TELA_DO_NOME = "/seu-nome";
+
 export function destinoDoPapel(papel: Papel): string {
   return papel === "professor" ? "/professor" : "/cursos";
+}
+
+// Quem ainda não informou o nome passa antes pela tela do nome.
+export function destinoDaSessao(
+  sessao: Pick<Sessao, "nome" | "papel">,
+): string {
+  return sessao.nome === null ? TELA_DO_NOME : destinoDoPapel(sessao.papel);
+}
+
+function comNome(sessao: Sessao): SessaoComNome {
+  if (sessao.nome === null) redirect(TELA_DO_NOME);
+  return sessao as SessaoComNome;
 }
 
 // Usuário logado com o perfil lido do banco (o papel nunca vem dos metadados).
@@ -46,11 +64,11 @@ export async function obterSessao(): Promise<Sessao | null> {
   };
 }
 
-export async function exigirProfessor(): Promise<Sessao> {
+export async function exigirProfessor(): Promise<SessaoComNome> {
   const sessao = await obterSessao();
   if (!sessao) redirect("/login");
-  if (sessao.papel !== "professor") redirect(destinoDoPapel(sessao.papel));
-  return sessao;
+  if (sessao.papel !== "professor") redirect(destinoDaSessao(sessao));
+  return comNome(sessao);
 }
 
 // Pergunta ao banco se o aluno logado já pode acessar (liberado pelo professor
@@ -62,23 +80,37 @@ export async function alunoLiberado(): Promise<boolean> {
   return !error && data === true;
 }
 
-// O aluno bloqueado vai para o aviso de bloqueio; o pedido pendente e o menor
-// de 12 sem aceite, para a tela de espera.
-export async function exigirAluno(): Promise<Sessao> {
+// O aluno bloqueado vai para o aviso de bloqueio; quem não informou o nome,
+// para a tela do nome; o pedido pendente e o menor de 12 sem aceite, para a
+// tela de espera.
+//
+// Com { semNome: true }, só para a tela do nome: aceita quem está logado, sem
+// bloqueio e ainda sem nome, mesmo pendente (o pedido só vai ao professor
+// depois do nome). Quem já tem nome volta para a sua área.
+export async function exigirAluno(): Promise<SessaoComNome>;
+export async function exigirAluno(opcoes: { semNome: true }): Promise<Sessao>;
+export async function exigirAluno(opcoes?: { semNome: true }): Promise<Sessao> {
   const sessao = await obterSessao();
   if (!sessao) redirect("/login");
-  if (sessao.papel !== "aluno") redirect(destinoDoPapel(sessao.papel));
+  if (opcoes?.semNome) {
+    if (sessao.bloqueado) redirect("/bloqueado");
+    if (sessao.nome !== null) redirect(destinoDaSessao(sessao));
+    return sessao;
+  }
+  if (sessao.papel !== "aluno") redirect(destinoDaSessao(sessao));
   if (sessao.bloqueado) redirect("/bloqueado");
+  const comONome = comNome(sessao);
   if (!(await alunoLiberado())) redirect("/aguardando");
-  return sessao;
+  return comONome;
 }
 
 // Telas do aluno: o aluno liberado estuda e o professor pré-visualiza.
-export async function exigirAlunoOuProfessor(): Promise<Sessao> {
+export async function exigirAlunoOuProfessor(): Promise<SessaoComNome> {
   const sessao = await obterSessao();
   if (!sessao) redirect("/login");
   if (sessao.papel === "aluno" && sessao.bloqueado) redirect("/bloqueado");
+  const comONome = comNome(sessao);
   if (sessao.papel === "aluno" && !(await alunoLiberado()))
     redirect("/aguardando");
-  return sessao;
+  return comONome;
 }
