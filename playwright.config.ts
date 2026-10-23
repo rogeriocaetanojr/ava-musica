@@ -1,5 +1,10 @@
 import { defineConfig, devices } from "@playwright/test";
 
+// Porta só dos testes: o Playwright sempre sobe o próprio servidor, mesmo com
+// o npm run dev aberto na 3000, e o encerra no fim.
+const PORTA = 3100;
+const ENDERECO = `http://localhost:${PORTA}`;
+
 // Testes de ponta a ponta contra o site local e o Supabase local.
 // Uso: npm run test:e2e (o Supabase local precisa estar rodando).
 export default defineConfig({
@@ -14,8 +19,7 @@ export default defineConfig({
   expect: { timeout: 15_000 },
   reporter: process.env.CI ? [["github"], ["html", { open: "never" }]] : "list",
   use: {
-    // O mesmo endereço do site_url do supabase/config.toml, usado nos links dos e-mails.
-    baseURL: "http://localhost:3000",
+    baseURL: ENDERECO,
     trace: "retain-on-failure",
     locale: "pt-BR",
     timezoneId: "America/Sao_Paulo",
@@ -25,11 +29,13 @@ export default defineConfig({
     { name: "celular", use: { ...devices["Pixel 7"] } },
   ],
   webServer: {
-    command: "npm run dev",
-    url: "http://localhost:3000/login",
-    reuseExistingServer: !process.env.CI,
+    command: `npm run dev -- --port ${PORTA}`,
+    url: `${ENDERECO}/login`,
+    reuseExistingServer: false,
     // Aviso de pedido novo ao professor pela porta SMTP do Mailpit local.
     env: {
+      NEXT_DIST_DIR: ".next-e2e",
+      NEXT_PUBLIC_SITE_URL: ENDERECO,
       SMTP_HOST: "127.0.0.1",
       SMTP_PORT: "54325",
       SMTP_REMETENTE: "AVA de Música <avisos@teste.local>",

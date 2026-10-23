@@ -2,6 +2,9 @@ import type { NextConfig } from "next";
 import { PHASE_PRODUCTION_BUILD } from "next/constants";
 
 const nextConfig: NextConfig = {
+  // Os testes de ponta a ponta usam uma pasta própria, para o servidor deles
+  // rodar ao lado do npm run dev (o Next trava a pasta do servidor aberto).
+  distDir: process.env.NEXT_DIST_DIR || ".next",
   cacheComponents: true,
   partialPrefetching: true,
   turbopack: {

@@ -9,7 +9,7 @@ Os testes em `e2e/` usam o site como o professor e o aluno usariam, no Chromium,
 3. Na primeira vez, instale o navegador: `npx playwright install chromium`.
 4. Rode `npm run test:e2e`.
 
-Antes dos testes, o banco local é recriado com `npx supabase db reset` e recebe os usuários de teste (`npm run seed:dev`). **Tudo o que estava no banco local é apagado.** Se o site não estiver rodando em http://localhost:3000, o próprio Playwright sobe o `npm run dev`.
+Antes dos testes, o banco local é recriado com `npx supabase db reset` e recebe os usuários de teste (`npm run seed:dev`). **Tudo o que estava no banco local é apagado.** O Playwright sempre sobe o próprio `npm run dev` em http://localhost:3100, com a pasta de build `.next-e2e`, e o encerra no fim; o `npm run dev` na porta 3000 pode continuar aberto.
 
 ## O que é testado
 
