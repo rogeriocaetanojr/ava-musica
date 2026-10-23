@@ -79,6 +79,7 @@
 - [x] Meus cursos no computador
 - [x] Meus cursos no celular, com a barra de abas e a página de perfil
 - [x] Tela da aula no computador
+- [x] Tela da aula no celular
 
 ## Decisões
 
@@ -171,3 +172,4 @@
 - A tela da aula tem cabeçalho próprio: o botão voltar ("Voltar para {curso}"), o logo e a trilha Curso / Módulo / Aula. O primeiro vídeo do YouTube abre a aula, os blocos de texto formam a descrição e os demais blocos viram os cartões de "Materiais da aula", na ordem do professor. O playback por link direto ganhou um botão grande de tocar; o do Drive continua no visualizador do Drive.
 - A lateral mostra o progresso no curso e as aulas do módulo atual. Para isso, a página lê também as aulas concluídas no curso, o título dos módulos e o tipo dos blocos de cada aula (para marcar as aulas com prova). São só leituras, sob as mesmas regras de acesso: o aluno pendente, bloqueado ou sem aceite do responsável não vê nada.
 - Concluída, o botão passa a "✓ Aula concluída" e continua desmarcando com um toque. O teste de ponta a ponta volta ao curso pelo botão "Voltar para {curso}".
+- No celular, a aula mostra no topo o botão voltar, "Módulo N · Aula N" (a numeração da aula é a do curso, a mesma da lista lateral) e o nome do curso; o logo e a trilha ficam só no computador. O botão "Marcar como concluída" fica fixo no rodapé, sem a barra de abas, e as aulas do módulo vêm depois dos materiais numa lista recolhível, fechada por padrão. O ícone dos materiais tem 44 px no celular.

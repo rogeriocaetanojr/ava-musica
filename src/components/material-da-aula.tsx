@@ -41,7 +41,7 @@ function Cabecalho({
 }) {
   return (
     <div className="flex items-center gap-4">
-      <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-amarelo-claro text-bordo">
+      <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-amarelo-claro text-bordo md:size-12">
         <Icone d={icone} />
       </span>
       <div className="min-w-0 flex-1">

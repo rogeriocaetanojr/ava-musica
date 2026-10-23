@@ -190,6 +190,10 @@ async function PaginaDaAula({ params }: { params: Promise<{ id: string }> }) {
     (modulo) => modulo.id === aula.modulos.id,
   );
   const aulasDoModulo = moduloAtual ? aulasEmOrdem([moduloAtual]) : [];
+  const numeroDoModulo =
+    ordenar(listaDeModulos).findIndex(
+      (modulo) => modulo.id === aula.modulos.id,
+    ) + 1;
 
   const marcados = new Set(
     (progresso ?? []).map((linha) => linha.conteudo_id as string | null),
@@ -219,10 +223,48 @@ async function PaginaDaAula({ params }: { params: Promise<{ id: string }> }) {
     return "pendente";
   }
 
+  function listaDoModulo() {
+    return (
+      <ol className="space-y-1">
+        {aulasDoModulo.map((item) => {
+          const situacao = situacaoDe(item);
+          const numero =
+            sequencia.findIndex((outra) => outra.id === item.id) + 1;
+          const prova = item.conteudos.some(
+            (conteudo) => conteudo.tipo === "prova",
+          );
+          const atual = item.id === aula!.id;
+          return (
+            <li key={item.id}>
+              <Link
+                href={`/aulas/${item.id}`}
+                aria-current={atual ? "page" : undefined}
+                className={`flex min-h-12 items-center gap-3 rounded-xl px-3 py-2 text-base ${
+                  atual
+                    ? "bg-amarelo-claro font-bold text-texto-sobre-amarelo"
+                    : "text-texto hover:bg-fundo"
+                }`}
+              >
+                <Marcador situacao={situacao} numero={numero} />
+                <span className="min-w-0 break-words">
+                  {prova ? item.titulo : `Aula ${numero} · ${item.titulo}`}
+                  <span className="sr-only">
+                    {" "}
+                    ({TEXTO_DA_SITUACAO[situacao]})
+                  </span>
+                </span>
+              </Link>
+            </li>
+          );
+        })}
+      </ol>
+    );
+  }
+
   return (
     <>
-      <header className="border-b border-linha bg-superficie">
-        <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3">
+      <header className="border-linha md:border-b md:bg-superficie">
+        <div className="mx-auto flex w-full max-w-6xl items-center gap-x-4 md:flex-wrap md:gap-x-6 gap-y-2 px-4 py-3">
           <Link
             href={linkDoCurso}
             aria-label={`Voltar para ${curso}`}
@@ -241,14 +283,24 @@ async function PaginaDaAula({ params }: { params: Promise<{ id: string }> }) {
               <path d="M19 12H5M11 6l-6 6 6 6" />
             </svg>
           </Link>
+          <div className="min-w-0 flex-1 md:hidden">
+            <p className="text-base font-bold text-bordo">
+              {numeroDoModulo > 0 && `Módulo ${numeroDoModulo}`}
+              {numeroDoModulo > 0 && posicao >= 0 && " · "}
+              {posicao >= 0 && `Aula ${posicao + 1}`}
+            </p>
+            <p className="font-titulo text-lg font-bold break-words text-texto">
+              {curso}
+            </p>
+          </div>
           <Link
             href="/cursos"
-            className="flex min-h-12 items-center gap-3 font-titulo text-2xl text-texto"
+            className="hidden min-h-12 items-center gap-3 font-titulo text-2xl text-texto md:flex"
           >
             <Image src={LOGO_DO_AVA} alt="" width={40} height={40} priority />
             <span>{NOME_DO_AVA}</span>
           </Link>
-          <nav aria-label="Trilha da aula" className="min-w-0">
+          <nav aria-label="Trilha da aula" className="hidden min-w-0 md:block">
             <ol className="flex flex-wrap items-center gap-x-2 text-base">
               <li>
                 <Link
@@ -275,8 +327,8 @@ async function PaginaDaAula({ params }: { params: Promise<{ id: string }> }) {
         </div>
       </header>
 
-      <main className="mx-auto grid w-full max-w-6xl flex-1 gap-8 px-4 py-8 lg:grid-cols-[minmax(0,1fr)_20rem]">
-        <div className="min-w-0 space-y-8">
+      <main className="mx-auto grid w-full max-w-6xl flex-1 gap-8 px-4 pt-4 pb-8 md:pt-8 lg:grid-cols-[minmax(0,1fr)_20rem]">
+        <div className="min-w-0 space-y-6 md:space-y-8">
           {!aluno && (
             <p className="rounded-xl bg-amarelo-claro p-3 text-base text-texto-sobre-amarelo">
               Pré-visualização do aluno. Os botões de concluir não aparecem para
@@ -302,7 +354,7 @@ async function PaginaDaAula({ params }: { params: Promise<{ id: string }> }) {
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div className="min-w-0 space-y-1">
               {posicao >= 0 && (
-                <p className="text-sm font-bold text-bordo">
+                <p className="hidden text-sm font-bold text-bordo md:block">
                   Aula {posicao + 1} de {sequencia.length}
                 </p>
               )}
@@ -311,11 +363,14 @@ async function PaginaDaAula({ params }: { params: Promise<{ id: string }> }) {
               </h1>
             </div>
             {aluno && (
-              <form action={marcarAula.bind(null, aula.id, !concluida)}>
+              <form
+                action={marcarAula.bind(null, aula.id, !concluida)}
+                className="max-md:fixed max-md:inset-x-0 max-md:bottom-0 max-md:z-10 max-md:border-t max-md:border-linha max-md:bg-superficie max-md:px-4 max-md:pt-3 max-md:pb-[calc(0.75rem+env(safe-area-inset-bottom))]"
+              >
                 <BotaoEnviar
                   className={classesDoBotao(
                     concluida ? "secundario" : "primario",
-                    "sm:w-auto",
+                    "md:w-auto",
                   )}
                 >
                   {concluida ? (
@@ -385,6 +440,29 @@ async function PaginaDaAula({ params }: { params: Promise<{ id: string }> }) {
             </section>
           )}
 
+          {moduloAtual && (
+            <details className="group rounded-2xl border border-linha bg-superficie md:hidden">
+              <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 rounded-2xl px-4 py-2 font-bold [&::-webkit-details-marker]:hidden">
+                <span className="min-w-0 break-words">
+                  Aulas de {moduloAtual.titulo}
+                </span>
+                <svg
+                  aria-hidden="true"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="size-5 shrink-0 transition-transform group-open:rotate-180"
+                >
+                  <path d="M6 9l6 6 6-6" />
+                </svg>
+              </summary>
+              <div className="px-2 pb-2">{listaDoModulo()}</div>
+            </details>
+          )}
+
           <nav
             aria-label="Navegar entre as aulas"
             className="grid grid-cols-1 gap-3 sm:grid-cols-2"
@@ -410,7 +488,7 @@ async function PaginaDaAula({ params }: { params: Promise<{ id: string }> }) {
 
         <aside
           aria-label={`Aulas de ${curso}`}
-          className="h-fit space-y-5 rounded-3xl border border-linha bg-superficie p-5"
+          className="hidden h-fit space-y-5 rounded-3xl border border-linha bg-superficie p-5 md:block"
         >
           <p className="text-sm font-bold break-words text-bordo">{curso}</p>
           <div className="flex items-center gap-3">
@@ -431,41 +509,7 @@ async function PaginaDaAula({ params }: { params: Promise<{ id: string }> }) {
               className="space-y-2"
             >
               <h2 className="font-bold break-words">{moduloAtual.titulo}</h2>
-              <ol className="space-y-1">
-                {aulasDoModulo.map((item) => {
-                  const situacao = situacaoDe(item);
-                  const numero =
-                    sequencia.findIndex((outra) => outra.id === item.id) + 1;
-                  const prova = item.conteudos.some(
-                    (conteudo) => conteudo.tipo === "prova",
-                  );
-                  const atual = item.id === aula.id;
-                  return (
-                    <li key={item.id}>
-                      <Link
-                        href={`/aulas/${item.id}`}
-                        aria-current={atual ? "page" : undefined}
-                        className={`flex min-h-12 items-center gap-3 rounded-xl px-3 py-2 text-base ${
-                          atual
-                            ? "bg-amarelo-claro font-bold text-texto-sobre-amarelo"
-                            : "text-texto hover:bg-fundo"
-                        }`}
-                      >
-                        <Marcador situacao={situacao} numero={numero} />
-                        <span className="min-w-0 break-words">
-                          {prova
-                            ? item.titulo
-                            : `Aula ${numero} · ${item.titulo}`}
-                          <span className="sr-only">
-                            {" "}
-                            ({TEXTO_DA_SITUACAO[situacao]})
-                          </span>
-                        </span>
-                      </Link>
-                    </li>
-                  );
-                })}
-              </ol>
+              {listaDoModulo()}
             </nav>
           )}
 
@@ -477,6 +521,12 @@ async function PaginaDaAula({ params }: { params: Promise<{ id: string }> }) {
           </Link>
         </aside>
       </main>
+      {aluno && (
+        <div
+          aria-hidden="true"
+          className="h-[calc(5.25rem+env(safe-area-inset-bottom))] shrink-0 md:hidden"
+        />
+      )}
     </>
   );
 }
