@@ -4,7 +4,6 @@
 
 ### Telas
 
-- [ ] Tela de entrada no computador, com as cores e fontes aprovadas
 - [ ] Tela de entrada no celular
 - [ ] Meus cursos no computador
 - [ ] Meus cursos no celular
@@ -72,6 +71,10 @@
 - [x] Professor pode bloquear e desbloquear o acesso de um aluno, sem perder os dados nem o progresso
 - [x] Aluno sem convite pode pedir acesso entrando com o Google; o professor libera ou recusa no painel e recebe um e-mail a cada pedido novo
 - [x] Pedido de acesso também pelo e-mail, com captcha, e bloqueio de 7 dias para quem foi recusado, com a lista "Recusados recentemente" no painel
+
+### Telas
+
+- [x] Tela de entrada no computador, com as cores e fontes aprovadas
 
 ## Decisões
 
@@ -153,3 +156,4 @@
 - Depois do código confirmado, a tela abre `/auth/concluir`, que faz o mesmo que a volta do Google (`src/app/auth/concluir-login.ts`): confirma o pedido de quem não tem cadastro, barra o bloqueado e leva cada papel à sua área. O pedido continua contando só depois do código confirmado. `/auth/callback` ficou só para o Google.
 - O convite do professor não traz link nem código: explica que o aluno deve abrir a página de login e pedir o código. O convidado ainda não confirmado recebe o código pelo modelo de confirmação (`confirmacao.html`, mesmo texto de `codigo.html`).
 - A sessão não fica salva, para alunos, professor e quem entra com o Google: os cookies do login são gravados sem `maxAge`/`expires` (cookies de sessão) nos três clientes do Supabase, e o proxy encerra a sessão (`signOut` com `scope: "local"`) depois de 2 horas sem uso, guardando a hora do último uso no cookie `ultimo-uso`. A regra fica no site porque o `inactivity_timeout` do Supabase só existe nos planos pagos. A versão dos termos passou a `4-rascunho` com a mudança na política de privacidade.
+- Revisto: as cores aprovadas ficam no bloco `@theme` de `src/app/globals.css` (fundo creme, bordô, vinho e amarelo; `primaria` e `secundaria` não existem mais), as fontes são Bricolage Grotesque nos títulos e Manrope no texto, e as telas novas usam os componentes de `src/components/` (botão, campo, aviso, cordas e moldura); o tema escuro automático saiu e volta na sua própria etapa.
