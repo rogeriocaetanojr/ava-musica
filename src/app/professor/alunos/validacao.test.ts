@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { confirmaExclusao, statusDoAluno, validarAluno } from "./validacao";
+import {
+  confirmaExclusao,
+  statusDoAluno,
+  validarAluno,
+  validarLiberacao,
+} from "./validacao";
 
 const HOJE = "2026-10-22";
 const CURSO = "11111111-1111-4111-8111-111111111111";
@@ -111,6 +116,29 @@ describe("validarAluno", () => {
 });
 
 describe("statusDoAluno", () => {
+  it("pedido do Google fica pendente, mesmo que já tenha entrado", () => {
+    expect(
+      statusDoAluno({
+        pendente: true,
+        menor_de_12: false,
+        aceito: false,
+        ultimo_acesso: "2026-10-01T10:00:00Z",
+      }),
+    ).toBe("pendente");
+  });
+
+  it("o bloqueio vale acima do pendente", () => {
+    expect(
+      statusDoAluno({
+        bloqueado: true,
+        pendente: true,
+        menor_de_12: false,
+        aceito: false,
+        ultimo_acesso: null,
+      }),
+    ).toBe("bloqueado");
+  });
+
   it("menor sem aceite fica aguardando, mesmo que já tenha entrado", () => {
     expect(
       statusDoAluno({
@@ -177,5 +205,67 @@ describe("confirmaExclusao", () => {
     expect(confirmaExclusao("Ana", "Ana Souza")).toBe(false);
     expect(confirmaExclusao("", "Ana Souza")).toBe(false);
     expect(confirmaExclusao(null, "Ana Souza")).toBe(false);
+  });
+});
+
+describe("validarLiberacao", () => {
+  it("libera quem tem 12 anos ou mais sem pedir responsável", () => {
+    const resultado = validarLiberacao(
+      formulario({ data_nascimento: "2010-01-15", responsavel_nome: "X" }),
+      HOJE,
+      "ana@exemplo.com",
+    );
+    expect(resultado).toEqual({
+      ok: true,
+      dados: { data_nascimento: "2010-01-15", idade: 16, responsavel: null },
+    });
+  });
+
+  it("exige o responsável do menor de 12", () => {
+    const sem = validarLiberacao(
+      formulario({ data_nascimento: "2016-05-01" }),
+      HOJE,
+      "ana@exemplo.com",
+    );
+    expect(sem.ok).toBe(false);
+    if (!sem.ok) expect(sem.erro).toContain("nome do responsável");
+
+    const com = validarLiberacao(
+      formulario({
+        data_nascimento: "2016-05-01",
+        responsavel_nome: "Carlos",
+        responsavel_email: "Carlos@Exemplo.com",
+      }),
+      HOJE,
+      "ana@exemplo.com",
+    );
+    expect(com.ok && com.dados.responsavel).toEqual({
+      nome: "Carlos",
+      email: "carlos@exemplo.com",
+    });
+  });
+
+  it("recusa o e-mail do responsável igual ao do aluno do Google", () => {
+    const resultado = validarLiberacao(
+      formulario({
+        data_nascimento: "2016-05-01",
+        responsavel_nome: "Carlos",
+        responsavel_email: "ana@exemplo.com",
+      }),
+      HOJE,
+      "Ana@Exemplo.com",
+    );
+    expect(resultado.ok).toBe(false);
+  });
+
+  it("recusa data vazia, inexistente ou no futuro", () => {
+    for (const data of ["", "2023-02-29", "2027-01-01"]) {
+      const resultado = validarLiberacao(
+        formulario({ data_nascimento: data }),
+        HOJE,
+        "ana@exemplo.com",
+      );
+      expect(resultado.ok).toBe(false);
+    }
   });
 });

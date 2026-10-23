@@ -91,7 +91,9 @@ export function FormularioLogin() {
         Entrar com Google
       </button>
 
-      <p className="text-center text-sm">ou receba um link por e-mail</p>
+      <p className="text-center text-sm">
+        ou, se o professor já cadastrou você, receba um link por e-mail
+      </p>
 
       <form onSubmit={enviarLink} className="space-y-3">
         <label htmlFor="email" className="block text-sm font-medium">

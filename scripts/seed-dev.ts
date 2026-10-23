@@ -21,6 +21,7 @@ const supabase = criarClienteAdmin();
 async function garantirUsuario(
   email: string,
   metadados: Record<string, unknown>,
+  doProfessor = true,
 ): Promise<string> {
   const { data: existente } = await supabase
     .from("perfis")
@@ -33,6 +34,9 @@ async function garantirUsuario(
     email,
     email_confirm: true,
     user_metadata: metadados,
+    // Como no cadastro feito pelo professor: o gatilho já cria o perfil liberado.
+    // Sem a marca, o usuário fica pendente, como quem entra pelo Google.
+    app_metadata: doProfessor ? { origem: "professor" } : {},
   });
   if (error) throw error;
   return data.user.id;
@@ -55,8 +59,23 @@ async function main() {
     menor_de_12: false,
   });
 
+  // Pedidos pendentes, um para cada perfil dos testes de ponta a ponta.
+  for (const perfil of ["computador", "celular"])
+    await garantirUsuario(
+      `pendente-${perfil}@teste.local`,
+      { full_name: `Pendente ${perfil}` },
+      false,
+    );
+  // Pedidos para conferir a seção "Pedidos de acesso" à mão, sem o Google.
+  for (const numero of [1, 2])
+    await garantirUsuario(
+      `pedido${numero}@teste.local`,
+      { full_name: `Pedido ${numero}` },
+      false,
+    );
+
   console.log(
-    "Pronto: professor@teste.local (professor) e aluno@teste.local (aluno, 15 anos).",
+    "Pronto: professor@teste.local (professor), aluno@teste.local (aluno, 15 anos), pendente-computador@ / pendente-celular@teste.local (pedidos dos testes e2e) e pedido1@ / pedido2@teste.local (pedidos para testar à mão).",
   );
 }
 

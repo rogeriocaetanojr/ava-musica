@@ -7,7 +7,9 @@ export type AcaoAuditada =
   | "desmatricular"
   | "excluir"
   | "bloquear"
-  | "desbloquear";
+  | "desbloquear"
+  | "liberar"
+  | "recusar";
 
 export const NOMES_DAS_ACOES: Record<AcaoAuditada, string> = {
   abrir: "Abriu a ficha",
@@ -17,6 +19,8 @@ export const NOMES_DAS_ACOES: Record<AcaoAuditada, string> = {
   excluir: "Excluiu os dados",
   bloquear: "Bloqueou o acesso",
   desbloquear: "Desbloqueou o acesso",
+  liberar: "Liberou o pedido de acesso",
+  recusar: "Recusou o pedido de acesso",
 };
 
 // Registra o acesso do professor ao aluno. O banco decide se registra (só

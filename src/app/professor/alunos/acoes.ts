@@ -14,7 +14,7 @@ import {
   type EstadoFormulario,
   valoresDigitados,
 } from "../cursos/validacao";
-import { confirmaExclusao, validarAluno } from "./validacao";
+import { confirmaExclusao, validarAluno, validarLiberacao } from "./validacao";
 
 export type EstadoCadastro = EstadoFormulario & {
   // Link /aceite/<token> que o professor envia ao responsável do menor de 12.
@@ -22,6 +22,11 @@ export type EstadoCadastro = EstadoFormulario & {
 };
 
 const ERRO_EMAIL_EXISTE = "Já existe uma conta com este e-mail.";
+const ERRO_EMAIL_PENDENTE =
+  "Este e-mail já pediu acesso pelo Google. Libere o pedido no painel.";
+// Marca o cadastro feito pelo professor: o gatilho do banco libera o acesso.
+// Só a chave de serviço grava app_metadata, então o aluno não forja isso.
+const ORIGEM_PROFESSOR = { origem: "professor" };
 const ERRO_BANCO = "Não foi possível salvar. Tente de novo.";
 // O Auth não tem ban sem prazo; 100 anos fazem esse papel.
 const BLOQUEIO_SEM_PRAZO = "876000h";
@@ -36,6 +41,8 @@ function atualizarTelas() {
 // Fluxo "Cadastro do aluno": 12 anos ou mais recebe convite por e-mail na hora;
 // menor de 12 tem a conta criada sem convite e fica aguardando o aceite do
 // responsável. O papel nunca é informado: o gatilho do banco sempre cria aluno.
+// A conta é criada antes do convite para levar a marca ORIGEM_PROFESSOR, que
+// o convite não aceita.
 export async function cadastrarAluno(
   _estado: EstadoCadastro,
   formData: FormData,
@@ -51,11 +58,15 @@ export async function cadastrarAluno(
   const supabase = await criarClienteServidor();
   const { data: existente, error: erroBusca } = await supabase
     .from("perfis")
-    .select("id")
+    .select("id, liberado_em")
     .eq("email", aluno.email)
     .maybeSingle();
   if (erroBusca) return { erro: ERRO_BANCO, valores };
-  if (existente) return { erro: ERRO_EMAIL_EXISTE, valores };
+  if (existente)
+    return {
+      erro: existente.liberado_em ? ERRO_EMAIL_EXISTE : ERRO_EMAIL_PENDENTE,
+      valores,
+    };
 
   const metadados = {
     nome: aluno.nome,
@@ -70,25 +81,36 @@ export async function cadastrarAluno(
   if (!aluno.responsavel) {
     const reserva = await reservarEnvioDeConvite(supabase);
     if (!reserva.ok) return { erro: reserva.erro, valores };
-    const { data, error } = await admin.auth.admin.inviteUserByEmail(
-      aluno.email,
-      { data: metadados, redirectTo: urlDoSite("/auth/callback") },
-    );
+    const { data, error } = await admin.auth.admin.createUser({
+      email: aluno.email,
+      user_metadata: metadados,
+      app_metadata: ORIGEM_PROFESSOR,
+    });
     if (error || !data.user)
       return {
-        erro:
-          error?.code === "email_exists"
-            ? ERRO_EMAIL_EXISTE
-            : "Não foi possível enviar o convite. Tente de novo.",
+        erro: error?.code === "email_exists" ? ERRO_EMAIL_EXISTE : ERRO_BANCO,
         valores,
       };
     alunoId = data.user.id;
+    const { error: erroConvite } = await admin.auth.admin.inviteUserByEmail(
+      aluno.email,
+      { data: metadados, redirectTo: urlDoSite("/auth/callback") },
+    );
+    if (erroConvite) {
+      // Sem o convite o aluno não teria como entrar; desfaz o cadastro.
+      await admin.auth.admin.deleteUser(alunoId);
+      return {
+        erro: "Não foi possível enviar o convite. Tente de novo.",
+        valores,
+      };
+    }
   } else {
     // Conta confirmada e sem convite: o acesso só é enviado depois do aceite.
     const { data, error } = await admin.auth.admin.createUser({
       email: aluno.email,
       email_confirm: true,
       user_metadata: metadados,
+      app_metadata: ORIGEM_PROFESSOR,
     });
     if (error || !data.user)
       return {
@@ -317,4 +339,80 @@ export async function desbloquearAluno(
 
   atualizarTelas();
   return { sucesso: "Acesso desbloqueado." };
+}
+
+// Libera um pedido do Google com a data de nascimento informada. O menor de 12
+// ganha o responsável antes da liberação e só acessa depois do aceite (o banco
+// confere). O banco grava a liberação e a auditoria juntos. Depois de liberar
+// o menor, o professor vai para a ficha, onde está o link de autorização.
+export async function liberarPedido(
+  alunoId: string,
+  _estado: EstadoFormulario,
+  formData: FormData,
+): Promise<EstadoFormulario> {
+  await exigirProfessor();
+  if (!ehUuid(alunoId)) return { erro: ERRO_BANCO };
+  const valores = valoresDigitados(formData);
+
+  const supabase = await criarClienteServidor();
+  const { data: aluno, error } = await supabase
+    .from("perfis")
+    .select("nome, email")
+    .eq("id", alunoId)
+    .eq("papel", "aluno")
+    .is("liberado_em", null)
+    .maybeSingle();
+  if (error) return { erro: ERRO_BANCO, valores };
+  if (!aluno) return { erro: "Pedido não encontrado ou já resolvido." };
+
+  const resultado = validarLiberacao(formData, hojeNoBrasil(), aluno.email);
+  if (!resultado.ok) return { erro: resultado.erro, valores };
+  const { data_nascimento, responsavel } = resultado.dados;
+
+  if (responsavel) {
+    const { error: erroResponsavel } = await supabase
+      .from("responsaveis")
+      .upsert(
+        { aluno_id: alunoId, nome: responsavel.nome, email: responsavel.email },
+        { onConflict: "aluno_id" },
+      );
+    if (erroResponsavel) return { erro: ERRO_BANCO, valores };
+  }
+
+  const { error: erroLiberacao } = await supabase.rpc("liberar_aluno", {
+    aluno: alunoId,
+    nascimento: data_nascimento,
+  });
+  if (erroLiberacao) {
+    if (responsavel)
+      await supabase.from("responsaveis").delete().eq("aluno_id", alunoId);
+    return { erro: "Não foi possível liberar. Tente de novo.", valores };
+  }
+
+  revalidatePath("/professor", "layout");
+  if (responsavel) redirect(`/professor/alunos/${alunoId}`);
+  return { sucesso: `${aluno.nome} foi liberado e já pode entrar.` };
+}
+
+// Recusa um pedido do Google: registra na auditoria e apaga a conta. Só fica
+// o registro, com o id; a pessoa pode pedir de novo entrando pelo Google.
+export async function recusarPedido(
+  alunoId: string,
+): Promise<EstadoFormulario> {
+  await exigirProfessor();
+  if (!ehUuid(alunoId)) return { erro: ERRO_BANCO };
+
+  const supabase = await criarClienteServidor();
+  const { error } = await supabase.rpc("registrar_recusa", { aluno: alunoId });
+  if (error) return { erro: "Não foi possível recusar. Tente de novo." };
+
+  const { error: erroExclusao } =
+    await criarClienteAdmin().auth.admin.deleteUser(alunoId);
+  if (erroExclusao)
+    return {
+      erro: "A recusa foi registrada, mas a conta não foi apagada. Tente recusar de novo.",
+    };
+
+  revalidatePath("/professor", "layout");
+  return { sucesso: "Pedido recusado." };
 }

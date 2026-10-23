@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { destinoDoPapel, obterSessao } from "@/lib/auth";
+import { avisarPedidoNovo } from "@/lib/pedidos";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 import { ehBloqueado, ehLimiteDeTentativas } from "../../login/mensagens";
 
@@ -20,13 +21,13 @@ export async function GET(request: NextRequest) {
   const tokenHash = searchParams.get("token_hash");
   const tipo = searchParams.get("type");
 
-  // Com o cadastro aberto desligado, o Google volta com erro para quem não foi
-  // convidado; a conta bloqueada volta com error_code=user_banned.
+  // A conta bloqueada volta com error_code=user_banned; qualquer outro erro do
+  // Google (como cancelar a escolha da conta) mostra o aviso de falha do Google.
   if (searchParams.get("error_code") === "user_banned") {
     return NextResponse.redirect(`${origin}/login?erro=bloqueado`);
   }
   if (searchParams.get("error")) {
-    return NextResponse.redirect(`${origin}/login?erro=nao-convidado`);
+    return NextResponse.redirect(`${origin}/login?erro=google`);
   }
 
   const supabase = await criarClienteServidor();
@@ -62,6 +63,12 @@ export async function GET(request: NextRequest) {
   if (sessao.bloqueado) {
     await supabase.auth.signOut();
     return NextResponse.redirect(`${origin}/login?erro=bloqueado`);
+  }
+  // Quem entrou pelo Google sem cadastro vira pedido: o professor é avisado
+  // e o aluno espera a liberação.
+  if (sessao.pendente) {
+    await avisarPedidoNovo(sessao);
+    return NextResponse.redirect(`${origin}/aguardando`);
   }
 
   return NextResponse.redirect(`${origin}${destinoDoPapel(sessao.papel)}`);

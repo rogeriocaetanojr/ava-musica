@@ -25,6 +25,17 @@ export default function Privacidade() {
           <strong>Do aluno:</strong> nome, e-mail e data de nascimento.
         </li>
         <li>
+          <strong>De quem entra com o Google:</strong> o Google nos informa só o
+          nome e o e-mail da conta. Não recebemos foto, contatos nem outros
+          dados da conta Google. A data de nascimento não vem do Google: quem
+          informa é o professor, ao liberar o acesso.
+        </li>
+        <li>
+          <strong>Do registro de ações do professor:</strong> quando o professor
+          libera, recusa, bloqueia ou desbloqueia um acesso, guardamos qual foi
+          a ação e quando, ligada só a um código do aluno, sem nome nem e-mail.
+        </li>
+        <li>
           <strong>Do estudo:</strong> as aulas concluídas e as provas marcadas
           como enviadas, com a data.
         </li>
@@ -42,6 +53,11 @@ export default function Privacidade() {
       <ul>
         <li>Nome e e-mail: para o aluno entrar no site e ser identificado.</li>
         <li>
+          Nome e e-mail de quem pede acesso: para o professor saber quem pediu e
+          decidir se libera. Por isso, o professor recebe um e-mail com esses
+          dados a cada pedido novo.
+        </li>
+        <li>
           Data de nascimento: para saber se o aluno tem menos de 12 anos e,
           nesse caso, pedir a autorização do responsável antes do acesso.
         </li>
@@ -56,17 +72,65 @@ export default function Privacidade() {
         endereço sem cookies de propaganda.
       </p>
 
+      <h2>Pedido de acesso pelo Google</h2>
+      <p>
+        Quem entra com o Google sem ter sido cadastrado pelo professor fica com
+        um pedido de acesso guardado até o professor decidir. Enquanto isso, a
+        pessoa não vê nenhum curso, aula ou aviso. Se o professor recusar, a
+        conta e os dados dela são apagados, e fica só o registro de que houve
+        uma recusa, sem nome nem e-mail. Depois de liberado, o professor pode
+        bloquear o acesso a qualquer momento, sem apagar o progresso.
+      </p>
+
       <h2>Quem tem acesso</h2>
       <p>
         Só o professor vê os dados de todos os alunos. Cada aluno vê apenas os
-        próprios dados. Os dados ficam guardados num serviço de banco de dados
-        com servidores no Brasil.
+        próprios dados. Para o site funcionar, usamos serviços de outras
+        empresas, que tratam os dados só para isso, seguindo as nossas
+        instruções:
+      </p>
+      <ul>
+        <li>
+          <strong>Supabase:</strong> banco de dados e login, onde ficam todos os
+          dados descritos acima.
+        </li>
+        <li>
+          <strong>Google:</strong> o login com a conta Google, para quem escolhe
+          entrar assim.
+        </li>
+        <li>
+          <strong>Resend:</strong> envio dos e-mails do site, como os links de
+          acesso e o aviso de pedido novo ao professor.
+        </li>
+        <li>
+          <strong>Netlify:</strong> hospedagem do site.
+        </li>
+      </ul>
+
+      <h2>Transferência internacional de dados</h2>
+      <p>
+        Alguns desses serviços guardam ou processam dados em servidores fora do
+        Brasil, principalmente nos Estados Unidos. É o caso do envio de e-mails,
+        que passa pelo nome e pelo e-mail do destinatário, e do login com o
+        Google. Essas transferências são feitas só para prestar o serviço do
+        site e com as garantias exigidas pela Lei Geral de Proteção de Dados
+        (LGPD), como cláusulas contratuais de proteção de dados com cada
+        empresa. Você pode pedir ao professor mais informações sobre onde cada
+        serviço guarda os dados.
       </p>
 
       <h2>Menores de idade</h2>
       <p>
         Alunos com menos de 12 anos só acessam o site depois que um dos pais ou
-        responsável autoriza, por um link enviado pelo professor.
+        responsável autoriza, por um link enviado pelo professor. Isso vale
+        também para quem pediu acesso pelo Google: o professor só libera depois
+        de informar a data de nascimento e, se for o caso, o responsável.
+      </p>
+      <p>
+        O Google só permite que crianças com menos de 13 anos usem uma conta
+        Google com o acompanhamento dos pais (Family Link). Para esses alunos, o
+        caminho mais simples é o professor fazer o cadastro e o aluno entrar
+        pelo link enviado por e-mail.
       </p>
 
       <h2>Seus direitos e a exclusão dos dados</h2>

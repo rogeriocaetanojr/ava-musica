@@ -9,10 +9,11 @@
 
 Usuários de teste:
 
-| E-mail                  | Papel     | Vai para     |
-| ----------------------- | --------- | ------------ |
-| `professor@teste.local` | professor | `/professor` |
-| `aluno@teste.local`     | aluno     | `/cursos`    |
+| E-mail                                                             | Papel           | Vai para      |
+| ------------------------------------------------------------------ | --------------- | ------------- |
+| `professor@teste.local`                                            | professor       | `/professor`  |
+| `aluno@teste.local`                                                | aluno           | `/cursos`     |
+| `pendente-computador@teste.local` e `pendente-celular@teste.local` | pedido pendente | `/aguardando` |
 
 ## Link mágico
 
@@ -35,6 +36,8 @@ Um aluno com menos de 12 anos não recebe convite: a tela mostra o link de autor
 
 Depois de mudar `supabase/config.toml` ou os modelos em `supabase/templates/`, reinicie com `npx supabase stop` e `npx supabase start`.
 
-## Google
+## Google e pedidos de acesso
 
-Fica desligado no ambiente local. Para ligar, crie um cliente OAuth no Google Cloud com o endereço de retorno `http://127.0.0.1:54321/auth/v1/callback`, coloque `SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID` e `SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET` em `supabase/.env`, mude `enabled` para `true` em `[auth.external.google]` e reinicie o Supabase.
+O Google já vem ligado no `supabase/config.toml`, mas precisa das chaves do cliente OAuth em `supabase/.env`. O passo a passo, do Google Cloud até o teste do pedido, está em `guias/login-google.md`.
+
+Sem o Google configurado, dá para ver um pedido pendente com as contas do seed: entre pelo link mágico com `pedido1@teste.local` ou `pedido2@teste.local` (as contas `pendente-*` ficam para os testes de ponta a ponta). A tela mostra "Aguardando liberação do professor", e a conta aparece em **Pedidos de acesso** no painel do professor. O e-mail de aviso ao professor só chega na caixa de teste com as variáveis `SMTP_*` e `EMAIL_PROFESSOR` no `.env.local` (veja o guia do Google).

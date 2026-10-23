@@ -58,28 +58,8 @@ export function validarAluno(
   const cursos = formData.getAll("cursos");
   if (!cursos.every(ehUuid)) return falha("Escolha cursos da lista.");
 
-  let responsavel: DadosAluno["responsavel"] = null;
-  if (idade < IDADE_MINIMA_SEM_ACEITE) {
-    if (!valores.responsavel_nome)
-      return falha(
-        "Alunos com menos de 12 anos precisam do nome do responsável.",
-      );
-    if (valores.responsavel_nome.length > 120)
-      return falha("O nome do responsável pode ter no máximo 120 caracteres.");
-    if (
-      !EMAIL.test(valores.responsavel_email) ||
-      valores.responsavel_email.length > 254
-    )
-      return falha("Informe um e-mail válido para o responsável.");
-    if (valores.responsavel_email === valores.email)
-      return falha(
-        "O e-mail do responsável precisa ser diferente do e-mail do aluno.",
-      );
-    responsavel = {
-      nome: valores.responsavel_nome,
-      email: valores.responsavel_email,
-    };
-  }
+  const responsavel = validarResponsavel(valores, idade, valores.email);
+  if (typeof responsavel === "string") return falha(responsavel);
 
   return {
     ok: true,
@@ -94,10 +74,73 @@ export function validarAluno(
   };
 }
 
-export type StatusDoAluno = "bloqueado" | "aguardando" | "convidado" | "ativo";
+// Responsável do menor de 12: devolve os dados, null para quem tem 12 anos ou
+// mais, ou a mensagem de erro.
+function validarResponsavel(
+  valores: { responsavel_nome: string; responsavel_email: string },
+  idade: number,
+  emailDoAluno: string,
+): DadosAluno["responsavel"] | string {
+  if (idade >= IDADE_MINIMA_SEM_ACEITE) return null;
+  if (!valores.responsavel_nome)
+    return "Alunos com menos de 12 anos precisam do nome do responsável.";
+  if (valores.responsavel_nome.length > 120)
+    return "O nome do responsável pode ter no máximo 120 caracteres.";
+  if (
+    !EMAIL.test(valores.responsavel_email) ||
+    valores.responsavel_email.length > 254
+  )
+    return "Informe um e-mail válido para o responsável.";
+  if (valores.responsavel_email === emailDoAluno)
+    return "O e-mail do responsável precisa ser diferente do e-mail do aluno.";
+  return { nome: valores.responsavel_nome, email: valores.responsavel_email };
+}
+
+export type DadosLiberacao = Pick<
+  DadosAluno,
+  "data_nascimento" | "idade" | "responsavel"
+>;
+
+// Liberação de um pedido do Google: o professor informa a data de nascimento,
+// que o Google não manda, e o responsável se o aluno tiver menos de 12 anos.
+export function validarLiberacao(
+  formData: FormData,
+  hoje: string,
+  emailDoAluno: string,
+): Resultado<DadosLiberacao> {
+  const valores = {
+    data_nascimento: texto(formData, "data_nascimento"),
+    responsavel_nome: texto(formData, "responsavel_nome"),
+    responsavel_email: texto(formData, "responsavel_email").toLowerCase(),
+  };
+  const falha = (erro: string) => ({ ok: false as const, erro, valores });
+
+  if (!ehDataValida(valores.data_nascimento))
+    return falha("Informe a data de nascimento.");
+  if (valores.data_nascimento > hoje)
+    return falha("A data de nascimento não pode estar no futuro.");
+  const idade = calcularIdade(valores.data_nascimento, hoje);
+  if (idade > 120) return falha("Confira o ano de nascimento.");
+
+  const responsavel = validarResponsavel(
+    valores,
+    idade,
+    emailDoAluno.toLowerCase(),
+  );
+  if (typeof responsavel === "string") return falha(responsavel);
+
+  return {
+    ok: true,
+    dados: { data_nascimento: valores.data_nascimento, idade, responsavel },
+  };
+}
+
+export type StatusDoAluno =
+  "bloqueado" | "pendente" | "aguardando" | "convidado" | "ativo";
 
 export const NOMES_DOS_STATUS: Record<StatusDoAluno, string> = {
   bloqueado: "Bloqueado",
+  pendente: "Pendente",
   aguardando: "Aguardando responsável",
   convidado: "Convidado",
   ativo: "Ativo",
@@ -105,21 +148,25 @@ export const NOMES_DOS_STATUS: Record<StatusDoAluno, string> = {
 
 export const CORES_DOS_STATUS: Record<StatusDoAluno, string> = {
   bloqueado: "bg-red-100 text-red-800",
+  pendente: "bg-orange-100 text-orange-800",
   aguardando: "bg-yellow-100 text-yellow-800",
   convidado: "bg-blue-100 text-blue-800",
   ativo: "bg-green-100 text-green-800",
 };
 
 // Bloqueado: o professor pausou o acesso (vale acima dos outros).
+// Pendente: entrou pelo Google e espera o professor liberar ou recusar.
 // Aguardando: menor de 12 sem aceite. Convidado: ainda não entrou nenhuma vez.
 // Ativo: já entrou.
 export function statusDoAluno(aluno: {
   bloqueado?: boolean;
+  pendente?: boolean;
   menor_de_12: boolean;
   aceito: boolean;
   ultimo_acesso: string | null | undefined;
 }): StatusDoAluno {
   if (aluno.bloqueado) return "bloqueado";
+  if (aluno.pendente) return "pendente";
   if (aluno.menor_de_12 && !aluno.aceito) return "aguardando";
   return aluno.ultimo_acesso ? "ativo" : "convidado";
 }

@@ -16,6 +16,8 @@ const MENSAGENS_DE_ERRO: Record<string, string> = {
   "nao-convidado": MENSAGEM_NAO_CONVIDADO,
   "muitas-tentativas": MENSAGEM_MUITAS_TENTATIVAS,
   bloqueado: MENSAGEM_BLOQUEADO,
+  google:
+    "Não foi possível entrar com o Google. Tente de novo ou peça um link por e-mail.",
   "link-invalido":
     "O link de acesso expirou ou já foi usado. Peça um novo abaixo.",
 };

@@ -1,8 +1,8 @@
 -- Aviso de um curso só aparece para os alunos matriculados nele.
 
 -- Um segundo aluno, matriculado só no curso c2 (Piano I).
-insert into auth.users (id, email, raw_user_meta_data) values
-  ('00000000-0000-0000-0000-0000000000c1', 'pianista@testes-banco.local',
+insert into auth.users (id, email, raw_app_meta_data, raw_user_meta_data) values
+  ('00000000-0000-0000-0000-0000000000c1', 'pianista@testes-banco.local', '{"origem": "professor"}',
    '{"nome": "Pianista", "data_nascimento": "2010-01-15", "menor_de_12": false}');
 insert into public.matriculas (aluno_id, curso_id) values
   ('00000000-0000-0000-0000-0000000000c1', 'c0000000-0000-0000-0000-000000000002');

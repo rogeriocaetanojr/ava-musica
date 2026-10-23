@@ -1,5 +1,5 @@
 export const MENSAGEM_NAO_CONVIDADO =
-  "Este e-mail ainda não foi convidado. Peça ao professor para cadastrar você.";
+  "Este e-mail ainda não foi convidado. Entre com o Google para pedir acesso ao professor.";
 
 // Limite de tentativas do login (supabase/config.toml e painel da nuvem).
 export const MENSAGEM_MUITAS_TENTATIVAS =

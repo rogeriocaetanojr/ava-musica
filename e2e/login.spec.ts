@@ -19,7 +19,7 @@ test("e-mail não convidado é recusado", async ({ page }) => {
   await expect(
     page.getByRole("alert").filter({
       hasText:
-        "Este e-mail ainda não foi convidado. Peça ao professor para cadastrar você.",
+        "Este e-mail ainda não foi convidado. Entre com o Google para pedir acesso ao professor.",
     }),
   ).toBeVisible();
   await expect(page).toHaveURL(/\/login$/);

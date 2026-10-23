@@ -28,6 +28,13 @@ export default defineConfig({
     command: "npm run dev",
     url: "http://localhost:3000/login",
     reuseExistingServer: !process.env.CI,
+    // Aviso de pedido novo ao professor pela porta SMTP do Mailpit local.
+    env: {
+      SMTP_HOST: "127.0.0.1",
+      SMTP_PORT: "54325",
+      SMTP_REMETENTE: "AVA de Música <avisos@teste.local>",
+      EMAIL_PROFESSOR: "professor@teste.local",
+    },
     timeout: 180_000,
   },
 });

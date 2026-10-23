@@ -4,14 +4,15 @@
 
 Ambiente virtual de aprendizagem (AVA) de um professor de música. O professor organiza cursos por instrumento em módulos e aulas, com vídeos do YouTube, arquivos do Google Drive e provas do Google Forms exibidos dentro da página. O aluno estuda e acompanha o próprio progresso num só lugar.
 
-- **Professor (administrador):** conta única; cria cursos, módulos, aulas e provas, convida e matricula alunos, publica avisos e acompanha o progresso de todos.
+- **Professor (administrador):** conta única; cria cursos, módulos, aulas e provas, convida e matricula alunos, libera ou recusa pedidos de acesso, publica avisos e acompanha o progresso de todos.
 - **Aluno:** vê apenas os cursos publicados em que está matriculado, conclui aulas, registra o envio de provas e lê avisos.
 - **Público:** de 20 a 30 alunos, com aulas individuais e muito acesso pelo celular. **Há menores de idade**, então o sistema guarda só dados mínimos (nome, e-mail, data de nascimento e progresso), conforme a LGPD.
 
 ## 2. Stack
 
 - **Next.js** com App Router, TypeScript em modo `strict` e Tailwind 4
-- **Supabase**: Postgres, Auth (Google e link mágico, só por convite) e Row Level Security (RLS)
+- **Supabase**: Postgres, Auth (Google e link mágico) e Row Level Security (RLS). O link mágico é só para quem o professor cadastrou; quem entra pelo Google sem cadastro vira um pedido pendente, sem acesso até o professor liberar
+- **Resend** (SMTP): aviso ao professor quando chega um pedido de acesso
 - **Netlify**: hospedagem, com homologação e produção separadas
 - **GitHub Actions**: integração contínua, migrações e rotinas automáticas
 - Toda a interface é **em português do Brasil**.
@@ -32,7 +33,7 @@ Os guias passo a passo ficam em `guias/`, como o fluxo de deploy, a restauraçã
 | `npm run typecheck`                        | checagem de tipos (`tsc --noEmit`)                                                                                                                            | disponível |
 | `npm test`                                 | testes unitários (`vitest run`)                                                                                                                               | disponível |
 | `npm run test:db`                          | testes SQL das regras de acesso contra o Supabase local; com `DATABASE_URL`, contra outro Postgres                                                            | disponível |
-| `npm run seed:dev`                         | cria professor@teste.local e aluno@teste.local no Supabase local (recusa rodar fora dele)                                                                     | disponível |
+| `npm run seed:dev`                         | cria professor@teste.local, aluno@teste.local e dois pedidos pendentes no Supabase local (recusa rodar fora dele)                                             | disponível |
 | `npm run test:e2e`                         | testes de ponta a ponta (Playwright) no computador e no celular; recria o banco local e precisa do Supabase local rodando; fica fora do `check` por ser lento | disponível |
 | `npm run build`                            | build de produção                                                                                                                                             | disponível |
 | `npx supabase start` / `npx supabase stop` | sobe e derruba o Supabase local (requer Docker)                                                                                                               | disponível |
@@ -47,10 +48,11 @@ Com o Supabase local rodando: Studio em http://localhost:54323 e caixa de e-mail
 3. **A chave `service_role` só aparece em arquivo com `import "server-only"`**, nunca em variável com prefixo `NEXT_PUBLIC_`.
 4. **O papel nunca vem dos metadados do usuário.** O gatilho que cria o perfil sempre cria `aluno`.
 5. **O banco só muda por migração em `supabase/migrations`.** Uma migração já aplicada nunca é editada: cria-se outra.
-6. **Menor de 12 anos só acessa depois do aceite do responsável.**
-7. **Nenhum segredo no Git.** Chaves ficam em `.env.local`, que é ignorado; o `.env.example` traz só os nomes das variáveis.
-8. **Commits e pushes são feitos manualmente pelo responsável do projeto.**
-9. **Material de planejamento interno não entra no repositório.** Documentação versionada fica em `guias/`.
+6. **Menor de 12 anos só acessa depois do aceite do responsável**, mesmo depois de liberado pelo professor.
+7. **Nenhum aluno acessa sem ter sido cadastrado ou liberado pelo professor.** A liberação, a recusa e o bloqueio só mudam pelas funções do banco que gravam a auditoria.
+8. **Nenhum segredo no Git.** Chaves ficam em `.env.local`, que é ignorado; o `.env.example` traz só os nomes das variáveis.
+9. **Commits e pushes são feitos manualmente pelo responsável do projeto.**
+10. **Material de planejamento interno não entra no repositório.** Documentação versionada fica em `guias/`.
 
 ## 6. Armadilhas conhecidas
 
@@ -58,6 +60,7 @@ Com o Supabase local rodando: Studio em http://localhost:54323 e caixa de e-mail
 - O lint roda com `eslint .`, **não** com `next lint`.
 - **Tailwind 4:** uma classe própria que usa `@apply` precisa ser declarada com `@utility`.
 - **Login Google para menores de 13 anos** depende do Family Link dos pais; para esses alunos, o caminho padrão é o link mágico por e-mail.
+- **O cadastro do Auth está aberto** (`enable_signup = true`) para o Google criar os pedidos. Quem protege é a RLS, pela coluna `liberado_em`; nunca confie nos metadados do usuário (`raw_user_meta_data`), que qualquer um pode enviar. A marca de cadastro feito pelo professor fica no `app_metadata`.
 - **`npm install <pacote>` pode apagar o binário nativo do rolldown** (bug do npm com dependências opcionais), e o `npm test` passa a falhar com "Cannot find native binding". Para corrigir, apague `node_modules` e `package-lock.json` e rode `npm install`.
 
 ## 7. Jeito de trabalhar

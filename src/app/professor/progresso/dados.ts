@@ -26,6 +26,7 @@ export async function dadosDoPainel(alunoId?: string) {
     .from("perfis")
     .select("id, nome, matriculas (curso_id)")
     .eq("papel", "aluno")
+    .not("liberado_em", "is", null)
     .order("nome");
   let progresso = supabase
     .from("progresso")

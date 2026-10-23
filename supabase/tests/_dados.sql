@@ -1,15 +1,16 @@
 -- Dados de teste carregados antes de cada arquivo, dentro da mesma transação.
 --
--- Usuários: professor (...0001), aluno de 14 anos (...00a1), aluno de 10 anos sem aceite (...00b1).
+-- Usuários: professor (...0001), aluno de 14 anos (...00a1), aluno de 10 anos sem aceite (...00b1),
+--           todos cadastrados pelo professor (app_metadata.origem), portanto já liberados.
 -- Cursos:   c1 publicado e com os dois alunos matriculados,
 --           c2 publicado sem matrícula, c3 em rascunho com o aluno de 14 matriculado.
 
-insert into auth.users (id, email, raw_user_meta_data) values
-  ('00000000-0000-0000-0000-000000000001', 'professor@testes-banco.local',
+insert into auth.users (id, email, raw_app_meta_data, raw_user_meta_data) values
+  ('00000000-0000-0000-0000-000000000001', 'professor@testes-banco.local', '{"origem": "professor"}',
    '{"nome": "Professor"}'),
-  ('00000000-0000-0000-0000-0000000000a1', 'aluno@testes-banco.local',
+  ('00000000-0000-0000-0000-0000000000a1', 'aluno@testes-banco.local', '{"origem": "professor"}',
    '{"nome": "Aluno", "data_nascimento": "2012-03-10", "menor_de_12": false}'),
-  ('00000000-0000-0000-0000-0000000000b1', 'menor@testes-banco.local',
+  ('00000000-0000-0000-0000-0000000000b1', 'menor@testes-banco.local', '{"origem": "professor"}',
    '{"nome": "Menor", "data_nascimento": "2016-05-20", "menor_de_12": true}');
 
 update public.perfis set papel = 'professor'

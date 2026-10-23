@@ -10,6 +10,8 @@ export type Sessao = {
   nome: string;
   papel: Papel;
   bloqueado: boolean;
+  // Entrou pelo Google sem cadastro do professor e ainda não foi liberado.
+  pendente: boolean;
 };
 
 export function destinoDoPapel(papel: Papel): string {
@@ -29,7 +31,7 @@ export async function obterSessao(): Promise<Sessao | null> {
 
   const { data: perfil } = await supabase
     .from("perfis")
-    .select("nome, email, papel, bloqueado_em")
+    .select("nome, email, papel, bloqueado_em, liberado_em")
     .eq("id", user.id)
     .single();
   if (!perfil) return null;
@@ -40,6 +42,7 @@ export async function obterSessao(): Promise<Sessao | null> {
     nome: perfil.nome,
     papel: perfil.papel as Papel,
     bloqueado: perfil.bloqueado_em !== null,
+    pendente: perfil.papel === "aluno" && perfil.liberado_em === null,
   };
 }
 
@@ -50,16 +53,17 @@ export async function exigirProfessor(): Promise<Sessao> {
   return sessao;
 }
 
-// Pergunta ao banco se o aluno logado já pode acessar (12 anos ou mais, ou
-// menor com aceite do responsável). Em caso de erro, trata como bloqueado.
+// Pergunta ao banco se o aluno logado já pode acessar (liberado pelo professor
+// e com 12 anos ou mais, ou menor com aceite do responsável). Em caso de erro,
+// trata como bloqueado.
 export async function alunoLiberado(): Promise<boolean> {
   const supabase = await criarClienteServidor();
   const { data, error } = await supabase.rpc("aluno_liberado");
   return !error && data === true;
 }
 
-// O aluno bloqueado vai para o aviso de bloqueio; o menor de 12 sem aceite,
-// para a tela de espera.
+// O aluno bloqueado vai para o aviso de bloqueio; o pedido pendente e o menor
+// de 12 sem aceite, para a tela de espera.
 export async function exigirAluno(): Promise<Sessao> {
   const sessao = await obterSessao();
   if (!sessao) redirect("/login");

@@ -30,6 +30,7 @@ type Aluno = {
   data_nascimento: string | null;
   menor_de_12: boolean;
   bloqueado_em: string | null;
+  liberado_em: string | null;
   responsaveis: {
     nome: string;
     email: string;
@@ -72,7 +73,7 @@ async function FichaDoAluno({ params }: { params: Promise<{ id: string }> }) {
       supabase
         .from("perfis")
         .select(
-          "id, nome, email, data_nascimento, menor_de_12, bloqueado_em, responsaveis (nome, email, token, aceito_em), matriculas (curso_id)",
+          "id, nome, email, data_nascimento, menor_de_12, bloqueado_em, liberado_em, responsaveis (nome, email, token, aceito_em), matriculas (curso_id)",
         )
         .eq("id", id)
         .eq("papel", "aluno")
@@ -92,6 +93,7 @@ async function FichaDoAluno({ params }: { params: Promise<{ id: string }> }) {
   const responsavel = aluno.responsaveis;
   const status = statusDoAluno({
     bloqueado: aluno.bloqueado_em !== null,
+    pendente: aluno.liberado_em === null,
     menor_de_12: aluno.menor_de_12,
     aceito: Boolean(responsavel?.aceito_em),
     ultimo_acesso: usuario?.user?.last_sign_in_at,
@@ -123,6 +125,15 @@ async function FichaDoAluno({ params }: { params: Promise<{ id: string }> }) {
           )}
         </dl>
         {status === "convidado" && <BotaoReenviar alunoId={aluno.id} />}
+        {status === "pendente" && (
+          <p className="text-sm">
+            Pediu acesso pelo Google.{" "}
+            <Link href="/professor" className="underline">
+              Libere ou recuse no painel
+            </Link>
+            .
+          </p>
+        )}
       </header>
 
       {responsavel && (

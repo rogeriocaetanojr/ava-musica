@@ -13,6 +13,8 @@
 - [ ] Chaves e configurações secretas guardadas com segurança
 - [ ] Site publicado na Netlify, com versão de teste e versão oficial
 - [ ] Login com Google e envio de e-mails funcionando de verdade
+  - Inclui o cadastro aberto, o Google ligado e o SMTP do Resend para o aviso de pedido novo (veja `guias/deploy.md` e `guias/login-google.md`).
+  - A política de privacidade (versão 2-rascunho) cita o Supabase, o Google, o Resend e a Netlify e a transferência internacional; confirmar com cada serviço onde os dados ficam e se o contrato tem cláusulas de proteção de dados antes da revisão jurídica.
 - [ ] Verificações automáticas completas a cada mudança no código
 - [ ] Publicação automática da versão de teste e promoção para a oficial
 - [ ] Endereço próprio do site e proteções de segurança do navegador
@@ -49,6 +51,7 @@
 - [x] Limite de tentativas de login, limite de convites por hora e registro dos acessos aos dados de menores de 18 anos
 - [x] Testes automáticos que usam o site como um aluno e um professor usariam, no computador e no celular
 - [x] Professor pode bloquear e desbloquear o acesso de um aluno, sem perder os dados nem o progresso
+- [x] Aluno sem convite pode pedir acesso entrando com o Google; o professor libera ou recusa no painel e recebe um e-mail a cada pedido novo
 
 ## Decisões
 
@@ -109,3 +112,12 @@
 - O Supabase aceita o pedido de link de um aluno bloqueado e só recusa quando ele clica no link. A mensagem de acesso pausado aparece nessa hora.
 - Com a sessão aberta, o Supabase já recusa o aluno bloqueado na página seguinte. O site apaga a sessão e mostra o aviso na tela de login. A página `/bloqueado` cobre o caso em que o banco já bloqueou, mas o login ainda não.
 - O status "bloqueado" vale acima dos outros, e o reenvio de convite fica indisponível enquanto o aluno estiver bloqueado.
+- Quem entra pelo Google sem ter sido cadastrado vira um pedido pendente (`perfis.liberado_em` vazio). A regra de acesso do aluno exige a liberação, então o pendente não vê nada além do próprio nome, mesmo com a sessão aberta.
+- O cadastro feito pelo professor leva a marca `origem: professor` no `app_metadata`, que só a chave de serviço grava, e já nasce liberado. Por isso o convite agora cria a conta primeiro e envia o convite em seguida. Quem se cadastra sozinho nasce sem data de nascimento: os metadados enviados pelo próprio usuário são ignorados, porque com o cadastro aberto qualquer um poderia forjá-los.
+- O Google não informa a data de nascimento. Ao liberar, o professor informa a data, e o banco decide se o aluno tem menos de 12 anos; nesse caso o professor informa o responsável, vai para a ficha do aluno com o link de autorização, e o acesso só começa depois do aceite.
+- Liberar e recusar sempre ficam na auditoria, em qualquer idade, como o bloqueio. O banco só aceita mudar a liberação pelas funções que também gravam o registro.
+- Recusar apaga a conta, como a exclusão, e só fica o registro da auditoria com o id. A pessoa pode pedir de novo entrando com o Google.
+- Depois de liberado, a revogação é o bloqueio que já existia; bloquear não desfaz a liberação, então desbloquear devolve o acesso.
+- O link mágico continua só para quem foi cadastrado. Menores de 13 anos que não conseguem usar o Google (Family Link) continuam sendo cadastrados pelo professor.
+- O aviso ao professor sai uma vez por pedido, no primeiro login, por SMTP (Resend na nuvem, Mailpit no computador). Se o envio falhar, o login segue, o pedido aparece no painel e o aviso é tentado de novo no próximo login. Sem as variáveis de SMTP, o aviso simplesmente não sai.
+- Os testes de ponta a ponta simulam o pedido do Google com contas criadas pelo seed sem a marca do professor, porque o login do Google não dá para automatizar.

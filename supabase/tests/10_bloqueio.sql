@@ -3,8 +3,8 @@
 -- desbloqueio devolve o acesso.
 
 -- Um aluno adulto, para conferir que a auditoria do bloqueio vale para qualquer idade.
-insert into auth.users (id, email, raw_user_meta_data) values
-  ('00000000-0000-0000-0000-0000000000d1', 'adulto@testes-banco.local',
+insert into auth.users (id, email, raw_app_meta_data, raw_user_meta_data) values
+  ('00000000-0000-0000-0000-0000000000d1', 'adulto@testes-banco.local', '{"origem": "professor"}',
    '{"nome": "Adulto", "data_nascimento": "1990-01-01", "menor_de_12": false}');
 
 insert into public.progresso (aluno_id, aula_id) values

@@ -4,9 +4,10 @@ import { Suspense } from "react";
 import { BotaoSair } from "@/components/botao-sair";
 import { alunoLiberado, destinoDoPapel, obterSessao } from "@/lib/auth";
 import { tituloDaPagina } from "@/lib/site";
+import { textoDaEspera } from "./textos";
 
 export const metadata: Metadata = {
-  title: tituloDaPagina("Aguardando o responsável"),
+  title: tituloDaPagina("Aguardando liberação"),
 };
 
 async function Aviso() {
@@ -15,18 +16,14 @@ async function Aviso() {
   if (sessao.papel === "aluno" && sessao.bloqueado) redirect("/bloqueado");
   if (sessao.papel !== "aluno" || (await alunoLiberado()))
     redirect(destinoDoPapel(sessao.papel));
+  const texto = textoDaEspera(sessao.pendente);
 
   return (
     <>
-      <h1 className="text-2xl font-bold break-words">Olá, {sessao.nome}</h1>
-      <p>
-        Seu acesso está aguardando a autorização do seu responsável. Assim que
-        ele autorizar, você vai poder ver seus cursos e aulas.
-      </p>
-      <p className="text-sm">
-        Se já faz um tempo, peça ao seu responsável para conferir o e-mail ou
-        fale com o professor.
-      </p>
+      <h1 className="text-2xl font-bold break-words">{texto.titulo}</h1>
+      <p className="break-words">Olá, {sessao.nome}.</p>
+      <p>{texto.explicacao}</p>
+      <p className="text-sm">{texto.dica}</p>
       <BotaoSair />
     </>
   );

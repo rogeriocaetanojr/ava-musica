@@ -5,6 +5,8 @@ import { BotaoSair } from "@/components/botao-sair";
 import { exigirProfessor } from "@/lib/auth";
 import { formatarDataHora } from "@/lib/datas";
 import { resumoParaProfessor, ultimaAtividade } from "@/lib/painel";
+import { criarClienteServidor } from "@/lib/supabase/servidor";
+import { PedidosDeAcesso } from "./pedidos-de-acesso";
 import { dadosDoPainel } from "./progresso/dados";
 
 async function ProgressoDaTurma() {
@@ -82,6 +84,26 @@ async function ProgressoDaTurma() {
   );
 }
 
+// Quem entrou pelo Google e ainda espera liberação, do mais antigo ao mais novo.
+async function Pedidos() {
+  await exigirProfessor();
+
+  const supabase = await criarClienteServidor();
+  const { data: pedidos, error } = await supabase
+    .from("perfis")
+    .select("id, nome, email, criado_em")
+    .eq("papel", "aluno")
+    .is("liberado_em", null)
+    .order("criado_em");
+  if (error || !pedidos)
+    return (
+      <p role="alert" className="rounded-md bg-red-100 p-3 text-red-800">
+        Não foi possível carregar os pedidos de acesso.
+      </p>
+    );
+  return <PedidosDeAcesso pedidos={pedidos} />;
+}
+
 async function Painel() {
   const sessao = await exigirProfessor();
 
@@ -102,6 +124,13 @@ async function Painel() {
           Ver como aluno
         </Link>
       </nav>
+
+      <section className="space-y-3">
+        <h2 className="text-xl font-semibold">Pedidos de acesso</h2>
+        <Suspense fallback={<p>Carregando…</p>}>
+          <Pedidos />
+        </Suspense>
+      </section>
 
       <section className="space-y-3">
         <h2 className="text-xl font-semibold">Progresso dos alunos</h2>

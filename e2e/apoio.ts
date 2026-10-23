@@ -27,6 +27,31 @@ function buscaPorDestinatario(email: string): string {
   return `/search?query=${encodeURIComponent(`to:"${email}"`)}`;
 }
 
+// Espera chegar um e-mail para o endereço com o assunto e devolve o texto.
+export async function textoDoEmail(
+  email: string,
+  assunto: string,
+): Promise<string> {
+  let id: string | undefined;
+  const busca = `/search?query=${encodeURIComponent(`to:"${email}" subject:"${assunto}"`)}`;
+  await expect
+    .poll(
+      async () => {
+        const resposta = await chamarCaixa(busca);
+        const { messages } = (await resposta.json()) as {
+          messages: { ID: string }[];
+        };
+        id = messages[0]?.ID;
+        return id;
+      },
+      { message: `o e-mail "${assunto}" não chegou`, timeout: 20_000 },
+    )
+    .toBeTruthy();
+  const resposta = await chamarCaixa(`/message/${id}`);
+  const { Text } = (await resposta.json()) as { Text: string };
+  return Text;
+}
+
 // Espera o e-mail chegar e devolve o link de acesso que ele traz.
 async function linkDoEmail(email: string): Promise<string> {
   let id: string | undefined;
