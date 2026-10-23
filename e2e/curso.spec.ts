@@ -95,8 +95,9 @@ test("aluno conclui a aula e o professor vê o progresso", async ({
   await page
     .getByRole("listitem")
     .filter({ has: page.getByRole("heading", { name: curso }) })
-    .getByRole("link", { name: "Começar" })
+    .getByRole("link")
     .click();
+  await page.getByRole("link", { name: "Começar" }).click();
 
   await expect(page.getByRole("heading", { name: aula })).toBeVisible();
   await expect(page.getByText(TEXTO_DA_AULA)).toBeVisible();

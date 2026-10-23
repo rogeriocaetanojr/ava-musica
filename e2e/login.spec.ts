@@ -14,7 +14,7 @@ test("aluno convidado entra com o código do e-mail", async ({ page }) => {
 
   await expect(page).toHaveURL(/\/cursos$/);
   await expect(
-    page.getByRole("heading", { name: `Olá, ${NOME_DO_ALUNO}` }),
+    page.getByRole("heading", { level: 1, name: NOME_DO_ALUNO }),
   ).toBeVisible();
 });
 

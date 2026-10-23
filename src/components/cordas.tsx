@@ -2,15 +2,25 @@
 
 const QUANTIDADE_DE_CORDAS = 6;
 
-// Listras amarelas verticais, como as cordas vistas de frente.
-export function Cordas({ className }: { className?: string }) {
+// Listras verticais, como as cordas vistas de frente. Amarelas por padrão;
+// vinho para aparecer sobre fundo amarelo.
+export function Cordas({
+  className,
+  cor = "amarelo",
+}: {
+  className?: string;
+  cor?: "amarelo" | "vinho";
+}) {
   return (
     <div
       aria-hidden="true"
       className={`pointer-events-none flex justify-between ${className ?? ""}`}
     >
       {Array.from({ length: QUANTIDADE_DE_CORDAS }, (_, indice) => (
-        <span key={indice} className="h-full w-px bg-amarelo/70" />
+        <span
+          key={indice}
+          className={`h-full w-px ${cor === "vinho" ? "bg-vinho/50" : "bg-amarelo/70"}`}
+        />
       ))}
     </div>
   );

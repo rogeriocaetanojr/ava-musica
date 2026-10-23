@@ -4,7 +4,6 @@
 
 ### Telas
 
-- [ ] Meus cursos no computador
 - [ ] Meus cursos no celular
 - [ ] Tela da aula no computador
 - [ ] Tela da aula no celular
@@ -75,6 +74,7 @@
 
 - [x] Tela de entrada no computador, com as cores e fontes aprovadas
 - [x] Tela de entrada no celular
+- [x] Meus cursos no computador
 
 ## Decisões
 
@@ -159,3 +159,8 @@
 - Revisto: as cores aprovadas ficam no bloco `@theme` de `src/app/globals.css` (fundo creme, bordô, vinho e amarelo; `primaria` e `secundaria` não existem mais), as fontes são Bricolage Grotesque nos títulos e Manrope no texto, e as telas novas usam os componentes de `src/components/` (botão, campo, aviso, cordas e moldura); o tema escuro automático saiu e volta na sua própria etapa.
 - O layout de celular vale até 767 px; a partir de 768 px a tela de entrada usa o layout do computador. Entre 768 e 1023 px, o título e a boca do violão ficam menores para não se sobreporem.
 - No celular, a tela de entrada mantém o título "Entrar" e o botão "Receber código de acesso", porque o acesso é por código de 6 dígitos e os testes procuram o título "Entrar". O aviso de convite aparece em versão curta no rodapé, junto do link da política de privacidade.
+- A área do aluno tem cabeçalho próprio (`src/components/cabecalho-do-aluno.tsx`), com Meus cursos, Avisos, o sino, o avatar com as iniciais e o Sair; a moldura do site some nessa tela, que traz o próprio link da política de privacidade. Perfil fica fora do menu até a tela existir.
+- Ainda não há registro de avisos lidos, então o sino aparece sem a bolinha amarela; a contagem de não lidos chega numa etapa com migração própria. Avisos, o sino e "Ver todos os recados" levam à lista completa de recados no fim de Meus cursos (`#recados`).
+- O "Continue de onde parou" usa o curso da aula com o registro de progresso mais recente; sem progresso, o primeiro curso (em ordem alfabética) que tem aulas. Com tudo concluído, o cartão diz isso e leva ao curso.
+- A saudação (Bom dia até 11h59, Boa tarde até 17h59, Boa noite a partir das 18h e até 4h59) segue o horário de Brasília.
+- Os cartões de curso inteiros são o link para a página do curso; o botão Começar fica na página do curso. O título da tela passou a ser só o nome do aluno, e os testes de ponta a ponta acompanham essas duas mudanças.
