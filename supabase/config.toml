@@ -214,15 +214,18 @@ token_verifications = 15
 web3 = 30
 
 # Configure one of the supported captcha providers: `hcaptcha`, `turnstile`.
-# [auth.captcha]
-# enabled = true
-# provider = "hcaptcha"
-# secret = ""
+# Cloudflare Turnstile no pedido do link mágico. Aqui fica a chave secreta pública de teste da
+# Cloudflare, que sempre aprova (computador e testes); a real fica só no painel da nuvem
+# (guias/deploy.md).
+[auth.captcha]
+enabled = true
+provider = "turnstile"
+secret = "1x0000000000000000000000000000000AA"
 
 [auth.email]
 # Allow/disallow new user signups via email to your project.
-# No CLI, false aqui desliga o login por e-mail inteiro (link mágico incluso). O link mágico
-# continua só para convidados porque o site pede com shouldCreateUser: false.
+# No CLI, false aqui desliga o login por e-mail inteiro (link mágico incluso). Quem não tem
+# conta pede acesso pelo próprio link mágico; o hook abaixo barra quem foi recusado.
 enable_signup = true
 # If enabled, a user will be required to confirm any email change on both the old, and new email
 # addresses. If disabled, only the new email is required to confirm.
@@ -257,6 +260,11 @@ content_path = "./supabase/templates/convite.html"
 subject = "Seu link para entrar no AVA de Música"
 content_path = "./supabase/templates/link-magico.html"
 
+# Primeiro link de quem ainda não tem conta (pedido de acesso pelo e-mail).
+[auth.email.template.confirmation]
+subject = "Seu link para entrar no AVA de Música"
+content_path = "./supabase/templates/confirmacao.html"
+
 # Uncomment to customize notification email template
 # [auth.email.notification.password_changed]
 # enabled = true
@@ -285,9 +293,11 @@ max_frequency = "5s"
 # inactivity_timeout = "8h"
 
 # This hook runs before a new user is created and allows developers to reject the request based on the incoming user object.
-# [auth.hook.before_user_created]
-# enabled = true
-# uri = "pg-functions://postgres/auth/before-user-created-hook"
+# Recusa a criação da conta de quem foi recusado pelo professor há menos de 7 dias
+# (supabase/migrations/20261023000000_pedido_por_email_e_recusas.sql).
+[auth.hook.before_user_created]
+enabled = true
+uri = "pg-functions://postgres/public/antes_de_criar_usuario"
 
 # This hook runs before a token is issued and allows you to add additional claims based on the authentication method used.
 # [auth.hook.custom_access_token]

@@ -1,10 +1,15 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { destinoDoPapel, obterSessao } from "@/lib/auth";
-import { avisarPedidoNovo } from "@/lib/pedidos";
+import { confirmarPedido } from "@/lib/pedidos";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
-import { ehBloqueado, ehLimiteDeTentativas } from "../../login/mensagens";
+import {
+  ehBloqueado,
+  ehLimiteDeTentativas,
+  ehPedidoBarrado,
+} from "../../login/mensagens";
 
-// Tipos de link aceitos com token_hash: o convite e o link mágico.
+// Tipos de link aceitos com token_hash: o convite e o link mágico (o primeiro
+// link de quem ainda não tinha conta também chega como "email").
 const TIPOS_DE_LINK = ["invite", "email"] as const;
 type TipoDeLink = (typeof TIPOS_DE_LINK)[number];
 
@@ -21,10 +26,18 @@ export async function GET(request: NextRequest) {
   const tokenHash = searchParams.get("token_hash");
   const tipo = searchParams.get("type");
 
-  // A conta bloqueada volta com error_code=user_banned; qualquer outro erro do
-  // Google (como cancelar a escolha da conta) mostra o aviso de falha do Google.
+  // A conta bloqueada volta com error_code=user_banned e a recusada há menos
+  // de 7 dias, com a mensagem do hook; qualquer outro erro do Google (como
+  // cancelar a escolha da conta) mostra o aviso de falha do Google.
   if (searchParams.get("error_code") === "user_banned") {
     return NextResponse.redirect(`${origin}/login?erro=bloqueado`);
+  }
+  if (
+    ehPedidoBarrado({
+      message: searchParams.get("error_description") ?? undefined,
+    })
+  ) {
+    return NextResponse.redirect(`${origin}/login?erro=pedido-barrado`);
   }
   if (searchParams.get("error")) {
     return NextResponse.redirect(`${origin}/login?erro=google`);
@@ -64,10 +77,10 @@ export async function GET(request: NextRequest) {
     await supabase.auth.signOut();
     return NextResponse.redirect(`${origin}/login?erro=bloqueado`);
   }
-  // Quem entrou pelo Google sem cadastro vira pedido: o professor é avisado
-  // e o aluno espera a liberação.
+  // Quem entrou sem cadastro do professor (Google ou link mágico) confirma o
+  // pedido aqui: só agora ele aparece para o professor, que é avisado.
   if (sessao.pendente) {
-    await avisarPedidoNovo(sessao);
+    await confirmarPedido(sessao);
     return NextResponse.redirect(`${origin}/aguardando`);
   }
 

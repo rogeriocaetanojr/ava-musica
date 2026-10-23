@@ -1,13 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { criarClienteNavegador } from "@/lib/supabase/navegador";
+import { Captcha, type ControleDoCaptcha } from "./captcha";
 import {
   ehBloqueado,
+  ehFalhaDoCaptcha,
   ehLimiteDeTentativas,
+  ehPedidoBarrado,
   MENSAGEM_BLOQUEADO,
+  MENSAGEM_CAPTCHA,
   MENSAGEM_MUITAS_TENTATIVAS,
-  MENSAGEM_NAO_CONVIDADO,
+  MENSAGEM_PEDIDO_BARRADO,
 } from "./mensagens";
 
 type Estado =
@@ -23,6 +27,8 @@ function urlDeRetorno(): string {
 export function FormularioLogin() {
   const [email, setEmail] = useState("");
   const [estado, setEstado] = useState<Estado>({ tipo: "inicial" });
+  const [tokenCaptcha, setTokenCaptcha] = useState<string | null>(null);
+  const captcha = useRef<ControleDoCaptcha>(null);
 
   async function entrarComGoogle() {
     const supabase = criarClienteNavegador();
@@ -46,11 +52,19 @@ export function FormularioLogin() {
 
     const enderecoDigitado = email.trim();
     const supabase = criarClienteNavegador();
-    // shouldCreateUser: false faz o Supabase recusar quem não foi convidado.
+    // Quem não tem conta ganha uma nova, pendente: o pedido só vale depois que
+    // a pessoa clica no link (ver /auth/callback). A mensagem de sucesso é a
+    // mesma para todos, então a tela não revela se o e-mail tem conta.
     const { error } = await supabase.auth.signInWithOtp({
       email: enderecoDigitado,
-      options: { shouldCreateUser: false, emailRedirectTo: urlDeRetorno() },
+      options: {
+        shouldCreateUser: true,
+        emailRedirectTo: urlDeRetorno(),
+        captchaToken: tokenCaptcha ?? undefined,
+      },
     });
+    // O token do captcha vale uma vez só.
+    captcha.current?.reiniciar();
 
     if (!error) {
       setEstado({ tipo: "enviado", email: enderecoDigitado });
@@ -58,12 +72,10 @@ export function FormularioLogin() {
       setEstado({ tipo: "erro", mensagem: MENSAGEM_MUITAS_TENTATIVAS });
     } else if (ehBloqueado(error)) {
       setEstado({ tipo: "erro", mensagem: MENSAGEM_BLOQUEADO });
-    } else if (
-      error.code === "otp_disabled" ||
-      error.code === "signup_disabled" ||
-      error.code === "user_not_found"
-    ) {
-      setEstado({ tipo: "erro", mensagem: MENSAGEM_NAO_CONVIDADO });
+    } else if (ehPedidoBarrado(error)) {
+      setEstado({ tipo: "erro", mensagem: MENSAGEM_PEDIDO_BARRADO });
+    } else if (ehFalhaDoCaptcha(error)) {
+      setEstado({ tipo: "erro", mensagem: MENSAGEM_CAPTCHA });
     } else {
       setEstado({
         tipo: "erro",
@@ -75,26 +87,15 @@ export function FormularioLogin() {
   if (estado.tipo === "enviado") {
     return (
       <p role="status" className="rounded-md bg-green-100 p-3 text-green-800">
-        Enviamos um link de acesso para <strong>{estado.email}</strong>. Abra
-        seu e-mail e toque no link para entrar.
+        Enviamos um link para <strong>{estado.email}</strong>. Abra seu e-mail e
+        toque no link para entrar. Se for o seu primeiro acesso, o professor
+        recebe o seu pedido e libera em breve.
       </p>
     );
   }
 
   return (
     <div className="space-y-6">
-      <button
-        type="button"
-        onClick={entrarComGoogle}
-        className="w-full rounded-md border border-current px-4 py-3 font-medium"
-      >
-        Entrar com Google
-      </button>
-
-      <p className="text-center text-sm">
-        ou, se o professor já cadastrou você, receba um link por e-mail
-      </p>
-
       <form onSubmit={enviarLink} className="space-y-3">
         <label htmlFor="email" className="block text-sm font-medium">
           E-mail
@@ -108,14 +109,25 @@ export function FormularioLogin() {
           onChange={(evento) => setEmail(evento.target.value)}
           className="w-full rounded-md border border-current bg-transparent px-3 py-3"
         />
+        <Captcha ref={captcha} aoMudarToken={setTokenCaptcha} />
         <button
           type="submit"
           disabled={estado.tipo === "enviando"}
           className="w-full rounded-md border border-current px-4 py-3 font-medium disabled:opacity-60"
         >
-          {estado.tipo === "enviando" ? "Enviando…" : "Enviar link de acesso"}
+          {estado.tipo === "enviando" ? "Enviando…" : "Entrar com e-mail"}
         </button>
       </form>
+
+      <p className="text-center text-sm">ou</p>
+
+      <button
+        type="button"
+        onClick={entrarComGoogle}
+        className="w-full rounded-md border border-current px-4 py-3 font-medium"
+      >
+        Entrar com Google
+      </button>
 
       {estado.tipo === "erro" && (
         <p role="alert" className="rounded-md bg-red-100 p-3 text-red-800">

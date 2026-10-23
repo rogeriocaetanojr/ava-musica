@@ -34,6 +34,8 @@ export default defineConfig({
       SMTP_PORT: "54325",
       SMTP_REMETENTE: "AVA de Música <avisos@teste.local>",
       EMAIL_PROFESSOR: "professor@teste.local",
+      // Chave de site de teste da Cloudflare: o captcha aprova sozinho.
+      NEXT_PUBLIC_TURNSTILE_SITE_KEY: "1x00000000000000000000AA",
     },
     timeout: 180_000,
   },

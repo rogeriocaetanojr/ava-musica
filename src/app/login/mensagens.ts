@@ -1,5 +1,16 @@
 export const MENSAGEM_NAO_CONVIDADO =
-  "Este e-mail ainda não foi convidado. Entre com o Google para pedir acesso ao professor.";
+  "Não encontramos o seu cadastro. Tente entrar de novo para pedir acesso ao professor.";
+
+// Pedido barrado pelo hook do Auth (recusado há menos de 7 dias). A mensagem
+// é neutra de propósito: não revela a terceiros que o e-mail foi recusado.
+export const MENSAGEM_PEDIDO_BARRADO =
+  "Não foi possível pedir acesso agora. Fale com o professor.";
+
+// Texto devolvido pelo hook antes_de_criar_usuario (migração 20261023000000).
+const MENSAGEM_DO_HOOK = "Não foi possível pedir acesso agora.";
+
+export const MENSAGEM_CAPTCHA =
+  "Não foi possível confirmar que você não é um robô. Espere a verificação terminar e tente de novo.";
 
 // Limite de tentativas do login (supabase/config.toml e painel da nuvem).
 export const MENSAGEM_MUITAS_TENTATIVAS =
@@ -27,4 +38,19 @@ export function ehBloqueado(
   erro: { code?: string } | null | undefined,
 ): boolean {
   return erro?.code === "user_banned";
+}
+
+// Criação da conta recusada pelo hook "Before User Created". O erro chega com
+// a mensagem do hook (status 403 no link mágico, error_description na volta
+// do Google).
+export function ehPedidoBarrado(
+  erro: { message?: string } | null | undefined,
+): boolean {
+  return !!erro?.message?.includes(MENSAGEM_DO_HOOK);
+}
+
+export function ehFalhaDoCaptcha(
+  erro: { code?: string } | null | undefined,
+): boolean {
+  return erro?.code === "captcha_failed";
 }

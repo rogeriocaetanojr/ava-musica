@@ -14,7 +14,12 @@ import {
   type EstadoFormulario,
   valoresDigitados,
 } from "../cursos/validacao";
-import { confirmaExclusao, validarAluno, validarLiberacao } from "./validacao";
+import {
+  confirmaExclusao,
+  normalizarEmail,
+  validarAluno,
+  validarLiberacao,
+} from "./validacao";
 
 export type EstadoCadastro = EstadoFormulario & {
   // Link /aceite/<token> que o professor envia ao responsável do menor de 12.
@@ -23,7 +28,7 @@ export type EstadoCadastro = EstadoFormulario & {
 
 const ERRO_EMAIL_EXISTE = "Já existe uma conta com este e-mail.";
 const ERRO_EMAIL_PENDENTE =
-  "Este e-mail já pediu acesso pelo Google. Libere o pedido no painel.";
+  "Este e-mail já pediu acesso. Libere o pedido no painel.";
 // Marca o cadastro feito pelo professor: o gatilho do banco libera o acesso.
 // Só a chave de serviço grava app_metadata, então o aluno não forja isso.
 const ORIGEM_PROFESSOR = { origem: "professor" };
@@ -42,7 +47,8 @@ function atualizarTelas() {
 // menor de 12 tem a conta criada sem convite e fica aguardando o aceite do
 // responsável. O papel nunca é informado: o gatilho do banco sempre cria aluno.
 // A conta é criada antes do convite para levar a marca ORIGEM_PROFESSOR, que
-// o convite não aceita.
+// o convite não aceita. O cadastro passa por cima de uma recusa recente do
+// e-mail e de uma conta criada pelo link mágico e nunca confirmada.
 export async function cadastrarAluno(
   _estado: EstadoCadastro,
   formData: FormData,
@@ -58,22 +64,31 @@ export async function cadastrarAluno(
   const supabase = await criarClienteServidor();
   const { data: existente, error: erroBusca } = await supabase
     .from("perfis")
-    .select("id, liberado_em")
+    .select("id, liberado_em, pedido_em")
     .eq("email", aluno.email)
     .maybeSingle();
   if (erroBusca) return { erro: ERRO_BANCO, valores };
-  if (existente)
-    return {
-      erro: existente.liberado_em ? ERRO_EMAIL_EXISTE : ERRO_EMAIL_PENDENTE,
-      valores,
-    };
+  if (existente?.liberado_em) return { erro: ERRO_EMAIL_EXISTE, valores };
+  if (existente?.pedido_em) return { erro: ERRO_EMAIL_PENDENTE, valores };
+
+  const admin = criarClienteAdmin();
+  if (existente) {
+    // Alguém digitou o e-mail no login e nunca clicou no link: a conta não
+    // tem dados de ninguém e dá lugar ao cadastro do professor.
+    const { error } = await admin.auth.admin.deleteUser(existente.id);
+    if (error) return { erro: ERRO_BANCO, valores };
+  }
+  const { error: erroRecusa } = await supabase.rpc(
+    "permitir_novo_pedido_por_email",
+    { email: aluno.email },
+  );
+  if (erroRecusa) return { erro: ERRO_BANCO, valores };
 
   const metadados = {
     nome: aluno.nome,
     data_nascimento: aluno.data_nascimento,
     menor_de_12: aluno.responsavel !== null,
   };
-  const admin = criarClienteAdmin();
 
   let alunoId: string;
   let linkAceite: string | undefined;
@@ -341,7 +356,7 @@ export async function desbloquearAluno(
   return { sucesso: "Acesso desbloqueado." };
 }
 
-// Libera um pedido do Google com a data de nascimento informada. O menor de 12
+// Libera um pedido de acesso com a data de nascimento informada. O menor de 12
 // ganha o responsável antes da liberação e só acessa depois do aceite (o banco
 // confere). O banco grava a liberação e a auditoria juntos. Depois de liberar
 // o menor, o professor vai para a ficha, onde está o link de autorização.
@@ -394,8 +409,9 @@ export async function liberarPedido(
   return { sucesso: `${aluno.nome} foi liberado e já pode entrar.` };
 }
 
-// Recusa um pedido do Google: registra na auditoria e apaga a conta. Só fica
-// o registro, com o id; a pessoa pode pedir de novo entrando pelo Google.
+// Recusa um pedido de acesso: registra na auditoria e apaga a conta. Ficam o
+// registro, com o id, e por 7 dias o hash do e-mail com a dica mascarada, que
+// impede um novo pedido até o prazo acabar ou o professor permitir.
 export async function recusarPedido(
   alunoId: string,
 ): Promise<EstadoFormulario> {
@@ -415,4 +431,59 @@ export async function recusarPedido(
 
   revalidatePath("/professor", "layout");
   return { sucesso: "Pedido recusado." };
+}
+
+function atualizarPainel() {
+  revalidatePath("/professor");
+}
+
+// Apaga a recusa escolhida em "Recusados recentemente": a pessoa pode pedir
+// acesso de novo. O banco registra na auditoria.
+export async function permitirNovoPedido(
+  alunoId: string,
+): Promise<EstadoFormulario> {
+  await exigirProfessor();
+  if (!ehUuid(alunoId)) return { erro: ERRO_BANCO };
+
+  const supabase = await criarClienteServidor();
+  const { error } = await supabase.rpc("permitir_novo_pedido", {
+    aluno: alunoId,
+  });
+  if (error)
+    return {
+      erro:
+        error.code === "P0002"
+          ? "Essa recusa já tinha acabado ou foi apagada."
+          : "Não foi possível permitir. Tente de novo.",
+    };
+
+  atualizarPainel();
+  return { sucesso: "Pronto: a pessoa já pode pedir acesso de novo." };
+}
+
+// O mesmo, pelo e-mail digitado pelo professor. O banco compara o hash.
+export async function permitirNovoPedidoPorEmail(
+  _estado: EstadoFormulario,
+  formData: FormData,
+): Promise<EstadoFormulario> {
+  await exigirProfessor();
+  const valores = valoresDigitados(formData);
+  const email = normalizarEmail(formData.get("email"));
+  if (!email) return { erro: "Digite um e-mail válido.", valores };
+
+  const supabase = await criarClienteServidor();
+  const { data: havia, error } = await supabase.rpc(
+    "permitir_novo_pedido_por_email",
+    { email },
+  );
+  if (error)
+    return { erro: "Não foi possível permitir. Tente de novo.", valores };
+  if (!havia)
+    return {
+      erro: "Não há recusa recente para este e-mail. A pessoa já pode pedir acesso.",
+      valores,
+    };
+
+  atualizarPainel();
+  return { sucesso: `Pronto: ${email} já pode pedir acesso de novo.` };
 }

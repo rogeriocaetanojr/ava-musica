@@ -27,33 +27,20 @@ function buscaPorDestinatario(email: string): string {
   return `/search?query=${encodeURIComponent(`to:"${email}"`)}`;
 }
 
-// Espera chegar um e-mail para o endereço com o assunto e devolve o texto.
-export async function textoDoEmail(
+// Quantos e-mails chegaram para o endereço com o assunto e o termo no texto.
+export async function contarEmails(
   email: string,
   assunto: string,
-): Promise<string> {
-  let id: string | undefined;
-  const busca = `/search?query=${encodeURIComponent(`to:"${email}" subject:"${assunto}"`)}`;
-  await expect
-    .poll(
-      async () => {
-        const resposta = await chamarCaixa(busca);
-        const { messages } = (await resposta.json()) as {
-          messages: { ID: string }[];
-        };
-        id = messages[0]?.ID;
-        return id;
-      },
-      { message: `o e-mail "${assunto}" não chegou`, timeout: 20_000 },
-    )
-    .toBeTruthy();
-  const resposta = await chamarCaixa(`/message/${id}`);
-  const { Text } = (await resposta.json()) as { Text: string };
-  return Text;
+  termo: string,
+): Promise<number> {
+  const busca = `/search?query=${encodeURIComponent(`to:"${email}" subject:"${assunto}" "${termo}"`)}`;
+  const resposta = await chamarCaixa(busca);
+  const { messages } = (await resposta.json()) as { messages: unknown[] };
+  return messages.length;
 }
 
 // Espera o e-mail chegar e devolve o link de acesso que ele traz.
-async function linkDoEmail(email: string): Promise<string> {
+export async function linkDoEmail(email: string): Promise<string> {
   let id: string | undefined;
   await expect
     .poll(
@@ -76,17 +63,28 @@ async function linkDoEmail(email: string): Promise<string> {
   return href.replaceAll("&amp;", "&");
 }
 
+export async function apagarEmailsDe(email: string): Promise<void> {
+  await chamarCaixa(buscaPorDestinatario(email), "DELETE");
+}
+
+// Pede o link na tela de login. O captcha usa a chave de teste da Cloudflare,
+// que aprova sozinha; o botão só é clicado depois que o token chega.
+export async function pedirLink(page: Page, email: string): Promise<void> {
+  await page.goto("/login");
+  await page.getByLabel("E-mail").fill(email);
+  await expect(page.locator('input[name="cf-turnstile-response"]')).toHaveValue(
+    /.+/,
+  );
+  await page.getByRole("button", { name: "Entrar com e-mail" }).click();
+}
+
 // Entra pelo link mágico, como o aluno e o professor fazem.
 export async function entrar(page: Page, email: string): Promise<void> {
   // Apaga e-mails antigos para não abrir um link já usado.
-  await chamarCaixa(buscaPorDestinatario(email), "DELETE");
+  await apagarEmailsDe(email);
 
-  await page.goto("/login");
-  await page.getByLabel("E-mail").fill(email);
-  await page.getByRole("button", { name: "Enviar link de acesso" }).click();
-  await expect(page.getByRole("status")).toContainText(
-    "Enviamos um link de acesso",
-  );
+  await pedirLink(page, email);
+  await expect(page.getByRole("status")).toContainText("Enviamos um link");
 
   await page.goto(await linkDoEmail(email));
 }

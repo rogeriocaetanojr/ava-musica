@@ -9,7 +9,7 @@ export type Pedido = {
   id: string;
   nome: string;
   email: string;
-  criado_em: string;
+  pedido_em: string;
 };
 
 const campo =
@@ -57,7 +57,7 @@ function CartaoDoPedido({
         <p className="font-medium break-words">{pedido.nome}</p>
         <p className="text-sm break-all">{pedido.email}</p>
         <p className="text-sm">
-          Pediu acesso em {formatarDataHora(pedido.criado_em)}
+          Pediu acesso em {formatarDataHora(pedido.pedido_em)}
         </p>
       </div>
 
@@ -95,7 +95,7 @@ function CartaoDoPedido({
   );
 }
 
-// A data de nascimento não vem do Google; o professor informa para aplicar a
+// A data de nascimento não vem do pedido; o professor informa para aplicar a
 // regra dos 12 anos. A decisão sobre o responsável aqui é só visual.
 function FormularioLiberacao({
   pedido,
@@ -212,8 +212,9 @@ function ConfirmacaoRecusa({
     <form action={enviar} className="space-y-3">
       <p className="text-sm">
         Recusar apaga a conta de{" "}
-        <strong className="break-words">{pedido.nome}</strong>. A pessoa pode
-        pedir de novo entrando com o Google.
+        <strong className="break-words">{pedido.nome}</strong>. Por 7 dias, o
+        e-mail não consegue pedir acesso de novo, a menos que você permita em
+        &quot;Recusados recentemente&quot;.
       </p>
       {estado.erro && (
         <p role="alert" className="rounded-md bg-red-100 p-3 text-red-800">

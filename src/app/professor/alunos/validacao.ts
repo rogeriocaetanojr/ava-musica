@@ -101,8 +101,8 @@ export type DadosLiberacao = Pick<
   "data_nascimento" | "idade" | "responsavel"
 >;
 
-// Liberação de um pedido do Google: o professor informa a data de nascimento,
-// que o Google não manda, e o responsável se o aluno tiver menos de 12 anos.
+// Liberação de um pedido de acesso: o professor informa a data de nascimento,
+// que o pedido não traz, e o responsável se o aluno tiver menos de 12 anos.
 export function validarLiberacao(
   formData: FormData,
   hoje: string,
@@ -155,7 +155,7 @@ export const CORES_DOS_STATUS: Record<StatusDoAluno, string> = {
 };
 
 // Bloqueado: o professor pausou o acesso (vale acima dos outros).
-// Pendente: entrou pelo Google e espera o professor liberar ou recusar.
+// Pendente: pediu acesso pelo login (Google ou e-mail) e espera o professor liberar ou recusar.
 // Aguardando: menor de 12 sem aceite. Convidado: ainda não entrou nenhuma vez.
 // Ativo: já entrou.
 export function statusDoAluno(aluno: {
@@ -179,4 +179,12 @@ export function confirmaExclusao(digitado: unknown, nome: string): boolean {
     digitado.trim().toLocaleLowerCase("pt-BR") ===
       nome.trim().toLocaleLowerCase("pt-BR")
   );
+}
+
+// E-mail do formulário "Permitir novo pedido": minúsculas e sem espaços nas
+// pontas, como o banco normaliza antes do hash. Devolve null se for inválido.
+export function normalizarEmail(valor: unknown): string | null {
+  if (typeof valor !== "string") return null;
+  const email = valor.trim().toLowerCase();
+  return EMAIL.test(email) && email.length <= 254 ? email : null;
 }

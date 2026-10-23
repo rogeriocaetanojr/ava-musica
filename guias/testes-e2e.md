@@ -13,10 +13,13 @@ Antes dos testes, o banco local é recriado com `npx supabase db reset` e recebe
 
 ## O que é testado
 
-| Arquivo             | Fluxo                                                                                                                                                                                                 |
-| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `e2e/login.spec.ts` | o aluno convidado entra pelo link mágico; um e-mail não convidado é recusado                                                                                                                          |
-| `e2e/curso.spec.ts` | o professor cria curso, módulo e aula com texto e vídeo do YouTube, publica e matricula o aluno; o aluno conclui a aula, a barra de progresso vai de 0% a 100% e o professor vê o progresso no painel |
+| Arquivo               | Fluxo                                                                                                                                                                                                                    |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `e2e/login.spec.ts`   | o aluno convidado entra pelo link mágico; a tela de login oferece o e-mail e o Google                                                                                                                                    |
+| `e2e/pedidos.spec.ts` | o pedido pelo e-mail só aparece para o professor depois do clique, pedir de novo não gera outro aviso, e o professor libera; o recusado não consegue pedir de novo até o professor permitir (só no perfil de computador) |
+| `e2e/curso.spec.ts`   | o professor cria curso, módulo e aula com texto e vídeo do YouTube, publica e matricula o aluno; o aluno conclui a aula, a barra de progresso vai de 0% a 100% e o professor vê o progresso no painel                    |
+
+O captcha da tela de login usa a chave de teste da Cloudflare, que aprova sozinha; o teste espera o token antes de clicar. Se o site já estiver rodando, o `.env.local` precisa ter `NEXT_PUBLIC_TURNSTILE_SITE_KEY` e, para o aviso ao professor, as variáveis `SMTP_*` e `EMAIL_PROFESSOR` do Mailpit (o Playwright só passa essas variáveis quando ele mesmo sobe o site).
 
 O login lê o e-mail na caixa de teste do Supabase local (http://localhost:54324) pela API dela e abre o link. O endereço pode ser trocado pela variável `MAILPIT_URL`.
 

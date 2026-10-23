@@ -127,7 +127,7 @@ async function FichaDoAluno({ params }: { params: Promise<{ id: string }> }) {
         {status === "convidado" && <BotaoReenviar alunoId={aluno.id} />}
         {status === "pendente" && (
           <p className="text-sm">
-            Pediu acesso pelo Google.{" "}
+            Pediu acesso pelo login.{" "}
             <Link href="/professor" className="underline">
               Libere ou recuse no painel
             </Link>

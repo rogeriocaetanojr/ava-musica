@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   confirmaExclusao,
+  normalizarEmail,
   statusDoAluno,
   validarAluno,
   validarLiberacao,
@@ -267,5 +268,20 @@ describe("validarLiberacao", () => {
       );
       expect(resultado.ok).toBe(false);
     }
+  });
+});
+
+describe("normalizarEmail", () => {
+  it("tira os espaços das pontas e passa para minúsculas", () => {
+    expect(normalizarEmail("  Ana.Silva@Gmail.COM ")).toBe(
+      "ana.silva@gmail.com",
+    );
+  });
+
+  it("recusa o que não é e-mail", () => {
+    expect(normalizarEmail("ana")).toBeNull();
+    expect(normalizarEmail("ana @gmail.com")).toBeNull();
+    expect(normalizarEmail(null)).toBeNull();
+    expect(normalizarEmail(`${"a".repeat(250)}@g.com`)).toBeNull();
   });
 });

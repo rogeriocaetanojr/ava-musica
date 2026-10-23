@@ -35,7 +35,7 @@ async function garantirUsuario(
     email_confirm: true,
     user_metadata: metadados,
     // Como no cadastro feito pelo professor: o gatilho já cria o perfil liberado.
-    // Sem a marca, o usuário fica pendente, como quem entra pelo Google.
+    // Sem a marca, o usuário fica pendente, como quem pede acesso pelo login.
     app_metadata: doProfessor ? { origem: "professor" } : {},
   });
   if (error) throw error;
@@ -59,23 +59,24 @@ async function main() {
     menor_de_12: false,
   });
 
-  // Pedidos pendentes, um para cada perfil dos testes de ponta a ponta.
-  for (const perfil of ["computador", "celular"])
-    await garantirUsuario(
-      `pendente-${perfil}@teste.local`,
-      { full_name: `Pendente ${perfil}` },
-      false,
-    );
-  // Pedidos para conferir a seção "Pedidos de acesso" à mão, sem o Google.
-  for (const numero of [1, 2])
-    await garantirUsuario(
+  // Pedidos já confirmados, para conferir a seção "Pedidos de acesso" à mão
+  // sem precisar entrar com cada um.
+  for (const numero of [1, 2]) {
+    const id = await garantirUsuario(
       `pedido${numero}@teste.local`,
       { full_name: `Pedido ${numero}` },
       false,
     );
+    const { error } = await supabase
+      .from("perfis")
+      .update({ pedido_em: new Date().toISOString() })
+      .eq("id", id)
+      .is("pedido_em", null);
+    if (error) throw error;
+  }
 
   console.log(
-    "Pronto: professor@teste.local (professor), aluno@teste.local (aluno, 15 anos), pendente-computador@ / pendente-celular@teste.local (pedidos dos testes e2e) e pedido1@ / pedido2@teste.local (pedidos para testar à mão).",
+    "Pronto: professor@teste.local (professor), aluno@teste.local (aluno, 15 anos) e pedido1@ / pedido2@teste.local (pedidos para testar à mão).",
   );
 }
 

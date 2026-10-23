@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { ehBloqueado, ehLimiteDeTentativas } from "./mensagens";
+import {
+  ehBloqueado,
+  ehFalhaDoCaptcha,
+  ehLimiteDeTentativas,
+  ehPedidoBarrado,
+} from "./mensagens";
 
 describe("ehLimiteDeTentativas", () => {
   it("reconhece o status 429 e os códigos de limite do Supabase", () => {
@@ -29,5 +34,31 @@ describe("ehBloqueado", () => {
     expect(ehBloqueado(null)).toBe(false);
     expect(ehBloqueado({ code: "otp_expired" })).toBe(false);
     expect(ehBloqueado({ code: "over_request_rate_limit" })).toBe(false);
+  });
+});
+
+describe("ehPedidoBarrado", () => {
+  it("reconhece a recusa do hook no link mágico e na volta do Google", () => {
+    expect(
+      ehPedidoBarrado({ message: "Não foi possível pedir acesso agora." }),
+    ).toBe(true);
+    expect(
+      ehPedidoBarrado({
+        message: "Error running hook URI: Não foi possível pedir acesso agora.",
+      }),
+    ).toBe(true);
+  });
+
+  it("não confunde outros erros com a recusa", () => {
+    expect(ehPedidoBarrado(null)).toBe(false);
+    expect(ehPedidoBarrado({ message: "Forbidden" })).toBe(false);
+  });
+});
+
+describe("ehFalhaDoCaptcha", () => {
+  it("reconhece a falha do captcha", () => {
+    expect(ehFalhaDoCaptcha({ code: "captcha_failed" })).toBe(true);
+    expect(ehFalhaDoCaptcha({ code: "otp_expired" })).toBe(false);
+    expect(ehFalhaDoCaptcha(null)).toBe(false);
   });
 });

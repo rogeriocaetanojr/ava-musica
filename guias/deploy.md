@@ -35,10 +35,22 @@ Observações:
 
 Nos dois projetos do Supabase (homologação e produção):
 
-1. **Cadastro aberto:** em **Authentication → Sign In / Providers**, deixe **Allow new users to sign up** ligado. É o que permite o pedido pelo Google; quem garante que o pendente não vê nada é a regra de acesso do banco (migração `20261022030000_pedidos_de_acesso.sql`), não o painel.
+1. **Cadastro aberto:** em **Authentication → Sign In / Providers**, deixe **Allow new users to sign up** ligado. É o que permite o pedido pelo Google e pelo e-mail; quem garante que o pendente não vê nada é a regra de acesso do banco (migração `20261022030000_pedidos_de_acesso.sql`), não o painel.
 2. **Google obrigatório:** ative o provedor Google com o cliente OAuth do ambiente (passo a passo em `guias/login-google.md`). Sem ele, ninguém consegue pedir acesso, só os cadastrados pelo professor entram.
-3. **Link mágico só para cadastrados:** não muda nada no painel; o site pede o link com `shouldCreateUser: false`.
-4. **Login por senha:** o Supabase não tem botão para desligar só a senha com o e-mail ligado. Alguém que crie conta por senha direto na API também vira pedido pendente e pode ser recusado.
+3. **Pedido pelo e-mail:** não muda nada no painel; o site pede o link com `shouldCreateUser: true`. Em **Authentication → Emails → Templates**, cole em **Confirm signup** o conteúdo de `supabase/templates/confirmacao.html` (e, em **Magic Link** e **Invite user**, os outros modelos da pasta, se ainda não estiverem lá), com o assunto "Seu link para entrar no AVA de Música".
+4. **Login por senha:** o Supabase não tem botão para desligar só a senha com o e-mail ligado. Alguém que crie conta por senha direto na API também vira pedido pendente e pode ser recusado. Com o captcha ligado (abaixo), esse cadastro também passa pelo captcha.
+5. **Hook dos recusados:** em **Authentication → Hooks**, adicione o hook **Before User Created** do tipo **Postgres**, com o schema `public` e a função `antes_de_criar_usuario`. Ele barra por 7 dias o cadastro de quem foi recusado. A função vem da migração `20261023000000_pedido_por_email_e_recusas.sql`; o painel não liga o hook sozinho.
+
+## Captcha do login (Cloudflare Turnstile)
+
+O pedido do link mágico passa por um captcha, para ninguém disparar links em massa nem criar contas com e-mails de terceiros. No computador e nos testes são usadas as chaves de teste da Cloudflare, que aprovam sozinhas (a secreta está no `supabase/config.toml` e a do site vai no `.env.local`).
+
+1. Na Cloudflare (conta gratuita), abra **Turnstile → Add widget**. Um widget por ambiente, com o domínio do site (homologação ou produção), no modo **Managed**.
+2. Copie a **chave do site** para a Netlify, na variável `NEXT_PUBLIC_TURNSTILE_SITE_KEY` do ambiente. Ela vai para o navegador, então não é secreta. Depois de mudar, publique de novo (a variável entra no build).
+3. Copie a **chave secreta** para o Supabase, em **Authentication → Attack Protection → Enable Captcha protection**, com o provedor **Turnstile**. Ela fica só no painel, nunca no repositório nem na Netlify.
+4. Ligue as duas coisas juntas: com o captcha ligado no Supabase e sem a chave do site na Netlify, ninguém consegue pedir o link (a tela avisa que não foi possível confirmar que não é um robô).
+5. O captcha não vale para o Google, que tem a própria proteção, nem para os envios do servidor com a chave de serviço (convites, reenvios e o link depois do aceite).
+6. Quando a política de segurança do navegador (CSP) for criada, ela precisa liberar `https://challenges.cloudflare.com` em `script-src` e `frame-src`.
 
 ## E-mail de aviso ao professor (Resend)
 
@@ -63,5 +75,5 @@ O site manda um e-mail ao professor a cada pedido novo, pelo SMTP do Resend.
 **Cota do Resend:** o plano gratuito permite 100 e-mails por dia e 3.000 por mês, **somando** os do site e os do Supabase (convites, links de acesso e avisos de pedido). Com 20 a 30 alunos isso sobra, mas:
 
 - o limite de 30 e-mails por hora do Supabase continua valendo para os e-mails dele, e os avisos de pedido saem pelo site, fora desse limite;
-- com o cadastro aberto, alguém pode criar muitas contas pelo Google para gastar a cota com avisos. Cada conta gera só um aviso, e o limite do Supabase de 15 cadastros a cada 5 minutos por IP segura o ritmo. Se isso acontecer, recuse os pedidos e considere desligar o cadastro por um tempo;
+- com o cadastro aberto, alguém pode criar muitas contas pelo Google ou pelo e-mail para gastar a cota com avisos. Cada conta gera só um aviso, e só depois do clique no link; o captcha, o limite de 30 e-mails por hora (que agora conta também os pedidos pelo e-mail) e o limite do Supabase de 15 cadastros a cada 5 minutos por IP seguram o ritmo. Se isso acontecer, recuse os pedidos e considere desligar o cadastro por um tempo;
 - acompanhe o uso no painel do Resend. Se passar de 100 por dia, os e-mails do dia param, inclusive os links de acesso dos alunos.

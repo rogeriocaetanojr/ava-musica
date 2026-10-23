@@ -39,8 +39,8 @@ export function configuracaoSmtp(
   };
 }
 
-// Aviso ao professor de que alguém entrou pelo Google e espera liberação.
-// Leva só nome e e-mail, os dados que o próprio Google informou.
+// Aviso ao professor de que alguém pediu acesso (pelo Google ou pelo e-mail)
+// e espera liberação. Leva só nome e e-mail.
 export function mensagemDePedidoNovo(
   aluno: { nome: string; email: string },
   linkDoPainel: string,
@@ -52,7 +52,7 @@ export function mensagemDePedidoNovo(
       "",
       `Para liberar ou recusar, abra o painel: ${linkDoPainel}`,
       "",
-      "Se você não conhece essa pessoa, recuse o pedido: a conta é apagada.",
+      "Se você não conhece essa pessoa, recuse o pedido: a conta é apagada e o e-mail não consegue pedir de novo por 7 dias.",
     ].join("\n"),
   };
 }

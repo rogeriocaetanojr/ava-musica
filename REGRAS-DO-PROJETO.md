@@ -11,7 +11,7 @@ Ambiente virtual de aprendizagem (AVA) de um professor de música. O professor o
 ## 2. Stack
 
 - **Next.js** com App Router, TypeScript em modo `strict` e Tailwind 4
-- **Supabase**: Postgres, Auth (Google e link mágico) e Row Level Security (RLS). O link mágico é só para quem o professor cadastrou; quem entra pelo Google sem cadastro vira um pedido pendente, sem acesso até o professor liberar
+- **Supabase**: Postgres, Auth (Google e link mágico) e Row Level Security (RLS). Quem entra pelo Google ou pelo link mágico sem cadastro vira um pedido pendente, que só conta depois de confirmado (clique no link ou volta do Google) e fica sem acesso até o professor liberar. O pedido do link mágico passa pelo captcha (Cloudflare Turnstile), e o hook "Before User Created" barra por 7 dias quem foi recusado
 - **Resend** (SMTP): aviso ao professor quando chega um pedido de acesso
 - **Netlify**: hospedagem, com homologação e produção separadas
 - **GitHub Actions**: integração contínua, migrações e rotinas automáticas
@@ -49,7 +49,7 @@ Com o Supabase local rodando: Studio em http://localhost:54323 e caixa de e-mail
 4. **O papel nunca vem dos metadados do usuário.** O gatilho que cria o perfil sempre cria `aluno`.
 5. **O banco só muda por migração em `supabase/migrations`.** Uma migração já aplicada nunca é editada: cria-se outra.
 6. **Menor de 12 anos só acessa depois do aceite do responsável**, mesmo depois de liberado pelo professor.
-7. **Nenhum aluno acessa sem ter sido cadastrado ou liberado pelo professor.** A liberação, a recusa e o bloqueio só mudam pelas funções do banco que gravam a auditoria.
+7. **Nenhum aluno acessa sem ter sido cadastrado ou liberado pelo professor.** A liberação, a recusa, a permissão de novo pedido e o bloqueio só mudam pelas funções do banco que gravam a auditoria. A recusa guarda só o hash do e-mail (HMAC com chave secreta) e uma dica mascarada, por 7 dias, no schema `privado`, que ninguém lê direto.
 8. **Nenhum segredo no Git.** Chaves ficam em `.env.local`, que é ignorado; o `.env.example` traz só os nomes das variáveis.
 9. **Commits e pushes são feitos manualmente pelo responsável do projeto.**
 10. **Material de planejamento interno não entra no repositório.** Documentação versionada fica em `guias/`.
@@ -60,7 +60,7 @@ Com o Supabase local rodando: Studio em http://localhost:54323 e caixa de e-mail
 - O lint roda com `eslint .`, **não** com `next lint`.
 - **Tailwind 4:** uma classe própria que usa `@apply` precisa ser declarada com `@utility`.
 - **Login Google para menores de 13 anos** depende do Family Link dos pais; para esses alunos, o caminho padrão é o link mágico por e-mail.
-- **O cadastro do Auth está aberto** (`enable_signup = true`) para o Google criar os pedidos. Quem protege é a RLS, pela coluna `liberado_em`; nunca confie nos metadados do usuário (`raw_user_meta_data`), que qualquer um pode enviar. A marca de cadastro feito pelo professor fica no `app_metadata`.
+- **O cadastro do Auth está aberto** (`enable_signup = true`) para o Google e o link mágico criarem os pedidos. Quem protege é a RLS, pela coluna `liberado_em`; nunca confie nos metadados do usuário (`raw_user_meta_data`), que qualquer um pode enviar. A marca de cadastro feito pelo professor fica no `app_metadata`.
 - **`npm install <pacote>` pode apagar o binário nativo do rolldown** (bug do npm com dependências opcionais), e o `npm test` passa a falhar com "Cannot find native binding". Para corrigir, apague `node_modules` e `package-lock.json` e rode `npm install`.
 
 ## 7. Jeito de trabalhar

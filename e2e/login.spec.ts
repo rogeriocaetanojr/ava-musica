@@ -10,17 +10,15 @@ test("aluno convidado entra pelo link mágico", async ({ page }) => {
   ).toBeVisible();
 });
 
-test("e-mail não convidado é recusado", async ({ page }) => {
+test("a tela de login oferece o e-mail e o Google", async ({ page }) => {
   await page.goto("/login");
-  await page.getByLabel("E-mail").fill("desconhecido@teste.local");
-  await page.getByRole("button", { name: "Enviar link de acesso" }).click();
 
-  // O Next.js tem outro role="alert", vazio, para anunciar a troca de página.
+  await expect(page.getByRole("heading", { name: "Entrar" })).toBeVisible();
+  await expect(page.getByLabel("E-mail")).toBeVisible();
   await expect(
-    page.getByRole("alert").filter({
-      hasText:
-        "Este e-mail ainda não foi convidado. Entre com o Google para pedir acesso ao professor.",
-    }),
+    page.getByRole("button", { name: "Entrar com e-mail" }),
   ).toBeVisible();
-  await expect(page).toHaveURL(/\/login$/);
+  await expect(
+    page.getByRole("button", { name: "Entrar com Google" }),
+  ).toBeVisible();
 });

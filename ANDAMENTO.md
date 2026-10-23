@@ -14,12 +14,16 @@
 - [ ] Site publicado na Netlify, com versão de teste e versão oficial
 - [ ] Login com Google e envio de e-mails funcionando de verdade
   - Inclui o cadastro aberto, o Google ligado e o SMTP do Resend para o aviso de pedido novo (veja `guias/deploy.md` e `guias/login-google.md`).
-  - A política de privacidade (versão 2-rascunho) cita o Supabase, o Google, o Resend e a Netlify e a transferência internacional; confirmar com cada serviço onde os dados ficam e se o contrato tem cláusulas de proteção de dados antes da revisão jurídica.
+  - Ligar na nuvem o captcha (Cloudflare Turnstile) e o hook que barra recusados por 7 dias, nos dois projetos (veja `guias/deploy.md`).
+  - A política de privacidade (versão 3-rascunho) cita o Supabase, o Google, a Cloudflare, o Resend e a Netlify e a transferência internacional; confirmar com cada serviço onde os dados ficam e se o contrato tem cláusulas de proteção de dados antes da revisão jurídica.
 - [ ] Verificações automáticas completas a cada mudança no código
 - [ ] Publicação automática da versão de teste e promoção para a oficial
 - [ ] Endereço próprio do site e proteções de segurança do navegador
+  - Na política de segurança do navegador (CSP), liberar o script e o quadro do captcha (`challenges.cloudflare.com`) na tela de login.
   - Na política de segurança do navegador (CSP), limitar de onde o bloco de áudio pode tocar: hoje ele aceita qualquer endereço https (`lerAudio` em `src/lib/embeds.ts`), e o navegador do aluno acessa servidores de terceiros.
 - [ ] Cópias de segurança do banco de dados
+- [ ] Rotinas automáticas do banco
+  - Apagar as contas criadas pelo link mágico e nunca confirmadas (ninguém clicou no link) depois de 48 horas. Hoje elas só ficam fora da lista do professor e dão lugar ao cadastro feito por ele.
 - [ ] Alertas quando o site cair ou apresentar erros
 - [ ] Cuidados com os dados pessoais no dia a dia, conforme a LGPD
 - [ ] Manual do professor e documentação do projeto
@@ -52,6 +56,7 @@
 - [x] Testes automáticos que usam o site como um aluno e um professor usariam, no computador e no celular
 - [x] Professor pode bloquear e desbloquear o acesso de um aluno, sem perder os dados nem o progresso
 - [x] Aluno sem convite pode pedir acesso entrando com o Google; o professor libera ou recusa no painel e recebe um e-mail a cada pedido novo
+- [x] Pedido de acesso também pelo e-mail, com captcha, e bloqueio de 7 dias para quem foi recusado, com a lista "Recusados recentemente" no painel
 
 ## Decisões
 
@@ -116,8 +121,16 @@
 - O cadastro feito pelo professor leva a marca `origem: professor` no `app_metadata`, que só a chave de serviço grava, e já nasce liberado. Por isso o convite agora cria a conta primeiro e envia o convite em seguida. Quem se cadastra sozinho nasce sem data de nascimento: os metadados enviados pelo próprio usuário são ignorados, porque com o cadastro aberto qualquer um poderia forjá-los.
 - O Google não informa a data de nascimento. Ao liberar, o professor informa a data, e o banco decide se o aluno tem menos de 12 anos; nesse caso o professor informa o responsável, vai para a ficha do aluno com o link de autorização, e o acesso só começa depois do aceite.
 - Liberar e recusar sempre ficam na auditoria, em qualquer idade, como o bloqueio. O banco só aceita mudar a liberação pelas funções que também gravam o registro.
-- Recusar apaga a conta, como a exclusão, e só fica o registro da auditoria com o id. A pessoa pode pedir de novo entrando com o Google.
+- Recusar apaga a conta, como a exclusão. Fica o registro da auditoria com o id e, por 7 dias, a recusa em `privado.recusas_recentes`: o hash do e-mail, uma dica mascarada (`a***@g***.com`) e o id. Nesse prazo, o hook "Before User Created" do Auth barra um novo cadastro desse e-mail, pelo link mágico ou pelo Google. Recusar de novo renova o prazo.
+- O hash do e-mail é um HMAC-SHA256 com uma chave gerada na migração, guardada no schema `privado`, que não é exposto pela API. Um SHA-256 simples se descobriria testando listas de e-mails conhecidos. O e-mail é normalizado antes (minúsculas, sem espaços nas pontas).
+- A dica mascarada mostra só a primeira letra do nome, a primeira letra do domínio e a última parte dele, para não revelar a instituição (`x***@e***.br` para `x@escola.sp.gov.br`). Ela é apagada junto com a recusa.
+- O professor permite um novo pedido pela lista "Recusados recentemente" ou digitando o e-mail completo (o banco confere o hash). As duas formas vão para a auditoria (`permitir_pedido`), com o id da conta recusada. O cadastro feito pelo professor sempre apaga a recusa daquele e-mail; o hook do Supabase não roda na criação de conta pelo admin, então o convite nunca é barrado.
+- O recusado que tenta de novo vê uma mensagem neutra ("Não foi possível pedir acesso agora. Fale com o professor."), para a tela não revelar a terceiros que aquele e-mail foi recusado.
 - Depois de liberado, a revogação é o bloqueio que já existia; bloquear não desfaz a liberação, então desbloquear devolve o acesso.
-- O link mágico continua só para quem foi cadastrado. Menores de 13 anos que não conseguem usar o Google (Family Link) continuam sendo cadastrados pelo professor.
+- Revisto: o link mágico agora também cria a conta (`shouldCreateUser: true`), e quem não tem cadastro pede acesso pelo e-mail. A tela mostra a mesma mensagem ("Enviamos um link…") para quem tem conta e para quem não tem, para não revelar quais e-mails estão cadastrados.
+- Digitar o e-mail cria a conta na hora, antes de qualquer clique. Por isso o pedido só conta depois que a pessoa clica no link ou volta do Google (`perfis.pedido_em`): sem a marca, a conta não aparece para o professor e não gera aviso. Assim ninguém enche a lista com e-mails de terceiros. A conta nunca confirmada dá lugar ao cadastro feito pelo professor.
+- O pedido do link mágico passa pelo captcha do Cloudflare Turnstile, ligado no Auth do Supabase. O widget é carregado direto do script da Cloudflare, sem pacote novo. No computador e nos testes, as chaves de teste da Cloudflare aprovam sozinhas. O captcha não vale para o Google (o próprio Google se protege) nem para os envios do servidor com a chave de serviço, como o reenvio de convite.
+- O primeiro link de quem ainda não tem conta usa o modelo de confirmação (`supabase/templates/confirmacao.html`), com o mesmo formato do link mágico.
 - O aviso ao professor sai uma vez por pedido, no primeiro login, por SMTP (Resend na nuvem, Mailpit no computador). Se o envio falhar, o login segue, o pedido aparece no painel e o aviso é tentado de novo no próximo login. Sem as variáveis de SMTP, o aviso simplesmente não sai.
-- Os testes de ponta a ponta simulam o pedido do Google com contas criadas pelo seed sem a marca do professor, porque o login do Google não dá para automatizar.
+- Os testes de ponta a ponta fazem o pedido de verdade pelo e-mail, com um endereço novo a cada execução. O login do Google não dá para automatizar.
+- O teste da recusa roda só no perfil de computador, para a execução não passar do limite de 15 logins a cada 5 minutos por endereço.

@@ -31,9 +31,21 @@ export default function Privacidade() {
           informa é o professor, ao liberar o acesso.
         </li>
         <li>
+          <strong>De quem pede acesso pelo e-mail:</strong> só o e-mail
+          digitado. O nome que aparece para o professor é o próprio e-mail, até
+          ele liberar o acesso.
+        </li>
+        <li>
+          <strong>De quem teve o pedido recusado:</strong> por 7 dias, um código
+          calculado a partir do e-mail, do qual não dá para recuperar o e-mail,
+          e uma dica parcial dele (como a***@g***.com), para o professor
+          reconhecer a recusa. Depois de 7 dias, os dois são apagados.
+        </li>
+        <li>
           <strong>Do registro de ações do professor:</strong> quando o professor
-          libera, recusa, bloqueia ou desbloqueia um acesso, guardamos qual foi
-          a ação e quando, ligada só a um código do aluno, sem nome nem e-mail.
+          libera, recusa, bloqueia ou desbloqueia um acesso, ou permite um novo
+          pedido de quem foi recusado, guardamos qual foi a ação e quando,
+          ligada só a um código do aluno, sem nome nem e-mail.
         </li>
         <li>
           <strong>Do estudo:</strong> as aulas concluídas e as provas marcadas
@@ -72,14 +84,26 @@ export default function Privacidade() {
         endereço sem cookies de propaganda.
       </p>
 
-      <h2>Pedido de acesso pelo Google</h2>
+      <h2>Pedido de acesso</h2>
       <p>
-        Quem entra com o Google sem ter sido cadastrado pelo professor fica com
-        um pedido de acesso guardado até o professor decidir. Enquanto isso, a
-        pessoa não vê nenhum curso, aula ou aviso. Se o professor recusar, a
-        conta e os dados dela são apagados, e fica só o registro de que houve
-        uma recusa, sem nome nem e-mail. Depois de liberado, o professor pode
-        bloquear o acesso a qualquer momento, sem apagar o progresso.
+        Quem entra com o Google ou pelo link enviado por e-mail sem ter sido
+        cadastrado pelo professor fica com um pedido de acesso guardado até o
+        professor decidir. O pedido só chega ao professor depois que a pessoa
+        clica no link ou volta do Google, para ninguém pedir acesso com o e-mail
+        de outra pessoa. Enquanto espera, a pessoa não vê nenhum curso, aula ou
+        aviso.
+      </p>
+      <p>
+        Se o professor recusar, a conta e os dados dela são apagados. Fica o
+        registro de que houve uma recusa, sem nome nem e-mail, e, por 7 dias, o
+        código e a dica do e-mail descritos acima, que impedem um novo pedido
+        nesse prazo. O professor pode permitir um novo pedido antes disso.
+        Depois de liberado, o professor pode bloquear o acesso a qualquer
+        momento, sem apagar o progresso.
+      </p>
+      <p>
+        Uma conta criada pelo link mas nunca confirmada (ninguém clicou no link)
+        guarda só o e-mail e não aparece para o professor.
       </p>
 
       <h2>Quem tem acesso</h2>
@@ -99,6 +123,11 @@ export default function Privacidade() {
           entrar assim.
         </li>
         <li>
+          <strong>Cloudflare (Turnstile):</strong> a verificação que impede
+          robôs de pedir links de acesso em massa. Ela analisa sinais do
+          navegador, como o endereço IP, sem cookies de propaganda.
+        </li>
+        <li>
           <strong>Resend:</strong> envio dos e-mails do site, como os links de
           acesso e o aviso de pedido novo ao professor.
         </li>
@@ -111,20 +140,21 @@ export default function Privacidade() {
       <p>
         Alguns desses serviços guardam ou processam dados em servidores fora do
         Brasil, principalmente nos Estados Unidos. É o caso do envio de e-mails,
-        que passa pelo nome e pelo e-mail do destinatário, e do login com o
-        Google. Essas transferências são feitas só para prestar o serviço do
-        site e com as garantias exigidas pela Lei Geral de Proteção de Dados
-        (LGPD), como cláusulas contratuais de proteção de dados com cada
-        empresa. Você pode pedir ao professor mais informações sobre onde cada
-        serviço guarda os dados.
+        que passa pelo nome e pelo e-mail do destinatário, do login com o Google
+        e da verificação contra robôs da Cloudflare. Essas transferências são
+        feitas só para prestar o serviço do site e com as garantias exigidas
+        pela Lei Geral de Proteção de Dados (LGPD), como cláusulas contratuais
+        de proteção de dados com cada empresa. Você pode pedir ao professor mais
+        informações sobre onde cada serviço guarda os dados.
       </p>
 
       <h2>Menores de idade</h2>
       <p>
         Alunos com menos de 12 anos só acessam o site depois que um dos pais ou
         responsável autoriza, por um link enviado pelo professor. Isso vale
-        também para quem pediu acesso pelo Google: o professor só libera depois
-        de informar a data de nascimento e, se for o caso, o responsável.
+        também para quem pediu acesso pelo Google ou pelo e-mail: o professor só
+        libera depois de informar a data de nascimento e, se for o caso, o
+        responsável.
       </p>
       <p>
         O Google só permite que crianças com menos de 13 anos usem uma conta

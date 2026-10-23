@@ -7,6 +7,7 @@ import { formatarDataHora } from "@/lib/datas";
 import { resumoParaProfessor, ultimaAtividade } from "@/lib/painel";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 import { PedidosDeAcesso } from "./pedidos-de-acesso";
+import { RecusadosRecentes } from "./recusados-recentes";
 import { dadosDoPainel } from "./progresso/dados";
 
 async function ProgressoDaTurma() {
@@ -84,17 +85,19 @@ async function ProgressoDaTurma() {
   );
 }
 
-// Quem entrou pelo Google e ainda espera liberação, do mais antigo ao mais novo.
+// Quem pediu acesso (pelo Google ou pelo e-mail) e ainda espera liberação, do
+// mais antigo ao mais novo. A conta criada e nunca confirmada fica de fora.
 async function Pedidos() {
   await exigirProfessor();
 
   const supabase = await criarClienteServidor();
   const { data: pedidos, error } = await supabase
     .from("perfis")
-    .select("id, nome, email, criado_em")
+    .select("id, nome, email, pedido_em")
     .eq("papel", "aluno")
     .is("liberado_em", null)
-    .order("criado_em");
+    .not("pedido_em", "is", null)
+    .order("pedido_em");
   if (error || !pedidos)
     return (
       <p role="alert" className="rounded-md bg-red-100 p-3 text-red-800">
@@ -102,6 +105,22 @@ async function Pedidos() {
       </p>
     );
   return <PedidosDeAcesso pedidos={pedidos} />;
+}
+
+async function Recusados() {
+  await exigirProfessor();
+
+  const supabase = await criarClienteServidor();
+  const { data: recusas, error } = await supabase.rpc(
+    "listar_recusas_recentes",
+  );
+  if (error || !recusas)
+    return (
+      <p role="alert" className="rounded-md bg-red-100 p-3 text-red-800">
+        Não foi possível carregar as recusas recentes.
+      </p>
+    );
+  return <RecusadosRecentes recusas={recusas} />;
 }
 
 async function Painel() {
@@ -129,6 +148,13 @@ async function Painel() {
         <h2 className="text-xl font-semibold">Pedidos de acesso</h2>
         <Suspense fallback={<p>Carregando…</p>}>
           <Pedidos />
+        </Suspense>
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="text-xl font-semibold">Recusados recentemente</h2>
+        <Suspense fallback={<p>Carregando…</p>}>
+          <Recusados />
         </Suspense>
       </section>
 
