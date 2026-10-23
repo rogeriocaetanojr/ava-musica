@@ -1,9 +1,12 @@
 import Link from "next/link";
 import { Suspense } from "react";
+import { Aviso } from "@/components/aviso";
 import { exigirProfessor } from "@/lib/auth";
 import { criarClienteAdmin } from "@/lib/supabase/admin";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 import { FormularioAluno } from "./formulario-aluno";
+import { PedidosDeAcesso } from "./pedidos-de-acesso";
+import { RecusadosRecentes } from "./recusados-recentes";
 import { CORES_DOS_STATUS, NOMES_DOS_STATUS, statusDoAluno } from "./validacao";
 
 type Aluno = {
@@ -50,8 +53,6 @@ async function ListaDeAlunos() {
 
   return (
     <>
-      <h1 className="text-2xl font-bold">Alunos</h1>
-
       <section className="space-y-4">
         <h2 className="text-xl font-semibold">Turma</h2>
         {lista.length === 0 ? (
@@ -103,12 +104,63 @@ async function ListaDeAlunos() {
   );
 }
 
+// Quem pediu acesso (pelo Google ou pelo e-mail) e ainda espera liberação, do
+// mais antigo ao mais novo. A conta criada e nunca confirmada fica de fora.
+async function Pedidos() {
+  await exigirProfessor();
+
+  const supabase = await criarClienteServidor();
+  const { data: pedidos, error } = await supabase
+    .from("perfis")
+    .select("id, nome, email, pedido_em")
+    .eq("papel", "aluno")
+    .is("liberado_em", null)
+    .not("pedido_em", "is", null)
+    .order("pedido_em");
+  if (error || !pedidos)
+    return (
+      <Aviso role="alert">
+        Não foi possível carregar os pedidos de acesso.
+      </Aviso>
+    );
+  return <PedidosDeAcesso pedidos={pedidos} />;
+}
+
+async function Recusados() {
+  await exigirProfessor();
+
+  const supabase = await criarClienteServidor();
+  const { data: recusas, error } = await supabase.rpc(
+    "listar_recusas_recentes",
+  );
+  if (error || !recusas)
+    return (
+      <Aviso role="alert">Não foi possível carregar as recusas recentes.</Aviso>
+    );
+  return <RecusadosRecentes recusas={recusas} />;
+}
+
 export default function Alunos() {
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-8 px-4 py-8">
       <Link href="/professor" className="text-sm underline">
         ← Painel
       </Link>
+      <h1 className="text-2xl font-bold">Alunos</h1>
+      <Suspense>
+        <Pedidos />
+      </Suspense>
+      <section
+        aria-labelledby="recusados-recentes"
+        className="space-y-4 rounded-3xl border border-linha bg-superficie p-6"
+      >
+        <h2 id="recusados-recentes" className="font-titulo text-2xl text-texto">
+          Recusados recentemente
+        </h2>
+        <Suspense fallback={<p>Carregando…</p>}>
+          <Recusados />
+        </Suspense>
+      </section>
       <Suspense fallback={<p>Carregando…</p>}>
         <ListaDeAlunos />
       </Suspense>

@@ -431,8 +431,8 @@ export async function recusarPedido(
   return { sucesso: "Pedido recusado." };
 }
 
-function atualizarPainel() {
-  revalidatePath("/professor");
+function atualizarAlunos() {
+  revalidatePath("/professor/alunos");
 }
 
 // Apaga a recusa escolhida em "Recusados recentemente": a pessoa pode pedir
@@ -455,7 +455,7 @@ export async function permitirNovoPedido(
           : "Não foi possível permitir. Tente de novo.",
     };
 
-  atualizarPainel();
+  atualizarAlunos();
   return { sucesso: "Pronto: a pessoa já pode pedir acesso de novo." };
 }
 
@@ -482,6 +482,6 @@ export async function permitirNovoPedidoPorEmail(
       valores,
     };
 
-  atualizarPainel();
+  atualizarAlunos();
   return { sucesso: `Pronto: ${email} já pode pedir acesso de novo.` };
 }

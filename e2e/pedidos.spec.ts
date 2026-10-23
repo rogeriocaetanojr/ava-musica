@@ -38,6 +38,7 @@ test("pedido pelo e-mail só conta depois do código, avisa uma vez e é liberad
   const professor = await browser.newPage();
   await entrar(professor, PROFESSOR);
   await expect(professor).toHaveURL(/\/professor$/);
+  await professor.goto("/professor/alunos");
   const pedidos = secao(professor, "Pedidos de acesso");
   await expect(pedidos.getByText(email)).toHaveCount(0);
 
@@ -64,7 +65,10 @@ test("pedido pelo e-mail só conta depois do código, avisa uma vez e é liberad
   await expect(aluno).toHaveURL(/\/aguardando$/);
   expect(await contarEmails(PROFESSOR, "Novo pedido de acesso", email)).toBe(1);
 
-  await professor.reload();
+  // O painel só mostra a faixa com a contagem, que leva à página Alunos.
+  await professor.goto("/professor");
+  await professor.getByRole("link", { name: /pedidos? de acesso/ }).click();
+  await expect(professor).toHaveURL(/\/professor\/alunos$/);
   const pedido = pedidos.getByRole("listitem").filter({ hasText: email });
   await expect(pedido).toHaveCount(1);
   await pedido.getByRole("button", { name: "Liberar" }).click();
@@ -98,6 +102,8 @@ test("recusado não pede de novo até o professor permitir", async ({
 
   const professor = await browser.newPage();
   await entrar(professor, PROFESSOR);
+  await expect(professor).toHaveURL(/\/professor$/);
+  await professor.goto("/professor/alunos");
   const pedido = secao(professor, "Pedidos de acesso")
     .getByRole("listitem")
     .filter({ hasText: email });

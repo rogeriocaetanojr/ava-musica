@@ -8,7 +8,7 @@ import { CabecalhoDoProfessor } from "@/components/cabecalho-do-professor";
 import { Cordas } from "@/components/cordas";
 import { exigirProfessor } from "@/lib/auth";
 import { dataPorExtenso, quandoFoi } from "@/lib/datas";
-import { iniciais } from "@/lib/nomes";
+import { iniciais, primeiroNome } from "@/lib/nomes";
 import {
   type SituacaoDoAluno,
   aulasConcluidasNaSemana,
@@ -17,14 +17,11 @@ import {
 } from "@/lib/painel";
 import { aulasEmOrdem } from "@/lib/progresso";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
-import { PedidosDeAcesso } from "./pedidos-de-acesso";
-import { RecusadosRecentes } from "./recusados-recentes";
 import {
   type CursoDoPainel,
   type ProgressoDoPainel,
   dadosDoPainel,
   situacaoDosAlunos,
-  ultimoRecado,
 } from "./progresso/dados";
 
 const cartao = "rounded-3xl border border-linha bg-superficie";
@@ -32,10 +29,10 @@ const tituloDeCartao = "font-titulo text-2xl text-texto";
 
 // Cores dos avatares, alternadas pela ordem da lista.
 const AVATARES = [
-  "bg-bordo text-superficie",
+  "bg-bordo text-amarelo",
   "bg-amarelo text-texto-sobre-amarelo",
   "bg-amarelo-claro text-texto-sobre-amarelo",
-  "bg-vinho text-superficie",
+  "bg-vinho text-amarelo-claro",
 ];
 
 const ETIQUETAS: Record<SituacaoDoAluno, { texto: string; classe: string }> = {
@@ -46,6 +43,9 @@ const ETIQUETAS: Record<SituacaoDoAluno, { texto: string; classe: string }> = {
   },
   bloqueado: { texto: "Bloqueado", classe: "bg-vinho text-superficie" },
 };
+
+const faixa =
+  "flex min-h-12 items-center justify-between gap-3 rounded-2xl bg-amarelo-claro px-5 py-3 text-sm font-bold text-texto-sobre-amarelo";
 
 function ErroAoCarregar({ children }: { children: React.ReactNode }) {
   return <Aviso role="alert">{children}</Aviso>;
@@ -195,6 +195,7 @@ async function Resumo() {
       avatar: AVATARES[indice % AVATARES.length],
       situacao: situacaoDe(aluno.id),
       registros,
+      variosCursos: cursos.length > 1,
     };
     const comCurso: (typeof base & { curso: CursoDoPainel | null })[] =
       cursos.length === 0
@@ -220,16 +221,17 @@ async function Resumo() {
       </ul>
 
       {aceitesPendentes > 0 && (
-        <Link
-          href="/professor/alunos"
-          className="flex min-h-12 items-center justify-between gap-3 rounded-2xl bg-amarelo-claro px-5 py-3 text-sm font-bold text-texto-sobre-amarelo md:hidden"
-        >
+        <Link href="/professor/alunos" className={`${faixa} md:hidden`}>
           {aceitesPendentes === 1
             ? "1 aceite de responsável pendente"
             : `${aceitesPendentes} aceites de responsável pendentes`}
           <span aria-hidden="true">›</span>
         </Link>
       )}
+
+      <Suspense>
+        <FaixaDePedidos />
+      </Suspense>
 
       <AcoesDoCelular />
 
@@ -265,29 +267,32 @@ async function Resumo() {
         />
       </ul>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_16rem]">
-        <div className="flex min-w-0 flex-col gap-6">
-          <Suspense>
-            <Pedidos />
-          </Suspense>
-
-          <section
-            aria-labelledby="progresso-dos-alunos-celular"
-            className="md:hidden"
+      <div className="flex min-w-0 flex-col gap-6">
+        <section
+          aria-labelledby="progresso-dos-alunos-celular"
+          className="md:hidden"
+        >
+          <h2
+            id="progresso-dos-alunos-celular"
+            className="pb-3 text-base font-bold text-bordo"
           >
-            <h2
-              id="progresso-dos-alunos-celular"
-              className="pb-3 text-base font-bold text-bordo"
-            >
-              Progresso dos alunos
-            </h2>
-            {linhas.length === 0 ? (
-              <p className="border-t border-linha pt-3 text-texto-secundario">
-                Nenhum aluno cadastrado ainda.
-              </p>
-            ) : (
-              <ul className="divide-y divide-linha border-t border-linha">
-                {linhas.map(({ aluno, avatar, situacao, registros, curso }) => {
+            Progresso dos alunos
+          </h2>
+          {linhas.length === 0 ? (
+            <p className="border-t border-linha pt-3 text-texto-secundario">
+              Nenhum aluno cadastrado ainda.
+            </p>
+          ) : (
+            <ul className="divide-y divide-linha border-t border-linha">
+              {linhas.map(
+                ({
+                  aluno,
+                  avatar,
+                  situacao,
+                  registros,
+                  curso,
+                  variosCursos,
+                }) => {
                   const resumo = curso
                     ? resumoParaProfessor(curso.modulos, registros)
                     : null;
@@ -307,16 +312,21 @@ async function Resumo() {
                           <span className="font-bold break-words text-texto">
                             {aluno.nome}
                           </span>
-                          <span className="text-sm break-words text-texto-secundario">
-                            {curso ? (
-                              <>
-                                {curso.titulo}
-                                {!curso.publicado && " (rascunho)"}
-                              </>
-                            ) : (
-                              "Sem matrículas"
-                            )}
-                          </span>
+                          {/* Com um curso só, a linha fica como no
+                              protótipo; o curso aparece para diferenciar as
+                              linhas de quem tem vários, e sem matrícula. */}
+                          {(variosCursos || !curso) && (
+                            <span className="text-sm break-words text-texto-secundario">
+                              {curso ? (
+                                <>
+                                  {curso.titulo}
+                                  {!curso.publicado && " (rascunho)"}
+                                </>
+                              ) : (
+                                "Sem matrículas"
+                              )}
+                            </span>
+                          )}
                           {situacao !== "ativo" ? (
                             <span
                               className={`self-start rounded-full px-3 py-1 text-xs font-bold ${ETIQUETAS[situacao].classe}`}
@@ -326,251 +336,176 @@ async function Resumo() {
                           ) : (
                             curso &&
                             resumo && (
-                              <span className="flex items-center gap-3">
-                                <span className="flex-1">
+                              <BarraProgresso
+                                percentual={resumo.percentual}
+                                rotulo={`Progresso de ${aluno.nome} em ${curso.titulo}`}
+                                cor="bordo"
+                                comTexto={false}
+                              />
+                            )
+                          )}
+                        </span>
+                        {situacao === "ativo" && resumo && (
+                          <span className="shrink-0 font-titulo text-xl text-texto">
+                            {resumo.percentual}%
+                          </span>
+                        )}
+                      </Link>
+                    </li>
+                  );
+                },
+              )}
+            </ul>
+          )}
+        </section>
+
+        <section
+          aria-labelledby="progresso-dos-alunos"
+          className={`${cartao} hidden min-w-0 overflow-hidden md:block`}
+        >
+          <div className="flex flex-wrap items-center justify-between gap-2 px-6 pt-5 pb-2">
+            <h2 id="progresso-dos-alunos" className={tituloDeCartao}>
+              Progresso dos alunos
+            </h2>
+            <Link
+              href="/professor/alunos"
+              className="inline-flex min-h-12 items-center text-sm font-bold text-bordo underline"
+            >
+              Ver todos
+            </Link>
+          </div>
+          {linhas.length === 0 ? (
+            <p className="px-6 pb-6 text-texto-secundario">
+              Nenhum aluno cadastrado ainda.
+            </p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[46rem] text-left text-sm">
+                <thead className="border-b border-linha text-xs font-bold text-texto-secundario">
+                  <tr>
+                    <th scope="col" className="px-6 py-3">
+                      Aluno
+                    </th>
+                    <th scope="col" className="px-3 py-3">
+                      Curso
+                    </th>
+                    <th scope="col" className="px-3 py-3">
+                      Progresso
+                    </th>
+                    <th scope="col" className="px-3 py-3">
+                      Última aula
+                    </th>
+                    <th scope="col" className="px-6 py-3">
+                      Situação
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-linha">
+                  {linhas.map(
+                    ({ aluno, avatar, situacao, registros, curso }) => {
+                      const resumo = curso
+                        ? resumoParaProfessor(curso.modulos, registros)
+                        : null;
+                      const ultima = curso
+                        ? ultimaAulaNoCurso(curso, registros)
+                        : null;
+                      const etiqueta = ETIQUETAS[situacao];
+                      return (
+                        <tr key={`${aluno.id}-${curso?.id ?? "sem-curso"}`}>
+                          <td className="px-6 py-3">
+                            <Link
+                              href={`/professor/progresso/${aluno.id}`}
+                              className="flex min-h-12 items-center gap-3 font-bold text-texto hover:underline"
+                            >
+                              <span
+                                aria-hidden="true"
+                                className={`inline-flex size-10 shrink-0 items-center justify-center rounded-full text-xs font-bold ${avatar}`}
+                              >
+                                {iniciais(aluno.nome)}
+                              </span>
+                              <span className="break-words">{aluno.nome}</span>
+                            </Link>
+                          </td>
+                          <td className="px-3 py-3 break-words">
+                            {curso ? (
+                              <>
+                                {curso.titulo}
+                                {!curso.publicado && (
+                                  <span className="text-texto-secundario">
+                                    {" "}
+                                    (rascunho)
+                                  </span>
+                                )}
+                              </>
+                            ) : (
+                              <span className="text-texto-secundario">
+                                Sem matrículas
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-3 py-3">
+                            {curso && resumo ? (
+                              <div className="flex min-w-36 items-center gap-3">
+                                <div className="flex-1">
                                   <BarraProgresso
                                     percentual={resumo.percentual}
                                     rotulo={`Progresso de ${aluno.nome} em ${curso.titulo}`}
                                     cor="bordo"
                                     comTexto={false}
                                   />
-                                </span>
-                                <span className="font-titulo text-lg text-texto">
-                                  {resumo.percentual}%
-                                </span>
-                              </span>
-                            )
-                          )}
-                        </span>
-                      </Link>
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
-          </section>
-
-          <section
-            aria-labelledby="progresso-dos-alunos"
-            className={`${cartao} hidden min-w-0 overflow-hidden md:block`}
-          >
-            <div className="flex flex-wrap items-center justify-between gap-2 px-6 pt-5 pb-2">
-              <h2 id="progresso-dos-alunos" className={tituloDeCartao}>
-                Progresso dos alunos
-              </h2>
-              <Link
-                href="/professor/alunos"
-                className="inline-flex min-h-12 items-center text-sm font-bold text-bordo underline"
-              >
-                Ver todos
-              </Link>
-            </div>
-            {linhas.length === 0 ? (
-              <p className="px-6 pb-6 text-texto-secundario">
-                Nenhum aluno cadastrado ainda.
-              </p>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full min-w-[46rem] text-left text-sm">
-                  <thead className="border-b border-linha text-xs font-bold text-texto-secundario">
-                    <tr>
-                      <th scope="col" className="px-6 py-3">
-                        Aluno
-                      </th>
-                      <th scope="col" className="px-3 py-3">
-                        Curso
-                      </th>
-                      <th scope="col" className="px-3 py-3">
-                        Progresso
-                      </th>
-                      <th scope="col" className="px-3 py-3">
-                        Última aula
-                      </th>
-                      <th scope="col" className="px-6 py-3">
-                        Situação
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-linha">
-                    {linhas.map(
-                      ({ aluno, avatar, situacao, registros, curso }) => {
-                        const resumo = curso
-                          ? resumoParaProfessor(curso.modulos, registros)
-                          : null;
-                        const ultima = curso
-                          ? ultimaAulaNoCurso(curso, registros)
-                          : null;
-                        const etiqueta = ETIQUETAS[situacao];
-                        return (
-                          <tr key={`${aluno.id}-${curso?.id ?? "sem-curso"}`}>
-                            <td className="px-6 py-3">
-                              <Link
-                                href={`/professor/progresso/${aluno.id}`}
-                                className="flex min-h-12 items-center gap-3 font-bold text-texto hover:underline"
-                              >
-                                <span
-                                  aria-hidden="true"
-                                  className={`inline-flex size-10 shrink-0 items-center justify-center rounded-full text-xs font-bold ${avatar}`}
-                                >
-                                  {iniciais(aluno.nome)}
-                                </span>
-                                <span className="break-words">
-                                  {aluno.nome}
-                                </span>
-                              </Link>
-                            </td>
-                            <td className="px-3 py-3 break-words">
-                              {curso ? (
-                                <>
-                                  {curso.titulo}
-                                  {!curso.publicado && (
-                                    <span className="text-texto-secundario">
-                                      {" "}
-                                      (rascunho)
-                                    </span>
-                                  )}
-                                </>
-                              ) : (
-                                <span className="text-texto-secundario">
-                                  Sem matrículas
-                                </span>
-                              )}
-                            </td>
-                            <td className="px-3 py-3">
-                              {curso && resumo ? (
-                                <div className="flex min-w-36 items-center gap-3">
-                                  <div className="flex-1">
-                                    <BarraProgresso
-                                      percentual={resumo.percentual}
-                                      rotulo={`Progresso de ${aluno.nome} em ${curso.titulo}`}
-                                      cor="bordo"
-                                      comTexto={false}
-                                    />
-                                  </div>
-                                  <span>{resumo.percentual}%</span>
                                 </div>
-                              ) : (
-                                <span aria-label="Sem progresso">—</span>
-                              )}
-                            </td>
-                            <td className="px-3 py-3">
-                              {ultima ?? (
-                                <span aria-label="Nenhuma aula concluída">
-                                  —
-                                </span>
-                              )}
-                            </td>
-                            <td className="px-6 py-3">
-                              <span
-                                className={`inline-block rounded-full px-3 py-1 text-xs font-bold ${etiqueta.classe}`}
-                              >
-                                {etiqueta.texto}
-                              </span>
-                            </td>
-                          </tr>
-                        );
-                      },
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </section>
-
-          <section
-            aria-labelledby="recusados-recentes"
-            className={`${cartao} space-y-4 p-6`}
-          >
-            <h2 id="recusados-recentes" className={tituloDeCartao}>
-              Recusados recentemente
-            </h2>
-            <Suspense fallback={<p>Carregando…</p>}>
-              <Recusados />
-            </Suspense>
-          </section>
-        </div>
-
-        <Suspense>
-          <UltimoRecado />
-        </Suspense>
+                                <span>{resumo.percentual}%</span>
+                              </div>
+                            ) : (
+                              <span aria-label="Sem progresso">—</span>
+                            )}
+                          </td>
+                          <td className="px-3 py-3">
+                            {ultima ?? (
+                              <span aria-label="Nenhuma aula concluída">—</span>
+                            )}
+                          </td>
+                          <td className="px-6 py-3">
+                            <span
+                              className={`inline-block rounded-full px-3 py-1 text-xs font-bold ${etiqueta.classe}`}
+                            >
+                              {etiqueta.texto}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    },
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
       </div>
     </>
   );
 }
 
-async function UltimoRecado() {
-  await exigirProfessor();
-
-  const resultado = await ultimoRecado();
-  return (
-    <section
-      aria-labelledby="ultimo-recado"
-      className="flex flex-col gap-4 self-start rounded-3xl bg-amarelo-claro p-6 text-texto-sobre-amarelo"
-    >
-      <h2 id="ultimo-recado" className="font-titulo text-2xl">
-        Último recado
-      </h2>
-      {"erro" in resultado ? (
-        <p role="alert" className="text-sm">
-          Não foi possível carregar o último recado.
-        </p>
-      ) : resultado.recado ? (
-        <div className="space-y-1">
-          <p className="font-bold break-words">{resultado.recado.titulo}</p>
-          <p className="text-sm">
-            Enviado para{" "}
-            {resultado.recado.curso_id
-              ? `alunos de ${resultado.recado.cursos?.titulo ?? "um curso"}`
-              : "todos os alunos"}{" "}
-            · {quandoFoi(resultado.recado.publicado_em)}
-          </p>
-        </div>
-      ) : (
-        <p className="text-sm">Nenhum recado enviado ainda.</p>
-      )}
-      <Link href="/professor/avisos" className={classesDoBotao("primario")}>
-        Novo recado
-      </Link>
-    </section>
-  );
-}
-
-// Quem pediu acesso (pelo Google ou pelo e-mail) e ainda espera liberação, do
-// mais antigo ao mais novo. A conta criada e nunca confirmada fica de fora.
-async function Pedidos() {
+// Quem pediu acesso (pelo Google ou pelo e-mail) e ainda espera liberação. A
+// faixa leva à página Alunos, onde o professor libera ou recusa; sem pedidos,
+// ou se a contagem falhar, ela não aparece.
+async function FaixaDePedidos() {
   await exigirProfessor();
 
   const supabase = await criarClienteServidor();
-  const { data: pedidos, error } = await supabase
+  const { count, error } = await supabase
     .from("perfis")
-    .select("id, nome, email, pedido_em")
+    .select("id", { count: "exact", head: true })
     .eq("papel", "aluno")
     .is("liberado_em", null)
-    .not("pedido_em", "is", null)
-    .order("pedido_em");
-  if (error || !pedidos)
-    return (
-      <ErroAoCarregar>
-        Não foi possível carregar os pedidos de acesso.
-      </ErroAoCarregar>
-    );
-  return <PedidosDeAcesso pedidos={pedidos} />;
-}
-
-async function Recusados() {
-  await exigirProfessor();
-
-  const supabase = await criarClienteServidor();
-  const { data: recusas, error } = await supabase.rpc(
-    "listar_recusas_recentes",
+    .not("pedido_em", "is", null);
+  if (error || !count) return null;
+  return (
+    <Link href="/professor/alunos" className={faixa}>
+      {count === 1 ? "1 pedido de acesso" : `${count} pedidos de acesso`}
+      <span aria-hidden="true">›</span>
+    </Link>
   );
-  if (error || !recusas)
-    return (
-      <ErroAoCarregar>
-        Não foi possível carregar as recusas recentes.
-      </ErroAoCarregar>
-    );
-  return <RecusadosRecentes recusas={recusas} />;
 }
 
 async function Painel() {
@@ -586,7 +521,7 @@ async function Painel() {
               {dataPorExtenso()}
             </p>
             <h1 className="font-titulo text-4xl break-words text-texto md:text-5xl">
-              Olá, {sessao.nome}
+              Olá, {primeiroNome(sessao.nome)}
             </h1>
           </div>
           <div className="hidden w-auto flex-wrap gap-3 md:flex">

@@ -6,3 +6,8 @@ export function iniciais(nome: string): string {
   const ultima = partes.length > 1 ? partes[partes.length - 1][0] : "";
   return (primeira + ultima).toLocaleUpperCase("pt-BR");
 }
+
+// Primeiro nome, para saudações ("Olá, Ana").
+export function primeiroNome(nome: string): string {
+  return nome.trim().split(/\s+/)[0] ?? "";
+}

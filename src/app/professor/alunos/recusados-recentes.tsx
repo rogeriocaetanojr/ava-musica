@@ -3,7 +3,7 @@
 import { useActionState, useState } from "react";
 import { classesDoBotao } from "@/components/botao";
 import { formatarDataHora } from "@/lib/datas";
-import { permitirNovoPedido, permitirNovoPedidoPorEmail } from "./alunos/acoes";
+import { permitirNovoPedido, permitirNovoPedidoPorEmail } from "./acoes";
 
 export type Recusa = {
   aluno_id: string;

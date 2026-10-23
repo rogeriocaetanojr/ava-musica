@@ -74,24 +74,3 @@ export async function situacaoDosAlunos() {
   if (error) return null;
   return data as unknown as SituacaoNoPainel[];
 }
-
-export type RecadoDoPainel = {
-  id: string;
-  titulo: string;
-  curso_id: string | null;
-  publicado_em: string;
-  cursos: { titulo: string } | null;
-};
-
-// Só o aviso mais recente; nulo quando ainda não há nenhum.
-export async function ultimoRecado() {
-  const supabase = await criarClienteServidor();
-  const { data, error } = await supabase
-    .from("avisos")
-    .select("id, titulo, curso_id, publicado_em, cursos (titulo)")
-    .order("publicado_em", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-  if (error) return { erro: true as const };
-  return { recado: data as unknown as RecadoDoPainel | null };
-}

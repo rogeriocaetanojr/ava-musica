@@ -4,7 +4,7 @@ import { useActionState, useState } from "react";
 import { classesDoBotao } from "@/components/botao";
 import { formatarDataHora } from "@/lib/datas";
 import { ehDataValida, hojeNoBrasil, precisaDeAceite } from "@/lib/idade";
-import { liberarPedido, recusarPedido } from "./alunos/acoes";
+import { liberarPedido, recusarPedido } from "./acoes";
 
 export type Pedido = {
   id: string;
