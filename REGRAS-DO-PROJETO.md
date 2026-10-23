@@ -11,7 +11,7 @@ Ambiente virtual de aprendizagem (AVA) de um professor de música. O professor o
 ## 2. Stack
 
 - **Next.js** com App Router, TypeScript em modo `strict` e Tailwind 4
-- **Supabase**: Postgres, Auth (Google e link mágico) e Row Level Security (RLS). Quem entra pelo Google ou pelo link mágico sem cadastro vira um pedido pendente, que só conta depois de confirmado (clique no link ou volta do Google) e fica sem acesso até o professor liberar. O pedido do link mágico passa pelo captcha (Cloudflare Turnstile), e o hook "Before User Created" barra por 7 dias quem foi recusado
+- **Supabase**: Postgres, Auth (Google e código de 6 dígitos por e-mail) e Row Level Security (RLS). Quem entra pelo Google ou pelo código por e-mail sem cadastro vira um pedido pendente, que só conta depois de confirmado (código digitado ou volta do Google) e fica sem acesso até o professor liberar. O pedido do código passa pelo captcha (Cloudflare Turnstile), e o hook "Before User Created" barra por 7 dias quem foi recusado
 - **Resend** (SMTP): aviso ao professor quando chega um pedido de acesso
 - **Netlify**: hospedagem, com homologação e produção separadas
 - **GitHub Actions**: integração contínua, migrações e rotinas automáticas
@@ -59,8 +59,8 @@ Com o Supabase local rodando: Studio em http://localhost:54323 e caixa de e-mail
 - **Next.js 16** usa `proxy.ts` no lugar de `middleware.ts`.
 - O lint roda com `eslint .`, **não** com `next lint`.
 - **Tailwind 4:** uma classe própria que usa `@apply` precisa ser declarada com `@utility`.
-- **Login Google para menores de 13 anos** depende do Family Link dos pais; para esses alunos, o caminho padrão é o link mágico por e-mail.
-- **O cadastro do Auth está aberto** (`enable_signup = true`) para o Google e o link mágico criarem os pedidos. Quem protege é a RLS, pela coluna `liberado_em`; nunca confie nos metadados do usuário (`raw_user_meta_data`), que qualquer um pode enviar. A marca de cadastro feito pelo professor fica no `app_metadata`.
+- **Login Google para menores de 13 anos** depende do Family Link dos pais; para esses alunos, o caminho padrão é o código de 6 dígitos por e-mail.
+- **O cadastro do Auth está aberto** (`enable_signup = true`) para o Google e o código por e-mail criarem os pedidos. Quem protege é a RLS, pela coluna `liberado_em`; nunca confie nos metadados do usuário (`raw_user_meta_data`), que qualquer um pode enviar. A marca de cadastro feito pelo professor fica no `app_metadata`.
 - **`npm install <pacote>` pode apagar o binário nativo do rolldown** (bug do npm com dependências opcionais), e o `npm test` passa a falhar com "Cannot find native binding". Para corrigir, apague `node_modules` e `package-lock.json` e rode `npm install`.
 
 ## 7. Jeito de trabalhar

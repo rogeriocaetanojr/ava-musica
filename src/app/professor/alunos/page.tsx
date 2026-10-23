@@ -40,7 +40,7 @@ async function ListaDeAlunos() {
         "id, nome, email, menor_de_12, bloqueado_em, liberado_em, responsaveis (aceito_em), matriculas (curso_id)",
       )
       .eq("papel", "aluno")
-      // A conta criada pelo link mágico e nunca confirmada não é de ninguém.
+      // A conta criada pelo pedido de código e nunca confirmada não é de ninguém.
       .or("liberado_em.not.is.null,pedido_em.not.is.null")
       .order("nome"),
     supabase.from("cursos").select("id, titulo, publicado").order("titulo"),

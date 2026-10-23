@@ -1,10 +1,12 @@
 import { expect, type Page, test } from "@playwright/test";
 import {
   apagarEmailsDe,
+  AVISO_DE_ENVIO,
+  codigoDoEmail,
   contarEmails,
+  digitarCodigo,
   entrar,
-  linkDoEmail,
-  pedirLink,
+  pedirCodigo,
   PROFESSOR,
 } from "./apoio";
 
@@ -22,16 +24,16 @@ function emailNovo(prefixo: string, projeto: string): string {
   return `${prefixo}-${projeto}-${Date.now()}@teste.local`;
 }
 
-test("pedido pelo e-mail só conta depois do clique, avisa uma vez e é liberado", async ({
+test("pedido pelo e-mail só conta depois do código, avisa uma vez e é liberado", async ({
   browser,
 }, testInfo) => {
   const email = emailNovo("pedido", testInfo.project.name);
 
   // Digitar o e-mail cria a conta, mas o pedido ainda não aparece.
   const aluno = await browser.newPage();
-  await pedirLink(aluno, email);
-  await expect(aluno.getByRole("status")).toContainText("Enviamos um link");
-  const link = await linkDoEmail(email);
+  await pedirCodigo(aluno, email);
+  await expect(aluno.getByRole("status")).toContainText(AVISO_DE_ENVIO);
+  const codigo = await codigoDoEmail(email);
 
   const professor = await browser.newPage();
   await entrar(professor, PROFESSOR);
@@ -39,8 +41,8 @@ test("pedido pelo e-mail só conta depois do clique, avisa uma vez e é liberado
   const pedidos = secao(professor, "Pedidos de acesso");
   await expect(pedidos.getByText(email)).toHaveCount(0);
 
-  // O clique confirma o pedido e avisa o professor.
-  await aluno.goto(link);
+  // O código confirma o pedido e avisa o professor.
+  await digitarCodigo(aluno, codigo);
   await expect(aluno).toHaveURL(/\/aguardando$/);
   await expect(
     aluno.getByRole("heading", { name: "Aguardando liberação do professor" }),
@@ -56,9 +58,9 @@ test("pedido pelo e-mail só conta depois do clique, avisa uma vez e é liberado
   // Pedir de novo e entrar de novo não gera outro aviso nem outro pedido.
   await aluno.context().clearCookies();
   await apagarEmailsDe(email);
-  await pedirLink(aluno, email);
-  await expect(aluno.getByRole("status")).toContainText("Enviamos um link");
-  await aluno.goto(await linkDoEmail(email));
+  await pedirCodigo(aluno, email);
+  await expect(aluno.getByRole("status")).toContainText(AVISO_DE_ENVIO);
+  await digitarCodigo(aluno, await codigoDoEmail(email));
   await expect(aluno).toHaveURL(/\/aguardando$/);
   expect(await contarEmails(PROFESSOR, "Novo pedido de acesso", email)).toBe(1);
 
@@ -90,8 +92,8 @@ test("recusado não pede de novo até o professor permitir", async ({
   const dica = "r***@t***.local";
 
   const aluno = await browser.newPage();
-  await pedirLink(aluno, email);
-  await aluno.goto(await linkDoEmail(email));
+  await pedirCodigo(aluno, email);
+  await digitarCodigo(aluno, await codigoDoEmail(email));
   await expect(aluno).toHaveURL(/\/aguardando$/);
 
   const professor = await browser.newPage();
@@ -111,7 +113,7 @@ test("recusado não pede de novo até o professor permitir", async ({
 
   // A tela não diz que houve recusa, só que não deu para pedir.
   const outro = await browser.newPage();
-  await pedirLink(outro, email);
+  await pedirCodigo(outro, email);
   await expect(
     outro.getByRole("alert").filter({ hasText: PEDIDO_BARRADO }),
   ).toBeVisible();
@@ -134,6 +136,6 @@ test("recusado não pede de novo até o professor permitir", async ({
   await expect(recusa).toHaveCount(0);
 
   await apagarEmailsDe(email);
-  await pedirLink(outro, email);
-  await expect(outro.getByRole("status")).toContainText("Enviamos um link");
+  await pedirCodigo(outro, email);
+  await expect(outro.getByRole("status")).toContainText(AVISO_DE_ENVIO);
 });

@@ -9,6 +9,7 @@ import {
   MENSAGEM_MUITAS_TENTATIVAS,
   MENSAGEM_NAO_CONVIDADO,
   MENSAGEM_PEDIDO_BARRADO,
+  MENSAGEM_SESSAO_EXPIRADA,
 } from "./mensagens";
 
 export const metadata: Metadata = { title: tituloDaPagina("Entrar") };
@@ -18,9 +19,9 @@ const MENSAGENS_DE_ERRO: Record<string, string> = {
   "muitas-tentativas": MENSAGEM_MUITAS_TENTATIVAS,
   bloqueado: MENSAGEM_BLOQUEADO,
   "pedido-barrado": MENSAGEM_PEDIDO_BARRADO,
+  "sessao-expirada": MENSAGEM_SESSAO_EXPIRADA,
   google:
-    "Não foi possível entrar com o Google. Tente de novo ou peça um link por e-mail.",
-  "link-invalido": "O link expirou ou já foi usado. Peça um novo abaixo.",
+    "Não foi possível entrar com o Google. Tente de novo ou entre pelo e-mail.",
 };
 
 type Parametros = Promise<{ erro?: string }>;

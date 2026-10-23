@@ -13,15 +13,15 @@ Antes dos testes, o banco local é recriado com `npx supabase db reset` e recebe
 
 ## O que é testado
 
-| Arquivo               | Fluxo                                                                                                                                                                                                                    |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `e2e/login.spec.ts`   | o aluno convidado entra pelo link mágico; a tela de login oferece o e-mail e o Google                                                                                                                                    |
-| `e2e/pedidos.spec.ts` | o pedido pelo e-mail só aparece para o professor depois do clique, pedir de novo não gera outro aviso, e o professor libera; o recusado não consegue pedir de novo até o professor permitir (só no perfil de computador) |
-| `e2e/curso.spec.ts`   | o professor cria curso, módulo e aula com texto e vídeo do YouTube, publica e matricula o aluno; o aluno conclui a aula, a barra de progresso vai de 0% a 100% e o professor vê o progresso no painel                    |
+| Arquivo               | Fluxo                                                                                                                                                                                                                                             |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `e2e/login.spec.ts`   | o aluno convidado entra com o código do e-mail; a tela de login oferece o e-mail e o Google; código errado mostra o erro e "Usar outro e-mail" volta ao começo; os cookies do login não têm validade e a sessão termina depois de 2 horas sem uso |
+| `e2e/pedidos.spec.ts` | o pedido pelo e-mail só aparece para o professor depois do código, pedir de novo não gera outro aviso, e o professor libera; o recusado não consegue pedir de novo até o professor permitir (só no perfil de computador)                          |
+| `e2e/curso.spec.ts`   | o professor cria curso, módulo e aula com texto e vídeo do YouTube, publica e matricula o aluno; o aluno conclui a aula, a barra de progresso vai de 0% a 100% e o professor vê o progresso no painel                                             |
 
 O captcha da tela de login usa a chave de teste da Cloudflare, que aprova sozinha; o teste espera o token antes de clicar. Se o site já estiver rodando, o `.env.local` precisa ter `NEXT_PUBLIC_TURNSTILE_SITE_KEY` e, para o aviso ao professor, as variáveis `SMTP_*` e `EMAIL_PROFESSOR` do Mailpit (o Playwright só passa essas variáveis quando ele mesmo sobe o site).
 
-O login lê o e-mail na caixa de teste do Supabase local (http://localhost:54324) pela API dela e abre o link. O endereço pode ser trocado pela variável `MAILPIT_URL`.
+O login lê o e-mail na caixa de teste do Supabase local (http://localhost:54324) pela API dela, tira o código de 6 dígitos e o digita na tela. Para o fim da sessão por falta de uso, o teste muda o cookie `ultimo-uso` para uma hora antiga, em vez de esperar 2 horas. O endereço pode ser trocado pela variável `MAILPIT_URL`.
 
 ## Quando um teste falha
 

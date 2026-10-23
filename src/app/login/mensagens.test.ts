@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   ehBloqueado,
+  ehCodigoInvalido,
   ehFalhaDoCaptcha,
   ehLimiteDeTentativas,
   ehPedidoBarrado,
@@ -38,7 +39,7 @@ describe("ehBloqueado", () => {
 });
 
 describe("ehPedidoBarrado", () => {
-  it("reconhece a recusa do hook no link mágico e na volta do Google", () => {
+  it("reconhece a recusa do hook no envio do código e na volta do Google", () => {
     expect(
       ehPedidoBarrado({ message: "Não foi possível pedir acesso agora." }),
     ).toBe(true);
@@ -60,5 +61,18 @@ describe("ehFalhaDoCaptcha", () => {
     expect(ehFalhaDoCaptcha({ code: "captcha_failed" })).toBe(true);
     expect(ehFalhaDoCaptcha({ code: "otp_expired" })).toBe(false);
     expect(ehFalhaDoCaptcha(null)).toBe(false);
+  });
+});
+
+describe("ehCodigoInvalido", () => {
+  it("reconhece o código errado ou vencido", () => {
+    expect(ehCodigoInvalido({ code: "otp_expired" })).toBe(true);
+    expect(ehCodigoInvalido({ code: "invalid_credentials" })).toBe(true);
+  });
+
+  it("não confunde outros erros com o código inválido", () => {
+    expect(ehCodigoInvalido(null)).toBe(false);
+    expect(ehCodigoInvalido({ code: "user_banned" })).toBe(false);
+    expect(ehCodigoInvalido({ code: "over_request_rate_limit" })).toBe(false);
   });
 });

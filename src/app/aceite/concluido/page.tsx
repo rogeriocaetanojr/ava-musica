@@ -16,7 +16,7 @@ async function Mensagem({ searchParams }: { searchParams: Parametros }) {
     return (
       <p role="alert" className="rounded-md bg-amber-100 p-3 text-amber-900">
         Não conseguimos enviar o e-mail de acesso agora. O aluno pode pedir o
-        link na{" "}
+        código na{" "}
         <Link href="/login" className="underline">
           página de entrada
         </Link>
@@ -25,7 +25,8 @@ async function Mensagem({ searchParams }: { searchParams: Parametros }) {
     );
   return (
     <p role="status" className="rounded-md bg-green-100 p-3 text-green-800">
-      Enviamos ao aluno, por e-mail, o link para entrar.
+      Enviamos ao aluno, por e-mail, um código para entrar. Se o código vencer,
+      ele pode pedir outro na página de entrada, com o próprio e-mail.
     </p>
   );
 }

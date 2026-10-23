@@ -48,7 +48,7 @@ function atualizarTelas() {
 // responsável. O papel nunca é informado: o gatilho do banco sempre cria aluno.
 // A conta é criada antes do convite para levar a marca ORIGEM_PROFESSOR, que
 // o convite não aceita. O cadastro passa por cima de uma recusa recente do
-// e-mail e de uma conta criada pelo link mágico e nunca confirmada.
+// e-mail e de uma conta criada pelo pedido de código e nunca confirmada.
 export async function cadastrarAluno(
   _estado: EstadoCadastro,
   formData: FormData,
@@ -109,7 +109,7 @@ export async function cadastrarAluno(
     alunoId = data.user.id;
     const { error: erroConvite } = await admin.auth.admin.inviteUserByEmail(
       aluno.email,
-      { data: metadados, redirectTo: urlDoSite("/auth/callback") },
+      { data: metadados },
     );
     if (erroConvite) {
       // Sem o convite o aluno não teria como entrar; desfaz o cadastro.
@@ -247,8 +247,8 @@ export async function excluirAluno(
 }
 
 // Reenvia o acesso a quem ainda não entrou. Quem tem 12 anos ou mais recebe o
-// convite de novo; o menor de 12 já autorizado recebe o link de acesso, como
-// no aceite. Conta no mesmo limite por hora dos convites.
+// convite de novo; o menor de 12 já autorizado recebe um código de acesso,
+// como no aceite. Conta no mesmo limite por hora dos convites.
 // O estado anterior do formulário não é usado, por isso fica fora da assinatura.
 export async function reenviarConvite(
   alunoId: string,
@@ -283,11 +283,10 @@ export async function reenviarConvite(
   const reserva = await reservarEnvioDeConvite(supabase);
   if (!reserva.ok) return { erro: reserva.erro };
 
-  const redirectTo = urlDoSite("/auth/callback");
   const { error: erroEnvio } = aluno.menor_de_12
     ? await admin.auth.signInWithOtp({
         email: aluno.email,
-        options: { shouldCreateUser: false, emailRedirectTo: redirectTo },
+        options: { shouldCreateUser: false },
       })
     : await admin.auth.admin.inviteUserByEmail(aluno.email, {
         data: {
@@ -295,7 +294,6 @@ export async function reenviarConvite(
           data_nascimento: aluno.data_nascimento,
           menor_de_12: false,
         },
-        redirectTo,
       });
   if (erroEnvio)
     return { erro: "Não foi possível reenviar o convite. Tente de novo." };

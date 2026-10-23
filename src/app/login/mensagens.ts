@@ -16,6 +16,12 @@ export const MENSAGEM_CAPTCHA =
 export const MENSAGEM_MUITAS_TENTATIVAS =
   "Muitas tentativas de entrar em pouco tempo. Por segurança, o acesso foi pausado: espere alguns minutos e tente de novo. Se o problema continuar, avise o professor.";
 
+export const MENSAGEM_CODIGO_INVALIDO =
+  "O código está errado ou expirou. Confira o último e-mail ou toque em Reenviar código.";
+
+export const MENSAGEM_SESSAO_EXPIRADA =
+  "Sua sessão terminou depois de 2 horas sem uso. Entre de novo para continuar.";
+
 export const MENSAGEM_BLOQUEADO =
   "Seu acesso foi pausado pelo professor. Seus dados e seu progresso continuam guardados. Fale com o professor para voltar a estudar.";
 
@@ -41,7 +47,7 @@ export function ehBloqueado(
 }
 
 // Criação da conta recusada pelo hook "Before User Created". O erro chega com
-// a mensagem do hook (status 403 no link mágico, error_description na volta
+// a mensagem do hook (status 403 no envio do código, error_description na volta
 // do Google).
 export function ehPedidoBarrado(
   erro: { message?: string } | null | undefined,
@@ -53,4 +59,12 @@ export function ehFalhaDoCaptcha(
   erro: { code?: string } | null | undefined,
 ): boolean {
   return erro?.code === "captcha_failed";
+}
+
+// Código digitado errado, vencido ou já usado (o Supabase responde
+// otp_expired nos três casos).
+export function ehCodigoInvalido(
+  erro: { code?: string } | null | undefined,
+): boolean {
+  return erro?.code === "otp_expired" || erro?.code === "invalid_credentials";
 }

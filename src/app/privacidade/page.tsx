@@ -84,14 +84,29 @@ export default function Privacidade() {
         endereço sem cookies de propaganda.
       </p>
 
+      <h2>Login e cookies</h2>
+      <p>
+        Para entrar, você recebe por e-mail um código de 6 dígitos, que vale por
+        10 minutos e só pode ser usado uma vez, ou entra com o Google. O site
+        usa só os cookies necessários para manter você logado. Eles são cookies
+        de sessão: não ficam salvos no aparelho e são apagados quando o
+        navegador é fechado. Por isso, ao abrir o navegador de novo, é preciso
+        entrar outra vez.
+      </p>
+      <p>
+        Por segurança, a sessão também termina depois de 2 horas sem uso, para
+        alunos e para o professor, mesmo com o navegador aberto. Para isso,
+        guardamos num desses cookies só a hora do último uso.
+      </p>
+
       <h2>Pedido de acesso</h2>
       <p>
-        Quem entra com o Google ou pelo link enviado por e-mail sem ter sido
+        Quem entra com o Google ou pelo código enviado por e-mail sem ter sido
         cadastrado pelo professor fica com um pedido de acesso guardado até o
         professor decidir. O pedido só chega ao professor depois que a pessoa
-        clica no link ou volta do Google, para ninguém pedir acesso com o e-mail
-        de outra pessoa. Enquanto espera, a pessoa não vê nenhum curso, aula ou
-        aviso.
+        digita o código recebido ou volta do Google, para ninguém pedir acesso
+        com o e-mail de outra pessoa. Enquanto espera, a pessoa não vê nenhum
+        curso, aula ou aviso.
       </p>
       <p>
         Se o professor recusar, a conta e os dados dela são apagados. Fica o
@@ -102,8 +117,8 @@ export default function Privacidade() {
         momento, sem apagar o progresso.
       </p>
       <p>
-        Uma conta criada pelo link mas nunca confirmada (ninguém clicou no link)
-        guarda só o e-mail e não aparece para o professor.
+        Uma conta criada pelo pedido do código mas nunca confirmada (ninguém
+        digitou o código) guarda só o e-mail e não aparece para o professor.
       </p>
 
       <h2>Quem tem acesso</h2>
@@ -124,11 +139,11 @@ export default function Privacidade() {
         </li>
         <li>
           <strong>Cloudflare (Turnstile):</strong> a verificação que impede
-          robôs de pedir links de acesso em massa. Ela analisa sinais do
+          robôs de pedir códigos de acesso em massa. Ela analisa sinais do
           navegador, como o endereço IP, sem cookies de propaganda.
         </li>
         <li>
-          <strong>Resend:</strong> envio dos e-mails do site, como os links de
+          <strong>Resend:</strong> envio dos e-mails do site, como os códigos de
           acesso e o aviso de pedido novo ao professor.
         </li>
         <li>
@@ -159,8 +174,8 @@ export default function Privacidade() {
       <p>
         O Google só permite que crianças com menos de 13 anos usem uma conta
         Google com o acompanhamento dos pais (Family Link). Para esses alunos, o
-        caminho mais simples é o professor fazer o cadastro e o aluno entrar
-        pelo link enviado por e-mail.
+        caminho mais simples é o professor fazer o cadastro e o aluno entrar com
+        o código enviado por e-mail.
       </p>
 
       <h2>Seus direitos e a exclusão dos dados</h2>

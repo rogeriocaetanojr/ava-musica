@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { urlDoSite, VERSAO_DOS_TERMOS } from "@/lib/site";
+import { VERSAO_DOS_TERMOS } from "@/lib/site";
 import { criarClienteAdmin } from "@/lib/supabase/admin";
 import { ehTokenDeAceite } from "../../validacao";
 
@@ -38,10 +38,7 @@ export async function POST(
   if (aluno) {
     const { error: erroEnvio } = await admin.auth.signInWithOtp({
       email: aluno.email,
-      options: {
-        shouldCreateUser: false,
-        emailRedirectTo: urlDoSite("/auth/callback"),
-      },
+      options: { shouldCreateUser: false },
     });
     enviado = !erroEnvio;
   }

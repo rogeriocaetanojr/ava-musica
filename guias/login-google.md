@@ -65,7 +65,7 @@ A chave secreta **nunca** vai para o Git, para o chat nem para variável com pre
 
 4. Suba o site (`npm run dev`), abra http://localhost:3000/login e clique em **Entrar com Google**.
 
-Sem o `supabase/.env`, o botão do Google mostra um erro, mas o link mágico continua funcionando.
+Sem o `supabase/.env`, o botão do Google mostra um erro, mas o código por e-mail continua funcionando.
 
 ## 5. Testar o pedido
 
@@ -73,6 +73,8 @@ Sem o `supabase/.env`, o botão do Google mostra um erro, mas o link mágico con
 2. Abra a caixa de teste (http://localhost:54324): chega o e-mail "Novo pedido de acesso" para `professor@teste.local`.
 3. Entre como professor. Em **Pedidos de acesso**, clique em **Liberar**, informe a data de nascimento e confirme. Para menores de 12, informe também o responsável: você vai para a ficha do aluno, com o link de autorização.
 4. Volte à conta do aluno e recarregue: ele vai para os cursos (ou, se for menor de 12, continua esperando o responsável).
+
+Quem entra com o Google segue as mesmas regras de sessão do código por e-mail: o login some ao fechar o navegador e termina depois de 2 horas sem uso.
 
 ## 6. Ligar na nuvem
 

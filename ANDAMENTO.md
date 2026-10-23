@@ -23,7 +23,7 @@
   - Na política de segurança do navegador (CSP), limitar de onde o bloco de áudio pode tocar: hoje ele aceita qualquer endereço https (`lerAudio` em `src/lib/embeds.ts`), e o navegador do aluno acessa servidores de terceiros.
 - [ ] Cópias de segurança do banco de dados
 - [ ] Rotinas automáticas do banco
-  - Apagar as contas criadas pelo link mágico e nunca confirmadas (ninguém clicou no link) depois de 48 horas. Hoje elas só ficam fora da lista do professor e dão lugar ao cadastro feito por ele.
+  - Apagar as contas criadas pelo pedido de código e nunca confirmadas (ninguém digitou o código) depois de 48 horas. Hoje elas só ficam fora da lista do professor e dão lugar ao cadastro feito por ele.
 - [ ] Alertas quando o site cair ou apresentar erros
 - [ ] Cuidados com os dados pessoais no dia a dia, conforme a LGPD
 - [ ] Manual do professor e documentação do projeto
@@ -45,7 +45,7 @@
 
 - [x] Base do site, com verificação de código, testes e configuração da hospedagem
 - [x] Banco de dados com as regras de quem pode ver o quê e verificações automáticas a cada envio de código
-- [x] Login dos alunos e do professor por convite, com Google ou link por e-mail
+- [x] Login dos alunos e do professor por convite, com Google ou código de 6 dígitos por e-mail
 - [x] Telas do professor para criar, editar, publicar e reordenar cursos, módulos e aulas
 - [x] Conteúdo das aulas: texto, vídeos do YouTube, arquivos do Drive, áudio, links e provas do Google Forms, com pré-visualização
 - [x] Cadastro de alunos por convite, matrícula nos cursos e regra para menores de 12 anos
@@ -67,8 +67,8 @@
 - O aluno menor de 12 anos ainda sem autorização do responsável vê só o próprio nome, para a tela de espera saber quem ele é; todo o resto fica bloqueado.
 - Os testes do banco vão além do mínimo pedido (por exemplo, visitante sem login não vê nada e o aluno não registra progresso em nome de outro), porque cobrem brechas reais.
 - Os testes do banco rodam por um script em Node, sem exigir o `psql` instalado, e funcionam tanto no banco local quanto nas verificações automáticas.
-- O cadastro aberto fica desligado na configuração geral do login (`[auth] enable_signup = false`). O cadastro por e-mail continua ligado porque, no Supabase local, desligá-lo desativa também o link mágico; quem não foi convidado é recusado do mesmo jeito.
-- O login com Google fica desligado no Supabase local até existirem chaves do Google; lá o teste é feito pelo link mágico.
+- O cadastro aberto fica desligado na configuração geral do login (`[auth] enable_signup = false`). O cadastro por e-mail continua ligado porque, no Supabase local, desligá-lo desativa também o login por código; quem não foi convidado é recusado do mesmo jeito.
+- O login com Google fica desligado no Supabase local até existirem chaves do Google; lá o teste é feito pelo código por e-mail.
 - O botão de sair envia um formulário em vez de ser um link, para que o navegador não deslogue ninguém ao pré-carregar a página.
 - As páginas que leem a sessão ficam dentro de `<Suspense>`, exigência do modo de cache ligado no Next.js.
 - O script de usuários de teste só roda quando o endereço do Supabase é local, para nunca criar contas de teste na nuvem.
@@ -94,14 +94,14 @@
 - A última atividade do aluno é o registro de progresso mais recente (aula concluída ou prova enviada), não o último login.
 - O detalhe do progresso de cada aluno fica em `/professor/progresso/...`, separado da ficha de cadastro e matrículas em `/professor/alunos/...`.
 - O "autorizo" do responsável é recebido por uma rota (`/aceite/.../autorizar`), não por server action, porque quem envia não tem login: a proteção é o token. A gravação só acontece onde o aceite ainda está vazio, então o mesmo link não vale duas vezes.
-- O link de acesso enviado depois do aceite usa um modelo próprio de e-mail (`supabase/templates/link-magico.html`) com o mesmo formato do convite, porque o pedido feito pelo servidor não guarda código no navegador. Depois de mudar o `config.toml`, é preciso reiniciar o Supabase local.
+- Depois do aceite, o servidor envia ao aluno um código de acesso (modelo `supabase/templates/codigo.html`). Se o código vencer, o aluno pede outro na tela de login. Depois de mudar o `config.toml`, é preciso reiniciar o Supabase local.
 - A versão dos termos gravada no aceite fica em `src/lib/site.ts` (`VERSAO_DOS_TERMOS`). Mudou o texto da política ou dos termos, muda a versão.
 - A política de privacidade e os termos de uso são rascunhos para revisão jurídica e avisam isso no topo.
 - A exclusão de um aluno pede o nome digitado (sem contar maiúsculas e espaços nas pontas), conferido de novo no servidor. Ela apaga a conta de login, e o banco apaga em cascata perfil, responsável, matrículas e progresso.
 - Nome, logo e cores ainda são provisórios. As cores ficam como variáveis do tema em `src/app/globals.css` (`primaria` e `secundaria`), o nome e o logo em `src/lib/site.ts`, e o logo em `public/logo.svg`. As cores de aviso (vermelho, verde, amarelo) não mudam com a identidade.
 - Os limites do login ficam no `supabase/config.toml` e, na nuvem, são configurados à mão no painel do Supabase com os mesmos valores (`guias/deploy.md`). O Supabase só conta verificações de código em janelas de 5 minutos por endereço, não por hora.
 - O professor envia no máximo 20 convites por hora, contando os reenvios. Quem garante é o banco (tabela `envios_convite`); a vaga é gasta antes do envio, mesmo que o e-mail falhe. Cadastrar um menor de 12 não conta, porque não envia e-mail.
-- O reenvio de convite aparece só para quem ainda não entrou. O menor de 12 só recebe depois da autorização do responsável, e recebe o link de acesso em vez do convite.
+- O reenvio de convite aparece só para quem ainda não entrou. O menor de 12 só recebe depois da autorização do responsável, e recebe um código de acesso em vez do convite.
 - A auditoria registra quando o professor abre a ficha, matricula, desmatricula ou exclui um aluno menor de 18 anos (sem data de nascimento, registra por precaução). Quem decide a idade e grava é o banco, pela função `registrar_acesso`; a aplicação não grava direto na tabela.
 - Ainda não existe tela para editar os dados do aluno; a ação "editar" já é aceita pela auditoria para quando ela existir.
 - Se o registro falhar, a ação não acontece e a ficha não abre.
@@ -109,19 +109,19 @@
 - Atualizar a ficha depois de matricular conta como abrir de novo e gera outro registro de abertura.
 - Os testes de ponta a ponta usam o Playwright só com o Chromium, nos perfis de computador e de celular (Pixel 7). Ficam fora do `npm run check` por serem lentos e vão rodar nas verificações automáticas da publicação.
 - Antes dos testes de ponta a ponta o banco local é recriado (`npx supabase db reset`) e recebe os usuários de teste (`seed:dev`). Isso apaga tudo o que estava no banco local.
-- No login dos testes, o link mágico é lido pela API da caixa de e-mail local (Mailpit) e aberto no navegador do teste.
+- No login dos testes, o código é lido pela API da caixa de e-mail local (Mailpit) e digitado na tela.
 - Os testes rodam um por vez e cada perfil cria o próprio curso, porque todos dividem o mesmo banco e os limites de login por endereço.
 - O bloqueio do aluno age em duas frentes. No banco, a coluna `bloqueado_em` faz a regra de acesso do aluno recusar tudo na mesma hora, mesmo com a sessão ainda aberta. No login, o Supabase passa a recusar a entrada e a renovação da sessão. Nada é apagado: ao desbloquear, o aluno volta a ver os cursos e o progresso.
 - O bloqueio não tem prazo: vale até o professor desbloquear.
 - Bloquear e desbloquear sempre ficam registrados na auditoria, em qualquer idade, porque são ações do professor e não acessos a dados. O banco só aceita mudar o bloqueio pela função que também grava o registro.
-- O Supabase aceita o pedido de link de um aluno bloqueado e só recusa quando ele clica no link. A mensagem de acesso pausado aparece nessa hora.
+- O Supabase aceita o pedido de código de um aluno bloqueado e só recusa quando ele confirma o código. A mensagem de acesso pausado aparece nessa hora.
 - Com a sessão aberta, o Supabase já recusa o aluno bloqueado na página seguinte. O site apaga a sessão e mostra o aviso na tela de login. A página `/bloqueado` cobre o caso em que o banco já bloqueou, mas o login ainda não.
 - O status "bloqueado" vale acima dos outros, e o reenvio de convite fica indisponível enquanto o aluno estiver bloqueado.
 - Quem entra pelo Google sem ter sido cadastrado vira um pedido pendente (`perfis.liberado_em` vazio). A regra de acesso do aluno exige a liberação, então o pendente não vê nada além do próprio nome, mesmo com a sessão aberta.
 - O cadastro feito pelo professor leva a marca `origem: professor` no `app_metadata`, que só a chave de serviço grava, e já nasce liberado. Por isso o convite agora cria a conta primeiro e envia o convite em seguida. Quem se cadastra sozinho nasce sem data de nascimento: os metadados enviados pelo próprio usuário são ignorados, porque com o cadastro aberto qualquer um poderia forjá-los.
 - O Google não informa a data de nascimento. Ao liberar, o professor informa a data, e o banco decide se o aluno tem menos de 12 anos; nesse caso o professor informa o responsável, vai para a ficha do aluno com o link de autorização, e o acesso só começa depois do aceite.
 - Liberar e recusar sempre ficam na auditoria, em qualquer idade, como o bloqueio. O banco só aceita mudar a liberação pelas funções que também gravam o registro.
-- Recusar apaga a conta, como a exclusão. Fica o registro da auditoria com o id e, por 7 dias, a recusa em `privado.recusas_recentes`: o hash do e-mail, uma dica mascarada (`a***@g***.com`) e o id. Nesse prazo, o hook "Before User Created" do Auth barra um novo cadastro desse e-mail, pelo link mágico ou pelo Google. Recusar de novo renova o prazo.
+- Recusar apaga a conta, como a exclusão. Fica o registro da auditoria com o id e, por 7 dias, a recusa em `privado.recusas_recentes`: o hash do e-mail, uma dica mascarada (`a***@g***.com`) e o id. Nesse prazo, o hook "Before User Created" do Auth barra um novo cadastro desse e-mail, pelo código por e-mail ou pelo Google. Recusar de novo renova o prazo.
 - O hash do e-mail é um HMAC-SHA256 com uma chave gerada na migração, guardada no schema `privado`, que não é exposto pela API. Um SHA-256 simples se descobriria testando listas de e-mails conhecidos. O e-mail é normalizado antes (minúsculas, sem espaços nas pontas).
 - A dica mascarada mostra só a primeira letra do nome, a primeira letra do domínio e a última parte dele, para não revelar a instituição (`x***@e***.br` para `x@escola.sp.gov.br`). Ela é apagada junto com a recusa.
 - O professor permite um novo pedido pela lista "Recusados recentemente" ou digitando o e-mail completo (o banco confere o hash). As duas formas vão para a auditoria (`permitir_pedido`), com o id da conta recusada. O cadastro feito pelo professor sempre apaga a recusa daquele e-mail; o hook do Supabase não roda na criação de conta pelo admin, então o convite nunca é barrado.
@@ -134,3 +134,7 @@
 - O aviso ao professor sai uma vez por pedido, no primeiro login, por SMTP (Resend na nuvem, Mailpit no computador). Se o envio falhar, o login segue, o pedido aparece no painel e o aviso é tentado de novo no próximo login. Sem as variáveis de SMTP, o aviso simplesmente não sai.
 - Os testes de ponta a ponta fazem o pedido de verdade pelo e-mail, com um endereço novo a cada execução. O login do Google não dá para automatizar.
 - O teste da recusa roda só no perfil de computador, para a execução não passar do limite de 15 logins a cada 5 minutos por endereço.
+- Revisto: o link mágico foi trocado por um código de 6 dígitos no e-mail. A tela "Entrar" pede o e-mail (`signInWithOtp`) e passa para "Digite o código", com Confirmar (`verifyOtp`, tipo `email`), Reenviar código e Usar outro e-mail. A mensagem de envio é a mesma para quem tem e quem não tem conta. O código vale 10 minutos (`otp_expiry = 600`). Assim o login funciona em qualquer navegador ou aparelho, sem depender de abrir o link no mesmo navegador.
+- Depois do código confirmado, a tela abre `/auth/concluir`, que faz o mesmo que a volta do Google (`src/app/auth/concluir-login.ts`): confirma o pedido de quem não tem cadastro, barra o bloqueado e leva cada papel à sua área. O pedido continua contando só depois do código confirmado. `/auth/callback` ficou só para o Google.
+- O convite do professor não traz link nem código: explica que o aluno deve abrir a página de login e pedir o código. O convidado ainda não confirmado recebe o código pelo modelo de confirmação (`confirmacao.html`, mesmo texto de `codigo.html`).
+- A sessão não fica salva, para alunos, professor e quem entra com o Google: os cookies do login são gravados sem `maxAge`/`expires` (cookies de sessão) nos três clientes do Supabase, e o proxy encerra a sessão (`signOut` com `scope: "local"`) depois de 2 horas sem uso, guardando a hora do último uso no cookie `ultimo-uso`. A regra fica no site porque o `inactivity_timeout` do Supabase só existe nos planos pagos. A versão dos termos passou a `4-rascunho` com a mudança na política de privacidade.

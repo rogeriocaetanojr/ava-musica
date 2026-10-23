@@ -39,8 +39,8 @@ export async function contarEmails(
   return messages.length;
 }
 
-// Espera o e-mail chegar e devolve o link de acesso que ele traz.
-export async function linkDoEmail(email: string): Promise<string> {
+// Espera o e-mail chegar e devolve o código de 6 dígitos que ele traz.
+export async function codigoDoEmail(email: string): Promise<string> {
   let id: string | undefined;
   await expect
     .poll(
@@ -57,34 +57,43 @@ export async function linkDoEmail(email: string): Promise<string> {
     .toBeTruthy();
 
   const resposta = await chamarCaixa(`/message/${id}`);
-  const { HTML } = (await resposta.json()) as { HTML: string };
-  const href = HTML.match(/href="([^"]*\/auth\/callback[^"]*)"/)?.[1];
-  if (!href) throw new Error(`Link de acesso não encontrado no e-mail`);
-  return href.replaceAll("&amp;", "&");
+  const { Text } = (await resposta.json()) as { Text: string };
+  const codigo = Text.match(/\b\d{6}\b/)?.[0];
+  if (!codigo) throw new Error(`Código de acesso não encontrado no e-mail`);
+  return codigo;
 }
 
 export async function apagarEmailsDe(email: string): Promise<void> {
   await chamarCaixa(buscaPorDestinatario(email), "DELETE");
 }
 
-// Pede o link na tela de login. O captcha usa a chave de teste da Cloudflare,
-// que aprova sozinha; o botão só é clicado depois que o token chega.
-export async function pedirLink(page: Page, email: string): Promise<void> {
+// Pede o código na tela de login. O captcha usa a chave de teste da
+// Cloudflare, que aprova sozinha; o botão só é clicado depois que o token
+// chega.
+export async function pedirCodigo(page: Page, email: string): Promise<void> {
   await page.goto("/login");
   await page.getByLabel("E-mail").fill(email);
   await expect(page.locator('input[name="cf-turnstile-response"]')).toHaveValue(
     /.+/,
   );
-  await page.getByRole("button", { name: "Entrar com e-mail" }).click();
+  await page.getByRole("button", { name: "Entrar", exact: true }).click();
 }
 
-// Entra pelo link mágico, como o aluno e o professor fazem.
+export const AVISO_DE_ENVIO = "Enviamos um código";
+
+// Digita o código na etapa "Digite o código" e confirma.
+export async function digitarCodigo(page: Page, codigo: string): Promise<void> {
+  await page.getByLabel("Código").fill(codigo);
+  await page.getByRole("button", { name: "Confirmar" }).click();
+}
+
+// Entra com o código enviado por e-mail, como o aluno e o professor fazem.
 export async function entrar(page: Page, email: string): Promise<void> {
-  // Apaga e-mails antigos para não abrir um link já usado.
+  // Apaga e-mails antigos para não usar um código já vencido.
   await apagarEmailsDe(email);
 
-  await pedirLink(page, email);
-  await expect(page.getByRole("status")).toContainText("Enviamos um link");
+  await pedirCodigo(page, email);
+  await expect(page.getByRole("status")).toContainText(AVISO_DE_ENVIO);
 
-  await page.goto(await linkDoEmail(email));
+  await digitarCodigo(page, await codigoDoEmail(email));
 }
