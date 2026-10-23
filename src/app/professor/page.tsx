@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { Aviso } from "@/components/aviso";
 import { BarraProgresso } from "@/components/barra-progresso";
+import { AbasDoProfessor } from "@/components/abas-do-professor";
 import { classesDoBotao } from "@/components/botao";
 import { CabecalhoDoProfessor } from "@/components/cabecalho-do-professor";
 import { Cordas } from "@/components/cordas";
@@ -91,10 +92,12 @@ function Indicador({
   numero,
   rotulo,
   estilo = "claro",
+  compacto = false,
 }: {
   numero: number;
   rotulo: string;
   estilo?: "claro" | "bordo" | "amarelo";
+  compacto?: boolean;
 }) {
   const fundo = {
     claro: "border-linha bg-superficie text-texto",
@@ -102,13 +105,15 @@ function Indicador({
     amarelo: "border-amarelo bg-amarelo-claro text-texto-sobre-amarelo",
   }[estilo];
   return (
-    <li className={`relative overflow-hidden rounded-3xl border p-6 ${fundo}`}>
-      {estilo === "bordo" && (
+    <li
+      className={`relative overflow-hidden rounded-3xl border ${compacto ? "p-5" : "p-6"} ${fundo}`}
+    >
+      {estilo === "bordo" && !compacto && (
         <Cordas className="absolute inset-y-0 right-6 w-24 border-l border-vinho pl-5" />
       )}
       <p className="relative flex flex-col gap-2">
         <span
-          className={`font-titulo text-5xl ${
+          className={`font-titulo ${compacto ? "text-4xl" : "text-5xl"} ${
             estilo === "bordo"
               ? "text-amarelo"
               : estilo === "claro"
@@ -124,6 +129,23 @@ function Indicador({
   );
 }
 
+// Nova aula e Convidar lado a lado, logo abaixo dos indicadores no celular.
+function AcoesDoCelular() {
+  return (
+    <div className="grid grid-cols-2 gap-3 md:hidden">
+      <Link href="/professor/cursos" className={classesDoBotao("primario")}>
+        <span className="text-amarelo">
+          <Icone caminho="M12 5v14 M5 12h14" />
+        </span>
+        Nova aula
+      </Link>
+      <Link href="/professor/alunos" className={classesDoBotao("secundario")}>
+        Convidar
+      </Link>
+    </div>
+  );
+}
+
 async function Resumo() {
   await exigirProfessor();
 
@@ -133,9 +155,12 @@ async function Resumo() {
   ]);
   if (!dados || !situacoes)
     return (
-      <ErroAoCarregar>
-        Não foi possível carregar o progresso dos alunos.
-      </ErroAoCarregar>
+      <>
+        <ErroAoCarregar>
+          Não foi possível carregar o progresso dos alunos.
+        </ErroAoCarregar>
+        <AcoesDoCelular />
+      </>
     );
 
   const situacaoPorId = new Map(
@@ -180,9 +205,37 @@ async function Resumo() {
 
   return (
     <>
+      <ul aria-label="Indicadores" className="grid grid-cols-2 gap-3 md:hidden">
+        <Indicador
+          numero={ativos}
+          rotulo={ativos === 1 ? "aluno ativo" : "alunos ativos"}
+          estilo="bordo"
+          compacto
+        />
+        <Indicador
+          numero={publicados}
+          rotulo={publicados === 1 ? "curso no ar" : "cursos no ar"}
+          compacto
+        />
+      </ul>
+
+      {aceitesPendentes > 0 && (
+        <Link
+          href="/professor/alunos"
+          className="flex min-h-12 items-center justify-between gap-3 rounded-2xl bg-amarelo-claro px-5 py-3 text-sm font-bold text-texto-sobre-amarelo md:hidden"
+        >
+          {aceitesPendentes === 1
+            ? "1 aceite de responsável pendente"
+            : `${aceitesPendentes} aceites de responsável pendentes`}
+          <span aria-hidden="true">›</span>
+        </Link>
+      )}
+
+      <AcoesDoCelular />
+
       <ul
         aria-label="Indicadores"
-        className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4"
+        className="hidden gap-4 md:grid md:grid-cols-2 lg:grid-cols-4"
       >
         <Indicador
           numero={ativos}
@@ -219,8 +272,87 @@ async function Resumo() {
           </Suspense>
 
           <section
+            aria-labelledby="progresso-dos-alunos-celular"
+            className="md:hidden"
+          >
+            <h2
+              id="progresso-dos-alunos-celular"
+              className="pb-3 text-base font-bold text-bordo"
+            >
+              Progresso dos alunos
+            </h2>
+            {linhas.length === 0 ? (
+              <p className="border-t border-linha pt-3 text-texto-secundario">
+                Nenhum aluno cadastrado ainda.
+              </p>
+            ) : (
+              <ul className="divide-y divide-linha border-t border-linha">
+                {linhas.map(({ aluno, avatar, situacao, registros, curso }) => {
+                  const resumo = curso
+                    ? resumoParaProfessor(curso.modulos, registros)
+                    : null;
+                  return (
+                    <li key={`${aluno.id}-${curso?.id ?? "sem-curso"}`}>
+                      <Link
+                        href={`/professor/progresso/${aluno.id}`}
+                        className="flex min-h-12 items-center gap-4 py-3"
+                      >
+                        <span
+                          aria-hidden="true"
+                          className={`inline-flex size-12 shrink-0 items-center justify-center rounded-full text-sm font-bold ${avatar}`}
+                        >
+                          {iniciais(aluno.nome)}
+                        </span>
+                        <span className="flex min-w-0 flex-1 flex-col gap-1">
+                          <span className="font-bold break-words text-texto">
+                            {aluno.nome}
+                          </span>
+                          <span className="text-sm break-words text-texto-secundario">
+                            {curso ? (
+                              <>
+                                {curso.titulo}
+                                {!curso.publicado && " (rascunho)"}
+                              </>
+                            ) : (
+                              "Sem matrículas"
+                            )}
+                          </span>
+                          {situacao !== "ativo" ? (
+                            <span
+                              className={`self-start rounded-full px-3 py-1 text-xs font-bold ${ETIQUETAS[situacao].classe}`}
+                            >
+                              {ETIQUETAS[situacao].texto}
+                            </span>
+                          ) : (
+                            curso &&
+                            resumo && (
+                              <span className="flex items-center gap-3">
+                                <span className="flex-1">
+                                  <BarraProgresso
+                                    percentual={resumo.percentual}
+                                    rotulo={`Progresso de ${aluno.nome} em ${curso.titulo}`}
+                                    cor="bordo"
+                                    comTexto={false}
+                                  />
+                                </span>
+                                <span className="font-titulo text-lg text-texto">
+                                  {resumo.percentual}%
+                                </span>
+                              </span>
+                            )
+                          )}
+                        </span>
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </section>
+
+          <section
             aria-labelledby="progresso-dos-alunos"
-            className={`${cartao} min-w-0 overflow-hidden`}
+            className={`${cartao} hidden min-w-0 overflow-hidden md:block`}
           >
             <div className="flex flex-wrap items-center justify-between gap-2 px-6 pt-5 pb-2">
               <h2 id="progresso-dos-alunos" className={tituloDeCartao}>
@@ -450,12 +582,14 @@ async function Painel() {
       <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-4 py-6 md:gap-8 md:px-8 md:py-10">
         <header className="flex flex-wrap items-end justify-between gap-4">
           <div className="min-w-0">
-            <p className="text-sm font-bold text-bordo">{dataPorExtenso()}</p>
+            <p className="hidden text-sm font-bold text-bordo md:block">
+              {dataPorExtenso()}
+            </p>
             <h1 className="font-titulo text-4xl break-words text-texto md:text-5xl">
               Olá, {sessao.nome}
             </h1>
           </div>
-          <div className="flex w-full flex-wrap gap-3 sm:w-auto">
+          <div className="hidden w-auto flex-wrap gap-3 md:flex">
             <Link
               href="/professor/alunos"
               className={classesDoBotao("secundario", "sm:w-auto")}
@@ -479,14 +613,29 @@ async function Painel() {
           <Resumo />
         </Suspense>
       </main>
-      <footer className="mx-auto w-full max-w-6xl px-4 pb-6 md:px-8">
+      <footer className="mx-auto flex w-full max-w-6xl flex-wrap items-center gap-x-6 px-4 pb-6 md:px-8">
         <Link
           href="/privacidade"
           className="inline-flex min-h-12 items-center text-sm text-texto-secundario underline"
         >
           Política de privacidade
         </Link>
+        <Link
+          href="/cursos"
+          className="inline-flex min-h-12 items-center text-sm text-texto-secundario underline md:hidden"
+        >
+          Ver como aluno
+        </Link>
+        <form action="/auth/sair" method="post" className="md:hidden">
+          <button
+            type="submit"
+            className="inline-flex min-h-12 items-center text-sm text-texto-secundario underline"
+          >
+            Sair
+          </button>
+        </form>
       </footer>
+      <AbasDoProfessor atual="painel" />
     </>
   );
 }

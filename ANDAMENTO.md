@@ -4,7 +4,6 @@
 
 ### Telas
 
-- [ ] Painel do professor no celular
 - [ ] Convite de aluno no computador
 - [ ] Convite de aluno no celular
 - [ ] Tema escuro no computador
@@ -79,6 +78,7 @@
 - [x] Tela da aula no computador
 - [x] Tela da aula no celular
 - [x] Painel do professor no computador
+- [x] Painel do professor no celular, com a barra de abas do professor
 
 ## Decisões
 
@@ -177,3 +177,5 @@
 - Alunos ativos são os liberados sem bloqueio. Aceite pendente é o menor de 12 sem aceite do responsável e sem bloqueio. Aulas concluídas na semana contam os últimos 7 dias, sem as provas.
 - A tabela tem uma linha por matrícula, com a situação Ativo, Aguardando responsável ou Bloqueado (o bloqueio vale acima). A última aula é a concluída mais recente no curso, com o número na ordem do curso e o dia contado no horário de Brasília. A tabela rola na horizontal dentro do cartão.
 - "Pedidos de acesso" aparece acima da tabela só quando há pedidos e continua na tela até a confirmação sumir; "Recusados recentemente" fica abaixo dela. Convidar aluno leva a Alunos, Nova aula a Cursos e aulas e Novo recado a Recados.
+- No celular, a área do professor tem barra de abas fixa no rodapé (`src/components/abas-do-professor.tsx`): Painel, Cursos, Alunos e Recados. A aba Cursos tem o nome acessível "Cursos e aulas", o mesmo do computador, e o teste de ponta a ponta continua igual. O cabeçalho mostra só o logo e o selo "Professor"; Ver como aluno e Sair ficam no rodapé da página.
+- No painel do celular: os indicadores são alunos ativos e cursos no ar; os aceites pendentes viram uma faixa amarela que leva a Alunos e só aparece quando há algum. Nova aula e Convidar ficam lado a lado abaixo dos indicadores. O progresso vira uma lista de cartões, um por matrícula, com o curso abaixo do nome e a barra com o percentual, ou a etiqueta Aguardando responsável ou Bloqueado. Pedidos de acesso, Recusados recentemente e Último recado continuam na tela: os pedidos acima da lista, os outros dois abaixo dela.

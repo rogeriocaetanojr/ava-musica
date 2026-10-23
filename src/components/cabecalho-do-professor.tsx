@@ -16,6 +16,7 @@ const item =
   "inline-flex min-h-12 items-center rounded-xl px-4 text-base font-bold";
 
 // Cabeçalho da área do professor: logo com o selo, navegação, avatar e Sair.
+// No celular fica só o logo com o selo; a navegação vai para a barra de abas.
 export function CabecalhoDoProfessor({
   nome,
   atual,
@@ -28,18 +29,18 @@ export function CabecalhoDoProfessor({
       <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3 md:px-8">
         <Link
           href="/professor"
-          className="flex min-h-12 items-center gap-3 font-titulo text-2xl text-texto"
+          className="flex min-h-12 flex-1 items-center gap-3 font-titulo text-2xl text-texto md:flex-none"
         >
           <LogoDoAva
             semSubtitulo
             className="[--altura:46px] md:[--altura:60px]"
           />
-          <span className="rounded-full bg-amarelo-claro px-3 py-1 font-sans text-xs font-bold text-texto-sobre-amarelo">
+          <span className="ml-auto rounded-full bg-amarelo-claro px-3 py-1 font-sans text-xs font-bold text-texto-sobre-amarelo md:ml-0">
             Professor
           </span>
         </Link>
 
-        <nav aria-label="Área do professor">
+        <nav aria-label="Área do professor" className="hidden md:block">
           <ul className="flex flex-wrap gap-2">
             {ITENS.map(({ secao, rotulo, href }) => (
               <li key={secao}>
@@ -59,7 +60,7 @@ export function CabecalhoDoProfessor({
           </ul>
         </nav>
 
-        <div className="ml-auto flex items-center gap-2">
+        <div className="ml-auto hidden items-center gap-2 md:flex">
           <Link
             href="/cursos"
             className={`${item} text-texto-secundario hover:text-texto`}
