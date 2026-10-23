@@ -99,7 +99,7 @@ async function PaginaDoCurso({ params }: { params: Promise<{ id: string }> }) {
                         aria-hidden
                         className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 ${
                           feita
-                            ? "border-primaria bg-primaria text-white"
+                            ? "border-bordo bg-bordo text-white"
                             : "border-current/40"
                         }`}
                       >

@@ -1,8 +1,20 @@
 import type { Metadata } from "next";
-import Image from "next/image";
-import Link from "next/link";
-import { LOGO_DO_AVA, NOME_DO_AVA } from "@/lib/site";
+import { Bricolage_Grotesque, Manrope } from "next/font/google";
+import { Cabecalho, Rodape } from "@/components/moldura-do-site";
+import { NOME_DO_AVA } from "@/lib/site";
 import "./globals.css";
+
+const bricolage = Bricolage_Grotesque({
+  subsets: ["latin"],
+  weight: "800",
+  variable: "--fonte-bricolage",
+});
+
+const manrope = Manrope({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--fonte-manrope",
+});
 
 export const metadata: Metadata = {
   title: NOME_DO_AVA,
@@ -13,30 +25,14 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="pt-BR" className="h-full antialiased">
+    <html
+      lang="pt-BR"
+      className={`${bricolage.variable} ${manrope.variable} h-full antialiased`}
+    >
       <body className="min-h-full flex flex-col">
-        <header className="border-b-4 border-secundaria bg-primaria text-white">
-          <div className="mx-auto flex w-full max-w-4xl items-center px-4 py-3">
-            <Link href="/" className="flex items-center gap-3 font-bold">
-              <Image src={LOGO_DO_AVA} alt="" width={36} height={36} priority />
-              <span className="text-lg">{NOME_DO_AVA}</span>
-            </Link>
-          </div>
-        </header>
+        <Cabecalho />
         {children}
-        <footer className="border-t-4 border-secundaria bg-primaria text-sm text-white">
-          <nav
-            aria-label="Rodapé"
-            className="mx-auto flex w-full max-w-4xl flex-wrap gap-x-6 gap-y-2 px-4 py-4"
-          >
-            <Link href="/privacidade" className="underline">
-              Política de privacidade
-            </Link>
-            <Link href="/termos" className="underline">
-              Termos de uso
-            </Link>
-          </nav>
-        </footer>
+        <Rodape />
       </body>
     </html>
   );

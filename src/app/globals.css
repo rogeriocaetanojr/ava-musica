@@ -1,42 +1,39 @@
 @import "tailwindcss";
 
-/* Identidade visual: troque aqui as cores do professor. */
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-  --primaria: #1f4e79;
-  --secundaria: #e0a526;
+/* Identidade visual aprovada pelo professor. Toda tela usa só estas cores. */
+@theme {
+  --color-fundo: #fbf5ea;
+  --color-superficie: #fffdf8;
+  --color-linha: #ebddc8;
+  --color-texto: #2e1a1c;
+  --color-texto-secundario: #6e5558;
+  --color-bordo: #6e1a2d;
+  --color-vinho: #4a0f1e;
+  --color-amarelo: #f2c230;
+  --color-amarelo-claro: #fbefc4;
+  --color-borda-campo: #8c7174;
+  --color-texto-sobre-amarelo: #3d0e1a;
   /* Texto e barra de "concluído": contraste de pelo menos 4,5:1 com o fundo. */
-  --sucesso: #166534;
-}
+  --color-sucesso: #166534;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-primaria: var(--primaria);
-  --color-secundaria: var(--secundaria);
-  --color-sucesso: var(--sucesso);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-    --sucesso: #4ade80;
-  }
+  --font-titulo: var(--fonte-bricolage), system-ui, sans-serif;
+  --font-sans: var(--fonte-manrope), system-ui, sans-serif;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
-  accent-color: var(--primaria);
+  background: var(--color-fundo);
+  color: var(--color-texto);
+  font-family: var(--font-sans);
+  accent-color: var(--color-bordo);
 }
 
-/* Contorno duplo: o azul aparece no fundo claro, o amarelo no escuro e no
-   cabeçalho azul. */
+/* Contorno amarelo em tudo que recebe foco pelo teclado. */
 :focus-visible {
-  outline: 2px solid var(--primaria);
+  outline: 3px solid var(--color-amarelo);
   outline-offset: 2px;
-  box-shadow: 0 0 0 4px var(--secundaria);
+}
+
+/* Telas de página inteira trazem o próprio logo e o link da política. */
+body:has([data-tela-cheia]) [data-moldura] {
+  display: none;
 }
