@@ -30,7 +30,7 @@ test("professor cria curso, módulo e aula com texto e YouTube e publica", async
   await entrar(page, PROFESSOR);
   await expect(page).toHaveURL(/\/professor$/);
 
-  await page.getByRole("link", { name: "Cursos, módulos e aulas" }).click();
+  await page.getByRole("link", { name: "Cursos e aulas" }).click();
   await page.getByLabel("Título").fill(curso);
   await page.getByLabel("Instrumento").fill("Violão");
   await page.getByLabel("Nível").selectOption("Iniciante");

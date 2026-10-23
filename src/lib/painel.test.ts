@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { resumoParaProfessor, ultimaAtividade } from "./painel";
+import {
+  aulasConcluidasNaSemana,
+  resumoParaProfessor,
+  situacaoDoAluno,
+  ultimaAtividade,
+} from "./painel";
 
 const modulos = [
   {
@@ -95,5 +100,48 @@ describe("ultimaAtividade", () => {
 
   it("é nula sem registros", () => {
     expect(ultimaAtividade([])).toBeNull();
+  });
+});
+
+describe("aulasConcluidasNaSemana", () => {
+  it("conta só as aulas dos últimos 7 dias, sem as provas", () => {
+    const registros = [
+      {
+        aula_id: "a1",
+        conteudo_id: null,
+        concluido_em: "2026-10-20T10:00:00Z",
+      },
+      {
+        aula_id: "a1",
+        conteudo_id: "p1",
+        concluido_em: "2026-10-20T10:00:00Z",
+      },
+      {
+        aula_id: "a2",
+        conteudo_id: null,
+        concluido_em: "2026-10-01T10:00:00Z",
+      },
+    ];
+    expect(
+      aulasConcluidasNaSemana(registros, new Date("2026-10-22T00:00:00Z")),
+    ).toBe(1);
+  });
+});
+
+describe("situacaoDoAluno", () => {
+  const base = { menor_de_12: false, bloqueado_em: null, aceito_em: null };
+  it("separa ativo, aguardando responsável e bloqueado", () => {
+    expect(situacaoDoAluno(base)).toBe("ativo");
+    expect(situacaoDoAluno({ ...base, menor_de_12: true })).toBe("aguardando");
+    expect(
+      situacaoDoAluno({ ...base, menor_de_12: true, aceito_em: "2026-10-01" }),
+    ).toBe("ativo");
+    expect(
+      situacaoDoAluno({
+        ...base,
+        menor_de_12: true,
+        bloqueado_em: "2026-10-01",
+      }),
+    ).toBe("bloqueado");
   });
 });

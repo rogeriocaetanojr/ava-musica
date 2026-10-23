@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { classesDoBotao } from "@/components/botao";
 import { formatarDataHora } from "@/lib/datas";
 import { ehDataValida, hojeNoBrasil, precisaDeAceite } from "@/lib/idade";
 import { liberarPedido, recusarPedido } from "./alunos/acoes";
@@ -13,17 +14,30 @@ export type Pedido = {
 };
 
 const campo =
-  "w-full rounded-md border border-current bg-transparent px-3 py-2";
+  "min-h-14 w-full rounded-xl border border-borda-campo bg-superficie px-4 py-3 text-base text-texto";
+const alerta =
+  "rounded-xl bg-amarelo-claro p-4 text-sm text-texto-sobre-amarelo";
 
 // O aviso fica aqui, fora de cada pedido: depois de liberar ou recusar o
-// pedido sai da lista, mas a confirmação continua na tela.
+// pedido sai da lista, mas a confirmação continua na tela. Sem pedidos e sem
+// confirmação, a seção não aparece.
 export function PedidosDeAcesso({ pedidos }: { pedidos: Pedido[] }) {
   const [aviso, setAviso] = useState("");
+  if (pedidos.length === 0 && !aviso) return null;
 
   return (
-    <div className="space-y-3">
+    <section
+      aria-labelledby="pedidos-de-acesso"
+      className="space-y-4 rounded-3xl border border-amarelo bg-superficie p-6"
+    >
+      <h2 id="pedidos-de-acesso" className="font-titulo text-2xl text-texto">
+        Pedidos de acesso
+      </h2>
       {aviso && (
-        <p role="status" className="rounded-md bg-green-100 p-3 text-green-800">
+        <p
+          role="status"
+          className="rounded-xl border border-linha bg-fundo p-4 text-sm font-bold text-sucesso"
+        >
           {aviso}
         </p>
       )}
@@ -38,7 +52,7 @@ export function PedidosDeAcesso({ pedidos }: { pedidos: Pedido[] }) {
           ))}
         </ul>
       )}
-    </div>
+    </section>
   );
 }
 
@@ -52,9 +66,9 @@ function CartaoDoPedido({
   const [abrindo, setAbrindo] = useState<"liberar" | "recusar" | null>(null);
 
   return (
-    <div className="space-y-3 rounded-md border border-current p-4">
+    <div className="space-y-3 rounded-2xl border border-linha bg-fundo p-4">
       <div className="space-y-1">
-        <p className="font-medium break-words">{pedido.nome}</p>
+        <p className="font-bold text-texto break-words">{pedido.nome}</p>
         <p className="text-sm break-all">{pedido.email}</p>
         <p className="text-sm">
           Pediu acesso em {formatarDataHora(pedido.pedido_em)}
@@ -78,14 +92,14 @@ function CartaoDoPedido({
           <button
             type="button"
             onClick={() => setAbrindo("liberar")}
-            className="rounded-md border border-current px-4 py-2 font-medium"
+            className={classesDoBotao("secundario", "sm:w-auto")}
           >
             Liberar
           </button>
           <button
             type="button"
             onClick={() => setAbrindo("recusar")}
-            className="rounded-md border border-current px-4 py-2"
+            className={classesDoBotao("secundario", "sm:w-auto")}
           >
             Recusar
           </button>
@@ -124,7 +138,7 @@ function FormularioLiberacao({
   return (
     <form action={enviar} className="space-y-3">
       <label className="block space-y-1">
-        <span className="text-sm font-medium">Data de nascimento</span>
+        <span className="text-sm font-bold text-texto">Data de nascimento</span>
         <input
           name="data_nascimento"
           type="date"
@@ -137,7 +151,7 @@ function FormularioLiberacao({
       </label>
 
       {menor && (
-        <fieldset className="space-y-3 rounded-md border border-current/50 p-3">
+        <fieldset className="space-y-3 rounded-xl border border-linha p-4">
           <legend className="px-1 text-sm font-medium">Responsável</legend>
           <p className="text-sm">
             Menos de 12 anos: o acesso só começa depois que o responsável
@@ -145,7 +159,9 @@ function FormularioLiberacao({
             autorização.
           </p>
           <label className="block space-y-1">
-            <span className="text-sm font-medium">Nome do responsável</span>
+            <span className="text-sm font-bold text-texto">
+              Nome do responsável
+            </span>
             <input
               name="responsavel_nome"
               required
@@ -154,7 +170,9 @@ function FormularioLiberacao({
             />
           </label>
           <label className="block space-y-1">
-            <span className="text-sm font-medium">E-mail do responsável</span>
+            <span className="text-sm font-bold text-texto">
+              E-mail do responsável
+            </span>
             <input
               name="responsavel_email"
               type="email"
@@ -167,7 +185,7 @@ function FormularioLiberacao({
       )}
 
       {estado.erro && (
-        <p role="alert" className="rounded-md bg-red-100 p-3 text-red-800">
+        <p role="alert" className={alerta}>
           {estado.erro}
         </p>
       )}
@@ -175,7 +193,7 @@ function FormularioLiberacao({
         <button
           type="submit"
           disabled={enviando}
-          className="rounded-md border border-current px-4 py-2 font-semibold disabled:opacity-50"
+          className={classesDoBotao("primario", "sm:w-auto")}
         >
           {enviando ? "Salvando…" : "Confirmar liberação"}
         </button>
@@ -183,7 +201,7 @@ function FormularioLiberacao({
           type="button"
           disabled={enviando}
           onClick={aoCancelar}
-          className="rounded-md border border-current px-4 py-2 disabled:opacity-50"
+          className={classesDoBotao("secundario", "sm:w-auto")}
         >
           Cancelar
         </button>
@@ -217,7 +235,7 @@ function ConfirmacaoRecusa({
         &quot;Recusados recentemente&quot;.
       </p>
       {estado.erro && (
-        <p role="alert" className="rounded-md bg-red-100 p-3 text-red-800">
+        <p role="alert" className={alerta}>
           {estado.erro}
         </p>
       )}
@@ -225,7 +243,7 @@ function ConfirmacaoRecusa({
         <button
           type="submit"
           disabled={enviando}
-          className="rounded-md bg-red-700 px-4 py-2 font-semibold text-white disabled:opacity-50"
+          className={classesDoBotao("primario", "sm:w-auto")}
         >
           {enviando ? "Salvando…" : "Confirmar recusa"}
         </button>
@@ -233,7 +251,7 @@ function ConfirmacaoRecusa({
           type="button"
           disabled={enviando}
           onClick={aoCancelar}
-          className="rounded-md border border-current px-4 py-2 disabled:opacity-50"
+          className={classesDoBotao("secundario", "sm:w-auto")}
         >
           Cancelar
         </button>

@@ -4,8 +4,6 @@
 
 ### Telas
 
-- [ ] Tela da aula no celular
-- [ ] Painel do professor no computador
 - [ ] Painel do professor no celular
 - [ ] Convite de aluno no computador
 - [ ] Convite de aluno no celular
@@ -80,6 +78,7 @@
 - [x] Meus cursos no celular, com a barra de abas e a página de perfil
 - [x] Tela da aula no computador
 - [x] Tela da aula no celular
+- [x] Painel do professor no computador
 
 ## Decisões
 
@@ -173,3 +172,8 @@
 - A lateral mostra o progresso no curso e as aulas do módulo atual. Para isso, a página lê também as aulas concluídas no curso, o título dos módulos e o tipo dos blocos de cada aula (para marcar as aulas com prova). São só leituras, sob as mesmas regras de acesso: o aluno pendente, bloqueado ou sem aceite do responsável não vê nada.
 - Concluída, o botão passa a "✓ Aula concluída" e continua desmarcando com um toque. O teste de ponta a ponta volta ao curso pelo botão "Voltar para {curso}".
 - No celular, a aula mostra no topo o botão voltar, "Módulo N · Aula N" (a numeração da aula é a do curso, a mesma da lista lateral) e o nome do curso; o logo e a trilha ficam só no computador. O botão "Marcar como concluída" fica fixo no rodapé, sem a barra de abas, e as aulas do módulo vêm depois dos materiais numa lista recolhível, fechada por padrão. O ícone dos materiais tem 44 px no celular.
+- A área do professor tem cabeçalho próprio (`src/components/cabecalho-do-professor.tsx`), com o selo "Professor", Painel, Cursos e aulas, Alunos e Recados, além de Ver como aluno, o avatar e o Sair. O link "Cursos, módulos e aulas" passou a "Cursos e aulas", e o teste de ponta a ponta acompanha.
+- O painel lê duas coisas a mais, só para leitura e sob as mesmas regras de acesso: o bloqueio e o aceite do responsável dos alunos liberados, e o recado mais recente.
+- Alunos ativos são os liberados sem bloqueio. Aceite pendente é o menor de 12 sem aceite do responsável e sem bloqueio. Aulas concluídas na semana contam os últimos 7 dias, sem as provas.
+- A tabela tem uma linha por matrícula, com a situação Ativo, Aguardando responsável ou Bloqueado (o bloqueio vale acima). A última aula é a concluída mais recente no curso, com o número na ordem do curso e o dia contado no horário de Brasília. A tabela rola na horizontal dentro do cartão.
+- "Pedidos de acesso" aparece acima da tabela só quando há pedidos e continua na tela até a confirmação sumir; "Recusados recentemente" fica abaixo dela. Convidar aluno leva a Alunos, Nova aula a Cursos e aulas e Novo recado a Recados.

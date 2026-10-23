@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { classesDoBotao } from "@/components/botao";
 import { formatarDataHora } from "@/lib/datas";
 import { permitirNovoPedido, permitirNovoPedidoPorEmail } from "./alunos/acoes";
 
@@ -12,7 +13,9 @@ export type Recusa = {
 };
 
 const campo =
-  "w-full rounded-md border border-current bg-transparent px-3 py-2";
+  "min-h-14 w-full rounded-xl border border-borda-campo bg-superficie px-4 py-3 text-base text-texto";
+const alerta =
+  "rounded-xl bg-amarelo-claro p-4 text-sm text-texto-sobre-amarelo";
 
 // Quem foi recusado não consegue pedir de novo por 7 dias. O banco guarda só
 // o hash do e-mail e uma dica mascarada (a***@g***.com); o professor pode
@@ -23,7 +26,10 @@ export function RecusadosRecentes({ recusas }: { recusas: Recusa[] }) {
   return (
     <div className="space-y-3">
       {aviso && (
-        <p role="status" className="rounded-md bg-green-100 p-3 text-green-800">
+        <p
+          role="status"
+          className="rounded-xl border border-linha bg-fundo p-4 text-sm font-bold text-sucesso"
+        >
           {aviso}
         </p>
       )}
@@ -59,24 +65,24 @@ function CartaoDaRecusa({
   return (
     <form
       action={enviar}
-      className="space-y-3 rounded-md border border-current p-4"
+      className="space-y-3 rounded-2xl border border-linha bg-fundo p-4"
     >
       <div className="space-y-1">
-        <p className="font-medium break-all">{recusa.dica}</p>
+        <p className="font-bold text-texto break-all">{recusa.dica}</p>
         <p className="text-sm">
           Recusado em {formatarDataHora(recusa.recusado_em)}. Não consegue pedir
           de novo até {formatarDataHora(recusa.vale_ate)}.
         </p>
       </div>
       {estado.erro && (
-        <p role="alert" className="rounded-md bg-red-100 p-3 text-red-800">
+        <p role="alert" className={alerta}>
           {estado.erro}
         </p>
       )}
       <button
         type="submit"
         disabled={enviando}
-        className="rounded-md border border-current px-4 py-2 disabled:opacity-50"
+        className={classesDoBotao("secundario", "sm:w-auto")}
       >
         {enviando ? "Salvando…" : "Permitir novo pedido"}
       </button>
@@ -104,7 +110,7 @@ function PermitirPorEmail({
   return (
     <form action={enviar} className="space-y-3">
       <label className="block space-y-1">
-        <span className="text-sm font-medium">
+        <span className="text-sm font-bold text-texto">
           Permitir novo pedido pelo e-mail
         </span>
         <input
@@ -118,14 +124,14 @@ function PermitirPorEmail({
         />
       </label>
       {estado.erro && (
-        <p role="alert" className="rounded-md bg-red-100 p-3 text-red-800">
+        <p role="alert" className={alerta}>
           {estado.erro}
         </p>
       )}
       <button
         type="submit"
         disabled={enviando}
-        className="rounded-md border border-current px-4 py-2 disabled:opacity-50"
+        className={classesDoBotao("secundario", "sm:w-auto")}
       >
         {enviando ? "Salvando…" : "Permitir"}
       </button>

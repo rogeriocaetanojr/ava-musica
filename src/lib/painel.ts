@@ -58,3 +58,30 @@ export function ultimaAtividade(
       ultima = r.concluido_em;
   return ultima;
 }
+
+const SEMANA_EM_MS = 7 * 24 * 60 * 60 * 1000;
+
+// Aulas concluídas (sem contar as provas) nos últimos 7 dias.
+export function aulasConcluidasNaSemana(
+  registros: readonly RegistroDeProgresso[],
+  agora: Date = new Date(),
+): number {
+  const desde = agora.getTime() - SEMANA_EM_MS;
+  return registros.filter(
+    (r) => !r.conteudo_id && Date.parse(r.concluido_em) >= desde,
+  ).length;
+}
+
+export type SituacaoDoAluno = "ativo" | "aguardando" | "bloqueado";
+
+// O bloqueio vale acima de tudo; depois, o menor de 12 sem aceite do
+// responsável.
+export function situacaoDoAluno(aluno: {
+  menor_de_12: boolean;
+  bloqueado_em: string | null;
+  aceito_em: string | null;
+}): SituacaoDoAluno {
+  if (aluno.bloqueado_em) return "bloqueado";
+  if (aluno.menor_de_12 && !aluno.aceito_em) return "aguardando";
+  return "ativo";
+}

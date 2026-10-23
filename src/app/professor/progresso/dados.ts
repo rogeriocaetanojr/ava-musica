@@ -54,3 +54,44 @@ export async function dadosDoPainel(alunoId?: string) {
     progresso: r3.data as ProgressoDoPainel[],
   };
 }
+
+export type SituacaoNoPainel = {
+  id: string;
+  menor_de_12: boolean;
+  bloqueado_em: string | null;
+  responsaveis: { aceito_em: string | null } | null;
+};
+
+// Bloqueio e aceite do responsável dos alunos liberados, para a situação de
+// cada um e os indicadores do painel.
+export async function situacaoDosAlunos() {
+  const supabase = await criarClienteServidor();
+  const { data, error } = await supabase
+    .from("perfis")
+    .select("id, menor_de_12, bloqueado_em, responsaveis (aceito_em)")
+    .eq("papel", "aluno")
+    .not("liberado_em", "is", null);
+  if (error) return null;
+  return data as unknown as SituacaoNoPainel[];
+}
+
+export type RecadoDoPainel = {
+  id: string;
+  titulo: string;
+  curso_id: string | null;
+  publicado_em: string;
+  cursos: { titulo: string } | null;
+};
+
+// Só o aviso mais recente; nulo quando ainda não há nenhum.
+export async function ultimoRecado() {
+  const supabase = await criarClienteServidor();
+  const { data, error } = await supabase
+    .from("avisos")
+    .select("id, titulo, curso_id, publicado_em, cursos (titulo)")
+    .order("publicado_em", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (error) return { erro: true as const };
+  return { recado: data as unknown as RecadoDoPainel | null };
+}
