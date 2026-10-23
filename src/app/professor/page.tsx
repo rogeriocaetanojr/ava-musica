@@ -140,7 +140,10 @@ function AcoesDoCelular() {
         </span>
         Nova aula
       </Link>
-      <Link href="/professor/alunos" className={classesDoBotao("secundario")}>
+      <Link
+        href="/professor/alunos/convidar"
+        className={classesDoBotao("secundario")}
+      >
         Convidar
       </Link>
     </div>
@@ -529,7 +532,7 @@ async function Painel() {
           </div>
           <div className="hidden w-auto flex-wrap gap-3 md:flex">
             <Link
-              href="/professor/alunos"
+              href="/professor/alunos/convidar"
               className={classesDoBotao("secundario", "sm:w-auto")}
             >
               <Icone caminho="M3 6h18v12H3z M3 7l9 6 9-6" />
