@@ -12,7 +12,7 @@ export default function Termos() {
       <AvisoRascunho versao={VERSAO_DOS_TERMOS} />
 
       <p>
-        O {NOME_DO_AVA} é usado só pelos alunos convidados pelo professor. Ao
+        A {NOME_DO_AVA} é usada só pelos alunos convidados pelo professor. Ao
         usar o site, o aluno (ou o responsável, para quem tem menos de 12 anos)
         concorda com as regras abaixo.
       </p>

@@ -16,7 +16,7 @@ import {
   MENSAGEM_SESSAO_EXPIRADA,
 } from "./mensagens";
 
-export const metadata: Metadata = { title: tituloDaPagina("Entrar") };
+export const metadata: Metadata = { title: tituloDaPagina() };
 
 const MENSAGENS_DE_ERRO: Record<string, string> = {
   "nao-convidado": MENSAGEM_NAO_CONVIDADO,

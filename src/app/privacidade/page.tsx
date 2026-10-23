@@ -14,7 +14,7 @@ export default function Privacidade() {
       <AvisoRascunho versao={VERSAO_DOS_TERMOS} />
 
       <p>
-        O {NOME_DO_AVA} é o site das aulas de música do professor. Aqui
+        A {NOME_DO_AVA} é o site das aulas de música do professor. Aqui
         explicamos, de forma simples, quais dados guardamos, para quê e como
         você pode pedir a exclusão.
       </p>

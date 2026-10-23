@@ -254,18 +254,18 @@ otp_expiry = 600
 
 # O convite só explica como entrar: o aluno pede o código na tela de login.
 [auth.email.template.invite]
-subject = "Seu convite para o AVA de Música"
+subject = "Seu convite para a Escola de Música John Meyer"
 content_path = "./supabase/templates/convite.html"
 
 # Código de 6 dígitos ({{ .Token }}), confirmado na tela com verifyOtp.
 [auth.email.template.magic_link]
-subject = "Seu código para entrar no AVA de Música"
+subject = "Seu código para entrar na Escola de Música John Meyer"
 content_path = "./supabase/templates/codigo.html"
 
 # Primeiro código de quem ainda não confirmou a conta (pedido de acesso pelo
 # e-mail ou aluno convidado que ainda não entrou).
 [auth.email.template.confirmation]
-subject = "Seu código para entrar no AVA de Música"
+subject = "Seu código para entrar na Escola de Música John Meyer"
 content_path = "./supabase/templates/confirmacao.html"
 
 # Uncomment to customize notification email template

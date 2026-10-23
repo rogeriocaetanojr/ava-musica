@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Bricolage_Grotesque, Manrope } from "next/font/google";
 import { Cabecalho, Rodape } from "@/components/moldura-do-site";
-import { NOME_DO_AVA } from "@/lib/site";
+import { NOME_CURTO_DO_AVA } from "@/lib/site";
 import "./globals.css";
 
 const bricolage = Bricolage_Grotesque({
@@ -17,7 +17,7 @@ const manrope = Manrope({
 });
 
 export const metadata: Metadata = {
-  title: NOME_DO_AVA,
+  title: NOME_CURTO_DO_AVA,
   description: "Ambiente virtual de aprendizagem para aulas de música.",
   icons: {
     icon: { url: "/icones/favicon-bordo.png", type: "image/png" },

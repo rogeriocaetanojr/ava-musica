@@ -69,7 +69,7 @@ async function Autorizacao({
     <>
       <h1 className="text-2xl font-bold">Autorização do responsável</h1>
       <p className="break-words">
-        Olá, {data.nome}. O professor cadastrou <strong>{aluno}</strong> no{" "}
+        Olá, {data.nome}. O professor cadastrou <strong>{aluno}</strong> na{" "}
         {NOME_DO_AVA}, o site das aulas de música. Como o aluno tem menos de 12
         anos, o acesso só é liberado com a sua autorização.
       </p>

@@ -38,7 +38,7 @@ O Supabase local limita o envio de e-mails por hora (`email_sent` em `supabase/c
 ## Convite de aluno
 
 1. Entre como `professor@teste.local` e abra **Alunos e matrículas**.
-2. Cadastre um aluno com 12 anos ou mais. O convite chega na caixa de teste (http://localhost:54324) com o assunto "Seu convite para o AVA de Música".
+2. Cadastre um aluno com 12 anos ou mais. O convite chega na caixa de teste (http://localhost:54324) com o assunto "Seu convite para a Escola de Música John Meyer".
 3. O convite não traz link nem código: ele explica que o aluno deve abrir a página de login, digitar o e-mail e tocar em **Entrar**. Faça isso e use o código que chega em seguida. O aluno cai em `/cursos`.
 
 Um aluno com menos de 12 anos não recebe convite: a tela mostra o link de autorização para enviar ao responsável. Se esse aluno entrar com o código antes da autorização, ele só vê a tela "aguardando o responsável".

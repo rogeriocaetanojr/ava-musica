@@ -59,7 +59,7 @@ A chave secreta **nunca** vai para o Git, para o chat nem para variável com pre
    ```
    SMTP_HOST=127.0.0.1
    SMTP_PORT=54325
-   SMTP_REMETENTE=AVA de Música <avisos@teste.local>
+   SMTP_REMETENTE=Escola de Música John Meyer <avisos@teste.local>
    EMAIL_PROFESSOR=professor@teste.local
    ```
 

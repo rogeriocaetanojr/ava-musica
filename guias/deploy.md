@@ -38,9 +38,9 @@ Nos dois projetos do Supabase (homologação e produção):
 1. **Cadastro aberto:** em **Authentication → Sign In / Providers**, deixe **Allow new users to sign up** ligado. É o que permite o pedido pelo Google e pelo e-mail; quem garante que o pendente não vê nada é a regra de acesso do banco (migração `20261022030000_pedidos_de_acesso.sql`), não o painel.
 2. **Google obrigatório:** ative o provedor Google com o cliente OAuth do ambiente (passo a passo em `guias/login-google.md`). Sem ele, ninguém consegue pedir acesso, só os cadastrados pelo professor entram.
 3. **Pedido pelo e-mail (código de 6 dígitos):** o site pede o código com `shouldCreateUser: true` e o confirma na própria tela (`verifyOtp`). Em **Authentication → Emails → Templates**, cole:
-   - em **Magic Link**, o conteúdo de `supabase/templates/codigo.html`, com o assunto "Seu código para entrar no AVA de Música";
+   - em **Magic Link**, o conteúdo de `supabase/templates/codigo.html`, com o assunto "Seu código para entrar na Escola de Música John Meyer";
    - em **Confirm signup**, o de `supabase/templates/confirmacao.html` (o mesmo texto; é o modelo usado no primeiro código de quem ainda não confirmou a conta), com o mesmo assunto;
-   - em **Invite user**, o de `supabase/templates/convite.html`, com o assunto "Seu convite para o AVA de Música".
+   - em **Invite user**, o de `supabase/templates/convite.html`, com o assunto "Seu convite para a Escola de Música John Meyer".
 
    Os modelos mostram `{{ .Token }}`; se algum ainda tiver `{{ .ConfirmationURL }}` ou `{{ .TokenHash }}`, o e-mail sai com link e o login não funciona. Em **Authentication → Sign In / Providers → Email**, deixe **Email OTP Length** em 6 e **Email OTP Expiration** em 600 segundos (10 minutos), como no `config.toml`.
 
@@ -73,14 +73,14 @@ O site manda um e-mail ao professor a cada pedido novo, pelo SMTP do Resend.
 2. Crie uma chave de API com permissão **Sending access**, uma por ambiente.
 3. Na Netlify, em **Site configuration → Environment variables**, para cada ambiente:
 
-   | Variável          | Valor                                                   |
-   | ----------------- | ------------------------------------------------------- |
-   | `SMTP_HOST`       | `smtp.resend.com`                                       |
-   | `SMTP_PORT`       | `465`                                                   |
-   | `SMTP_USER`       | `resend`                                                |
-   | `SMTP_PASS`       | a chave de API do Resend (marque como secreta)          |
-   | `SMTP_REMETENTE`  | `AVA de Música <avisos@<domínio verificado>>`           |
-   | `EMAIL_PROFESSOR` | o e-mail do professor (em homologação, o de quem testa) |
+   | Variável          | Valor                                                       |
+   | ----------------- | ----------------------------------------------------------- |
+   | `SMTP_HOST`       | `smtp.resend.com`                                           |
+   | `SMTP_PORT`       | `465`                                                       |
+   | `SMTP_USER`       | `resend`                                                    |
+   | `SMTP_PASS`       | a chave de API do Resend (marque como secreta)              |
+   | `SMTP_REMETENTE`  | `Escola de Música John Meyer <avisos@<domínio verificado>>` |
+   | `EMAIL_PROFESSOR` | o e-mail do professor (em homologação, o de quem testa)     |
 
 4. Sem essas variáveis, o site funciona e os pedidos aparecem no painel, mas o aviso não sai.
 5. **Mesmo SMTP no Supabase:** use o Resend também como SMTP próprio do Supabase, em **Authentication → Emails → SMTP Settings** (host, porta, usuário e senha iguais). É o que libera o limite de 30 e-mails por hora da tabela acima.

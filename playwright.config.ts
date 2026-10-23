@@ -38,7 +38,7 @@ export default defineConfig({
       NEXT_PUBLIC_SITE_URL: ENDERECO,
       SMTP_HOST: "127.0.0.1",
       SMTP_PORT: "54325",
-      SMTP_REMETENTE: "AVA de Música <avisos@teste.local>",
+      SMTP_REMETENTE: "Escola de Música John Meyer <avisos@teste.local>",
       EMAIL_PROFESSOR: "professor@teste.local",
       // Chave de site de teste da Cloudflare: o captcha aprova sozinho.
       NEXT_PUBLIC_TURNSTILE_SITE_KEY: "1x00000000000000000000AA",

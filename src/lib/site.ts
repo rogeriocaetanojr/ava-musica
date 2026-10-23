@@ -1,5 +1,7 @@
-// Nome e logo provisórios, até o professor enviar os definitivos.
-export const NOME_DO_AVA = "AVA de Música";
+// Nome completo da escola: name do manifest, e-mails e textos legais.
+export const NOME_DO_AVA = "Escola de Música John Meyer";
+// Nome curto: título padrão, título das páginas e short_name do manifest.
+export const NOME_CURTO_DO_AVA = "Escola John Meyer";
 export const LOGO_DO_AVA = "/logo.svg";
 // O logo traz o nome escrito; o texto alternativo repete o que está nele.
 export const ALT_DO_LOGO = "John Meyer, Escola de Música";
@@ -20,7 +22,7 @@ export const RECORTE_DO_SUBTITULO = {
 };
 
 export function tituloDaPagina(titulo?: string): string {
-  return titulo ? `${titulo} · ${NOME_DO_AVA}` : NOME_DO_AVA;
+  return titulo ? `${titulo} · ${NOME_CURTO_DO_AVA}` : NOME_CURTO_DO_AVA;
 }
 
 // Endereço completo de uma página do site, para links enviados por e-mail ou

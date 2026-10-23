@@ -46,9 +46,9 @@ export function mensagemDePedidoNovo(
   linkDoPainel: string,
 ): Mensagem {
   return {
-    assunto: `Novo pedido de acesso no ${NOME_DO_AVA}`,
+    assunto: `Novo pedido de acesso na ${NOME_DO_AVA}`,
     texto: [
-      `${aluno.nome} (${aluno.email}) entrou no ${NOME_DO_AVA} e está aguardando a sua liberação.`,
+      `${aluno.nome} (${aluno.email}) entrou na ${NOME_DO_AVA} e está aguardando a sua liberação.`,
       "",
       `Para liberar ou recusar, abra o painel: ${linkDoPainel}`,
       "",
