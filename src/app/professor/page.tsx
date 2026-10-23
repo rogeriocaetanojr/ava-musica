@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CONTEINER } from "@/components/conteiner";
 import { Suspense } from "react";
 import { Aviso } from "@/components/aviso";
 import { BarraProgresso } from "@/components/barra-progresso";
@@ -514,7 +515,9 @@ async function Painel() {
   return (
     <>
       <CabecalhoDoProfessor nome={sessao.nome} atual="painel" />
-      <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-4 py-6 md:gap-8 md:px-8 md:py-10">
+      <main
+        className={`${CONTEINER} flex max-w-6xl flex-1 flex-col gap-6 py-6 md:gap-8 md:py-10`}
+      >
         <header className="flex flex-wrap items-end justify-between gap-4">
           <div className="min-w-0">
             <p className="hidden text-sm font-bold text-bordo md:block">
@@ -548,7 +551,9 @@ async function Painel() {
           <Resumo />
         </Suspense>
       </main>
-      <footer className="mx-auto flex w-full max-w-6xl flex-wrap items-center gap-x-6 px-4 pb-6 md:px-8">
+      <footer
+        className={`${CONTEINER} flex max-w-6xl flex-wrap items-center gap-x-6 pb-6`}
+      >
         <Link
           href="/privacidade"
           className="inline-flex min-h-12 items-center text-sm text-texto-secundario underline"

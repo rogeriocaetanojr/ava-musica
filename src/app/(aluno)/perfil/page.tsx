@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CONTEINER } from "@/components/conteiner";
 import { Suspense } from "react";
 import { AbasDoAluno } from "@/components/abas-do-aluno";
 import { classesDoBotao } from "@/components/botao";
@@ -16,7 +17,9 @@ async function PerfilDoAluno() {
     <>
       <CabecalhoDoAluno nome={sessao.nome} atual="perfil" />
 
-      <main className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 px-4 py-6 md:py-10">
+      <main
+        className={`${CONTEINER} flex max-w-xl flex-1 flex-col gap-6 py-6 md:py-10`}
+      >
         <h1 className="font-titulo text-4xl">Perfil</h1>
 
         <section className="flex items-center gap-4 rounded-3xl border border-linha bg-superficie p-5">

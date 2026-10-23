@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CONTEINER } from "@/components/conteiner";
 import { Suspense } from "react";
 import { BarraProgresso } from "@/components/barra-progresso";
 import { classesDoBotao } from "@/components/botao";
@@ -142,39 +143,50 @@ function ContinueDeOndeParou({
   );
 }
 
+// Sem recados, o cartão mostra um estado vazio para a coluna da direita não
+// sobrar em branco; nesse caso só aparece a partir de lg, ao lado do Continue.
 function RecadosDoProfessor({ avisos }: { avisos: Aviso[] }) {
+  const vazio = avisos.length === 0;
   return (
     <section
       aria-labelledby="recados-recentes"
-      className="hidden flex-col gap-5 rounded-3xl bg-amarelo-claro p-7 text-texto-sobre-amarelo md:flex"
+      className={`hidden flex-col gap-5 rounded-3xl bg-amarelo-claro p-7 text-texto-sobre-amarelo ${
+        vazio ? "lg:flex" : "md:flex"
+      }`}
     >
       <h2 id="recados-recentes" className="text-sm font-bold">
         Recados do professor
       </h2>
-      <ul className="space-y-4">
-        {avisos.slice(0, 2).map((aviso) => (
-          <li key={aviso.id} className="flex gap-3">
-            <span
-              aria-hidden="true"
-              className="mt-2 size-2.5 shrink-0 rounded-full bg-bordo"
-            />
-            <div className="min-w-0">
-              <h3 className="text-base font-bold break-words">
-                {aviso.titulo}
-              </h3>
-              <p className="line-clamp-2 text-sm break-words">
-                {aviso.texto} · {formatarDataHora(aviso.publicado_em)}
-              </p>
-            </div>
-          </li>
-        ))}
-      </ul>
-      <Link
-        href="#recados"
-        className="mt-auto inline-flex min-h-12 items-center self-start text-sm font-bold underline"
-      >
-        Ver todos os recados
-      </Link>
+      {vazio ? (
+        <p className="text-base">Nenhum recado novo por enquanto.</p>
+      ) : (
+        <>
+          <ul className="space-y-4">
+            {avisos.slice(0, 2).map((aviso) => (
+              <li key={aviso.id} className="flex gap-3">
+                <span
+                  aria-hidden="true"
+                  className="mt-2 size-2.5 shrink-0 rounded-full bg-bordo"
+                />
+                <div className="min-w-0">
+                  <h3 className="text-base font-bold break-words">
+                    {aviso.titulo}
+                  </h3>
+                  <p className="line-clamp-2 text-sm break-words">
+                    {aviso.texto} · {formatarDataHora(aviso.publicado_em)}
+                  </p>
+                </div>
+              </li>
+            ))}
+          </ul>
+          <Link
+            href="#recados"
+            className="mt-auto inline-flex min-h-12 items-center self-start text-sm font-bold underline"
+          >
+            Ver todos os recados
+          </Link>
+        </>
+      )}
     </section>
   );
 }
@@ -292,7 +304,9 @@ async function MeusCursosDoAluno() {
     <>
       <CabecalhoDoAluno nome={sessao.nome} atual="cursos" />
 
-      <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-4 py-6 md:gap-8 md:px-8 md:py-10">
+      <main
+        className={`${CONTEINER} flex max-w-6xl flex-1 flex-col gap-6 py-6 md:gap-8 md:py-10`}
+      >
         <header className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <p className={rotuloDeSecao}>{saudacao()}</p>
@@ -322,7 +336,7 @@ async function MeusCursosDoAluno() {
             {continuar && (
               <ContinueDeOndeParou curso={continuar} concluidas={concluidas} />
             )}
-            {avisos.length > 0 && <RecadosDoProfessor avisos={avisos} />}
+            <RecadosDoProfessor avisos={avisos} />
             {avisos.length > 0 && <RecadoMaisRecente aviso={avisos[0]} />}
           </div>
         )}
@@ -392,7 +406,7 @@ export default function MeusCursos() {
       <Suspense fallback={<p className="p-8">Carregando…</p>}>
         <MeusCursosDoAluno />
       </Suspense>
-      <footer className="mx-auto w-full max-w-6xl px-4 py-6 md:px-8">
+      <footer className={`${CONTEINER} max-w-6xl py-6`}>
         <Link
           href="/privacidade"
           className="inline-flex min-h-12 items-center text-sm text-texto-secundario underline"

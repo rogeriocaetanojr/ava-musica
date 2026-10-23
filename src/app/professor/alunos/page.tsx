@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { TelaDoProfessor } from "@/components/tela-do-professor";
+import { CONTEINER } from "@/components/conteiner";
 import { Suspense } from "react";
 import { Aviso } from "@/components/aviso";
 import { exigirProfessor } from "@/lib/auth";
@@ -142,28 +144,35 @@ async function Recusados() {
 
 export default function Alunos() {
   return (
-    <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-8 px-4 py-8">
-      <Link href="/professor" className="text-sm underline">
-        ← Painel
-      </Link>
-      <h1 className="text-2xl font-bold">Alunos</h1>
-      <Suspense>
-        <Pedidos />
-      </Suspense>
-      <section
-        aria-labelledby="recusados-recentes"
-        className="space-y-4 rounded-3xl border border-linha bg-superficie p-6"
+    <TelaDoProfessor atual="alunos">
+      <main
+        className={`${CONTEINER} flex max-w-2xl flex-1 flex-col gap-8 py-8`}
       >
-        <h2 id="recusados-recentes" className="font-titulo text-2xl text-texto">
-          Recusados recentemente
-        </h2>
-        <Suspense fallback={<p>Carregando…</p>}>
-          <Recusados />
+        <Link href="/professor" className="text-sm underline">
+          ← Painel
+        </Link>
+        <h1 className="text-2xl font-bold">Alunos</h1>
+        <Suspense>
+          <Pedidos />
         </Suspense>
-      </section>
-      <Suspense fallback={<p>Carregando…</p>}>
-        <ListaDeAlunos />
-      </Suspense>
-    </main>
+        <section
+          aria-labelledby="recusados-recentes"
+          className="space-y-4 rounded-3xl border border-linha bg-superficie p-6"
+        >
+          <h2
+            id="recusados-recentes"
+            className="font-titulo text-2xl text-texto"
+          >
+            Recusados recentemente
+          </h2>
+          <Suspense fallback={<p>Carregando…</p>}>
+            <Recusados />
+          </Suspense>
+        </section>
+        <Suspense fallback={<p>Carregando…</p>}>
+          <ListaDeAlunos />
+        </Suspense>
+      </main>
+    </TelaDoProfessor>
   );
 }

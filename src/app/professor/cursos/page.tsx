@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { TelaDoProfessor } from "@/components/tela-do-professor";
+import { CONTEINER } from "@/components/conteiner";
 import { Suspense } from "react";
 import { exigirProfessor } from "@/lib/auth";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
@@ -57,24 +59,28 @@ async function ListaDeCursos() {
 
 export default function CursosDoProfessor() {
   return (
-    <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-8 px-4 py-8">
-      <div className="space-y-2">
-        <Link href="/professor" className="text-sm underline">
-          ← Painel
-        </Link>
-        <h1 className="text-2xl font-bold">Cursos</h1>
-      </div>
+    <TelaDoProfessor atual="cursos">
+      <main
+        className={`${CONTEINER} flex max-w-2xl flex-1 flex-col gap-8 py-8`}
+      >
+        <div className="space-y-2">
+          <Link href="/professor" className="text-sm underline">
+            ← Painel
+          </Link>
+          <h1 className="text-2xl font-bold">Cursos</h1>
+        </div>
 
-      <section className="space-y-3">
-        <Suspense fallback={<p>Carregando…</p>}>
-          <ListaDeCursos />
-        </Suspense>
-      </section>
+        <section className="space-y-3">
+          <Suspense fallback={<p>Carregando…</p>}>
+            <ListaDeCursos />
+          </Suspense>
+        </section>
 
-      <section className="space-y-4">
-        <h2 className="text-xl font-semibold">Novo curso</h2>
-        <FormularioCurso acao={criarCurso} textoDoBotao="Criar curso" />
-      </section>
-    </main>
+        <section className="space-y-4">
+          <h2 className="text-xl font-semibold">Novo curso</h2>
+          <FormularioCurso acao={criarCurso} textoDoBotao="Criar curso" />
+        </section>
+      </main>
+    </TelaDoProfessor>
   );
 }

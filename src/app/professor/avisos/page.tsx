@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { TelaDoProfessor } from "@/components/tela-do-professor";
+import { CONTEINER } from "@/components/conteiner";
 import { Suspense } from "react";
 import { exigirProfessor } from "@/lib/auth";
 import { formatarDataHora } from "@/lib/datas";
@@ -97,16 +99,20 @@ async function Avisos() {
 
 export default function AvisosDoProfessor() {
   return (
-    <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-8 px-4 py-8">
-      <div className="space-y-2">
-        <Link href="/professor" className="text-sm underline">
-          ← Painel
-        </Link>
-        <h1 className="text-2xl font-bold">Avisos</h1>
-      </div>
-      <Suspense fallback={<p>Carregando…</p>}>
-        <Avisos />
-      </Suspense>
-    </main>
+    <TelaDoProfessor atual="recados">
+      <main
+        className={`${CONTEINER} flex max-w-2xl flex-1 flex-col gap-8 py-8`}
+      >
+        <div className="space-y-2">
+          <Link href="/professor" className="text-sm underline">
+            ← Painel
+          </Link>
+          <h1 className="text-2xl font-bold">Avisos</h1>
+        </div>
+        <Suspense fallback={<p>Carregando…</p>}>
+          <Avisos />
+        </Suspense>
+      </main>
+    </TelaDoProfessor>
   );
 }

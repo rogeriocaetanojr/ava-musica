@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { TelaDoProfessor } from "@/components/tela-do-professor";
+import { CONTEINER } from "@/components/conteiner";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { exigirProfessor } from "@/lib/auth";
@@ -247,13 +249,17 @@ export default function EditarCurso({
   params: Promise<{ id: string }>;
 }) {
   return (
-    <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-8 px-4 py-8">
-      <Link href="/professor/cursos" className="text-sm underline">
-        ← Cursos
-      </Link>
-      <Suspense fallback={<p>Carregando…</p>}>
-        <EditorDoCurso params={params} />
-      </Suspense>
-    </main>
+    <TelaDoProfessor atual="cursos">
+      <main
+        className={`${CONTEINER} flex max-w-2xl flex-1 flex-col gap-8 py-8`}
+      >
+        <Link href="/professor/cursos" className="text-sm underline">
+          ← Cursos
+        </Link>
+        <Suspense fallback={<p>Carregando…</p>}>
+          <EditorDoCurso params={params} />
+        </Suspense>
+      </main>
+    </TelaDoProfessor>
   );
 }

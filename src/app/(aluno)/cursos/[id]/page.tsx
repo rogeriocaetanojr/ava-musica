@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { TelaDoAluno } from "@/components/tela-do-aluno";
+import { CONTEINER } from "@/components/conteiner";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { BarraProgresso } from "@/components/barra-progresso";
@@ -123,10 +125,14 @@ async function PaginaDoCurso({ params }: { params: Promise<{ id: string }> }) {
 
 export default function Curso({ params }: { params: Promise<{ id: string }> }) {
   return (
-    <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 px-4 py-8">
-      <Suspense fallback={<p>Carregando…</p>}>
-        <PaginaDoCurso params={params} />
-      </Suspense>
-    </main>
+    <TelaDoAluno atual="cursos">
+      <main
+        className={`${CONTEINER} flex max-w-2xl flex-1 flex-col gap-6 py-8`}
+      >
+        <Suspense fallback={<p>Carregando…</p>}>
+          <PaginaDoCurso params={params} />
+        </Suspense>
+      </main>
+    </TelaDoAluno>
   );
 }

@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { TelaDoProfessor } from "@/components/tela-do-professor";
+import { CONTEINER } from "@/components/conteiner";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { BarraProgresso } from "@/components/barra-progresso";
@@ -131,13 +133,17 @@ export default function ProgressoDoAluno({
   params: Promise<{ id: string }>;
 }) {
   return (
-    <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-8 px-4 py-8">
-      <Link href="/professor" className="text-sm underline">
-        ← Painel
-      </Link>
-      <Suspense fallback={<p>Carregando…</p>}>
-        <DetalheDoAluno params={params} />
-      </Suspense>
-    </main>
+    <TelaDoProfessor atual="alunos">
+      <main
+        className={`${CONTEINER} flex max-w-2xl flex-1 flex-col gap-8 py-8`}
+      >
+        <Link href="/professor" className="text-sm underline">
+          ← Painel
+        </Link>
+        <Suspense fallback={<p>Carregando…</p>}>
+          <DetalheDoAluno params={params} />
+        </Suspense>
+      </main>
+    </TelaDoProfessor>
   );
 }

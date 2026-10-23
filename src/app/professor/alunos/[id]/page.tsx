@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { TelaDoProfessor } from "@/components/tela-do-professor";
+import { CONTEINER } from "@/components/conteiner";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { exigirProfessor } from "@/lib/auth";
@@ -245,13 +247,17 @@ async function FichaDoAluno({ params }: { params: Promise<{ id: string }> }) {
 
 export default function Aluno({ params }: { params: Promise<{ id: string }> }) {
   return (
-    <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-8 px-4 py-8">
-      <Link href="/professor/alunos" className="text-sm underline">
-        ← Alunos
-      </Link>
-      <Suspense fallback={<p>Carregando…</p>}>
-        <FichaDoAluno params={params} />
-      </Suspense>
-    </main>
+    <TelaDoProfessor atual="alunos">
+      <main
+        className={`${CONTEINER} flex max-w-2xl flex-1 flex-col gap-8 py-8`}
+      >
+        <Link href="/professor/alunos" className="text-sm underline">
+          ← Alunos
+        </Link>
+        <Suspense fallback={<p>Carregando…</p>}>
+          <FichaDoAluno params={params} />
+        </Suspense>
+      </main>
+    </TelaDoProfessor>
   );
 }

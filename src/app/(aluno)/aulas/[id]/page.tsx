@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CONTEINER } from "@/components/conteiner";
 import { LogoDoAva } from "@/components/logo-do-ava";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
@@ -264,7 +265,9 @@ async function PaginaDaAula({ params }: { params: Promise<{ id: string }> }) {
   return (
     <>
       <header className="border-linha md:border-b md:bg-superficie">
-        <div className="mx-auto flex w-full max-w-6xl items-center gap-x-4 md:flex-wrap md:gap-x-6 gap-y-2 px-4 py-3">
+        <div
+          className={`${CONTEINER} flex max-w-6xl items-center gap-x-4 md:flex-wrap md:gap-x-6 gap-y-2 py-3`}
+        >
           <Link
             href={linkDoCurso}
             aria-label={`Voltar para ${curso}`}
@@ -326,7 +329,9 @@ async function PaginaDaAula({ params }: { params: Promise<{ id: string }> }) {
         </div>
       </header>
 
-      <main className="mx-auto grid w-full max-w-6xl flex-1 gap-8 px-4 pt-4 pb-8 md:pt-8 lg:grid-cols-[minmax(0,1fr)_20rem]">
+      <main
+        className={`${CONTEINER} grid max-w-6xl flex-1 gap-8 pt-4 pb-8 md:pt-8 lg:grid-cols-[minmax(0,1fr)_20rem]`}
+      >
         <div className="min-w-0 space-y-6 md:space-y-8">
           {!aluno && (
             <p className="rounded-xl bg-amarelo-claro p-3 text-base text-texto-sobre-amarelo">

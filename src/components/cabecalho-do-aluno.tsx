@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CONTEINER } from "@/components/conteiner";
 import { LogoDoAva } from "@/components/logo-do-ava";
 
 import { iniciais } from "@/lib/nomes";
@@ -15,7 +16,7 @@ const ITENS: {
 ];
 
 const item =
-  "inline-flex min-h-12 items-center rounded-xl px-4 text-base font-bold";
+  "inline-flex min-h-12 items-center rounded-xl px-4 text-base font-bold md:px-2 lg:px-4";
 
 function textoDoSino(naoLidos: number): string {
   if (naoLidos === 0) return "Avisos";
@@ -31,25 +32,27 @@ export function CabecalhoDoAluno({
   atual,
   naoLidos = 0,
 }: {
-  nome: string;
+  nome?: string;
   atual: SecaoDoAluno;
   naoLidos?: number;
 }) {
   return (
     <header className="border-b border-linha bg-superficie">
-      <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3">
+      <div
+        className={`${CONTEINER} flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-2 py-3 md:grid md:grid-cols-[1fr_auto_1fr] md:gap-x-4 lg:gap-x-6`}
+      >
         <Link
           href="/cursos"
-          className="flex min-h-12 items-center gap-3 font-titulo text-2xl text-texto"
+          className="flex min-h-12 items-center gap-3 font-titulo text-2xl text-texto md:justify-self-start"
         >
           <LogoDoAva
             semSubtitulo
-            className="[--altura:46px] md:[--altura:60px]"
+            className="[--altura:46px] lg:[--altura:60px]"
           />
         </Link>
 
         <nav aria-label="Área do aluno" className="hidden md:block">
-          <ul className="flex gap-2">
+          <ul className="flex items-center gap-1 lg:gap-2">
             {ITENS.map(({ secao, rotulo, href }) => (
               <li key={secao}>
                 <Link
@@ -68,7 +71,7 @@ export function CabecalhoDoAluno({
           </ul>
         </nav>
 
-        <div className="ml-auto flex items-center gap-3">
+        <div className="ml-auto flex items-center gap-3 md:justify-self-end md:gap-2">
           <Link
             href="/cursos#recados"
             aria-label={textoDoSino(naoLidos)}
@@ -95,13 +98,15 @@ export function CabecalhoDoAluno({
             )}
           </Link>
 
-          <span
-            title={nome}
-            className="hidden size-12 items-center justify-center rounded-full bg-bordo md:inline-flex text-base font-bold text-superficie"
-          >
-            <span aria-hidden="true">{iniciais(nome)}</span>
-            <span className="sr-only">Conectado como {nome}</span>
-          </span>
+          {nome && (
+            <span
+              title={nome}
+              className="hidden size-12 items-center justify-center rounded-full bg-bordo md:inline-flex text-base font-bold text-superficie"
+            >
+              <span aria-hidden="true">{iniciais(nome)}</span>
+              <span className="sr-only">Conectado como {nome}</span>
+            </span>
+          )}
 
           <form action="/auth/sair" method="post" className="hidden md:block">
             <button
