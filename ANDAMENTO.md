@@ -4,7 +4,6 @@
 
 ### Telas
 
-- [ ] Curso do aluno no celular
 - [ ] Cursos do professor no computador
 - [ ] Cursos do professor no celular
 - [ ] Alunos do professor no computador
@@ -86,6 +85,7 @@
 - [x] Convite de aluno no computador
 - [x] Convite de aluno no celular
 - [x] Curso do aluno no computador
+- [x] Curso do aluno no celular, com os módulos recolhíveis e o da próxima aula aberto
 
 ## Decisões
 

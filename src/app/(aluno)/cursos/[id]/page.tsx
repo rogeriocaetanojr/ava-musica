@@ -165,54 +165,86 @@ async function PaginaDoCurso({ params }: { params: Promise<{ id: string }> }) {
                 modulo.aulas.filter((aula) => aula.publicada),
               );
               if (aulas.length === 0) return null;
-              return (
-                <li
-                  key={modulo.id}
-                  className="space-y-3 rounded-2xl border border-linha bg-superficie p-4 md:p-6"
-                >
-                  <div className="flex flex-wrap items-baseline justify-between gap-x-4 px-3">
-                    <h3 className="font-titulo text-xl break-words text-texto md:text-2xl">
-                      {modulo.titulo}
-                    </h3>
-                    <p className="text-sm text-texto-secundario">
-                      {aulas.length} {aulas.length === 1 ? "aula" : "aulas"}
-                    </p>
-                  </div>
-                  <ol className="space-y-1">
-                    {aulas.map((aula) => {
-                      const situacao = situacaoDe(aula);
-                      const numero =
-                        sequencia.findIndex((outra) => outra.id === aula.id) +
-                        1;
-                      const atual = situacao === "atual";
-                      return (
-                        <li key={aula.id}>
-                          <Link
-                            href={`/aulas/${aula.id}`}
-                            className={`flex min-h-12 items-center gap-3 rounded-xl px-3 py-2 text-base ${
-                              atual
-                                ? "bg-amarelo-claro font-bold text-texto-sobre-amarelo"
-                                : "text-texto hover:bg-fundo"
-                            }`}
-                          >
-                            <MarcadorDaAula
-                              situacao={situacao}
-                              numero={numero}
-                            />
-                            <span className="min-w-0 break-words">
-                              {temProva(aula)
-                                ? aula.titulo
-                                : `Aula ${numero} · ${aula.titulo}`}
-                              <span className="sr-only">
-                                {" "}
-                                ({TEXTO_DA_SITUACAO[situacao]})
-                              </span>
+              const quantidade = `${aulas.length} ${aulas.length === 1 ? "aula" : "aulas"}`;
+              const listaDeAulas = (
+                <ol className="space-y-1">
+                  {aulas.map((aula) => {
+                    const situacao = situacaoDe(aula);
+                    const numero =
+                      sequencia.findIndex((outra) => outra.id === aula.id) + 1;
+                    const atual = situacao === "atual";
+                    return (
+                      <li key={aula.id}>
+                        <Link
+                          href={`/aulas/${aula.id}`}
+                          className={`flex min-h-12 items-center gap-3 rounded-xl px-3 py-2 text-base ${
+                            atual
+                              ? "bg-amarelo-claro font-bold text-texto-sobre-amarelo"
+                              : "text-texto hover:bg-fundo"
+                          }`}
+                        >
+                          <MarcadorDaAula situacao={situacao} numero={numero} />
+                          <span className="min-w-0 break-words">
+                            {temProva(aula)
+                              ? aula.titulo
+                              : `Aula ${numero} · ${aula.titulo}`}
+                            <span className="sr-only">
+                              {" "}
+                              ({TEXTO_DA_SITUACAO[situacao]})
                             </span>
-                          </Link>
-                        </li>
-                      );
-                    })}
-                  </ol>
+                          </span>
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ol>
+              );
+              const temAProxima = aulas.some(
+                (aula) => aula.id === resumo.proxima?.id,
+              );
+              return (
+                <li key={modulo.id}>
+                  {/* No celular o módulo recolhe; abre o da próxima aula. */}
+                  <details
+                    open={temAProxima}
+                    className="group rounded-2xl border border-linha bg-superficie md:hidden"
+                  >
+                    <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 rounded-2xl px-4 py-3 [&::-webkit-details-marker]:hidden">
+                      <span className="min-w-0">
+                        <span className="block font-titulo text-xl break-words text-texto">
+                          {modulo.titulo}
+                        </span>
+                        <span className="block text-sm text-texto-secundario">
+                          {quantidade}
+                        </span>
+                      </span>
+                      <svg
+                        aria-hidden="true"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="size-5 shrink-0 text-texto transition-transform group-open:rotate-180"
+                      >
+                        <path d="M6 9l6 6 6-6" />
+                      </svg>
+                    </summary>
+                    <div className="px-1 pb-3">{listaDeAulas}</div>
+                  </details>
+
+                  <div className="hidden space-y-3 rounded-2xl border border-linha bg-superficie p-4 md:block md:p-6">
+                    <div className="flex flex-wrap items-baseline justify-between gap-x-4 px-3">
+                      <h3 className="font-titulo text-xl break-words text-texto md:text-2xl">
+                        {modulo.titulo}
+                      </h3>
+                      <p className="text-sm text-texto-secundario">
+                        {quantidade}
+                      </p>
+                    </div>
+                    {listaDeAulas}
+                  </div>
                 </li>
               );
             })}
