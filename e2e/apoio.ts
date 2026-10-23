@@ -5,7 +5,7 @@ const CAIXA_DE_EMAIL = process.env.MAILPIT_URL ?? "http://127.0.0.1:54324";
 
 export const PROFESSOR = "professor@teste.local";
 export const ALUNO = "aluno@teste.local";
-export const NOME_DO_ALUNO = "Aluno de Teste";
+export const NOME_DO_ALUNO = "Ana Souza";
 
 async function chamarCaixa(caminho: string, metodo = "GET"): Promise<Response> {
   const resposta = await fetch(`${CAIXA_DE_EMAIL}/api/v1${caminho}`, {

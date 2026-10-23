@@ -108,7 +108,7 @@ test("aluno conclui a aula e o professor vê o progresso", async ({
   await page.getByRole("button", { name: "Marcar como concluída" }).click();
   await expect(page.getByText("✓ Aula concluída")).toBeVisible();
 
-  await page.getByRole("link", { name: `← ${curso}` }).click();
+  await page.getByRole("link", { name: `Voltar para ${curso}` }).click();
   await expect(progressoDoAluno).toHaveAttribute("aria-valuenow", "100");
 
   // O professor, em outro navegador, vê o progresso no painel.

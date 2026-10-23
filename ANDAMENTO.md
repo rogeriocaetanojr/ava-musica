@@ -4,7 +4,6 @@
 
 ### Telas
 
-- [ ] Tela da aula no computador
 - [ ] Tela da aula no celular
 - [ ] Painel do professor no computador
 - [ ] Painel do professor no celular
@@ -79,6 +78,7 @@
 - [x] Tela de entrada no celular
 - [x] Meus cursos no computador
 - [x] Meus cursos no celular, com a barra de abas e a página de perfil
+- [x] Tela da aula no computador
 
 ## Decisões
 
@@ -168,3 +168,6 @@
 - O "Continue de onde parou" usa o curso da aula com o registro de progresso mais recente; sem progresso, o primeiro curso (em ordem alfabética) que tem aulas. Com tudo concluído, o cartão diz isso e leva ao curso.
 - A saudação (Bom dia até 11h59, Boa tarde até 17h59, Boa noite a partir das 18h e até 4h59) segue o horário de Brasília.
 - Os cartões de curso inteiros são o link para a página do curso; o botão Começar fica na página do curso. O título da tela passou a ser só o nome do aluno, e os testes de ponta a ponta acompanham essas duas mudanças.
+- A tela da aula tem cabeçalho próprio: o botão voltar ("Voltar para {curso}"), o logo e a trilha Curso / Módulo / Aula. O primeiro vídeo do YouTube abre a aula, os blocos de texto formam a descrição e os demais blocos viram os cartões de "Materiais da aula", na ordem do professor. O playback por link direto ganhou um botão grande de tocar; o do Drive continua no visualizador do Drive.
+- A lateral mostra o progresso no curso e as aulas do módulo atual. Para isso, a página lê também as aulas concluídas no curso, o título dos módulos e o tipo dos blocos de cada aula (para marcar as aulas com prova). São só leituras, sob as mesmas regras de acesso: o aluno pendente, bloqueado ou sem aceite do responsável não vê nada.
+- Concluída, o botão passa a "✓ Aula concluída" e continua desmarcando com um toque. O teste de ponta a ponta volta ao curso pelo botão "Voltar para {curso}".
