@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { BarraProgresso } from "@/components/barra-progresso";
 import { classesDoBotao } from "@/components/botao";
+import { AbasDoAluno } from "@/components/abas-do-aluno";
 import { CabecalhoDoAluno } from "@/components/cabecalho-do-aluno";
 import { BocaDoViolao, Cordas } from "@/components/cordas";
 import { exigirAlunoOuProfessor } from "@/lib/auth";
@@ -80,22 +81,30 @@ function ContinueDeOndeParou({
   return (
     <section
       aria-labelledby="continuar"
-      className="relative overflow-hidden rounded-3xl bg-bordo p-8 text-superficie md:pr-56"
+      className="relative overflow-hidden rounded-3xl bg-bordo p-6 text-superficie md:p-8 md:pr-56"
     >
-      <Cordas className="absolute inset-y-0 right-14 hidden w-26 md:flex" />
+      <Cordas className="absolute inset-y-0 right-4 w-16 md:right-14 md:w-26" />
       <BocaDoViolao className="absolute top-1/2 right-10 hidden size-32 -translate-y-1/2 md:block" />
 
       <div className="relative space-y-4">
         <h2 id="continuar" className="text-sm font-bold text-amarelo">
           {proxima ? "Continue de onde parou" : "Curso concluído"}
         </h2>
-        <p className="font-titulo text-4xl break-words">
+        <p className="pr-14 font-titulo text-3xl break-words md:pr-0 md:text-4xl">
           {proxima ? proxima.titulo : curso.titulo}
         </p>
-        <p className="text-base text-amarelo-claro">
-          {proxima
-            ? `${curso.titulo} · ${modulo?.titulo ?? ""} · Aula ${numero} de ${resumo.total}`
-            : "Você concluiu todas as aulas deste curso. Pode rever quando quiser."}
+        <p className="pr-14 text-base text-amarelo-claro md:pr-0">
+          {proxima ? (
+            <>
+              {curso.titulo} ·{" "}
+              <span className="hidden md:inline">
+                {modulo?.titulo ?? ""} ·{" "}
+              </span>
+              Aula {numero} de {resumo.total}
+            </>
+          ) : (
+            "Você concluiu todas as aulas deste curso. Pode rever quando quiser."
+          )}
         </p>
         <div className="flex max-w-md items-center gap-3">
           <div className="flex-1">
@@ -110,7 +119,7 @@ function ContinueDeOndeParou({
         </div>
         <Link
           href={proxima ? `/aulas/${proxima.id}` : `/cursos/${curso.id}`}
-          className={classesDoBotao("destaque", "sm:w-auto")}
+          className={classesDoBotao("destaque", "md:w-auto")}
         >
           <svg
             aria-hidden="true"
@@ -120,7 +129,13 @@ function ContinueDeOndeParou({
           >
             <path d="M2 1l9 5-9 5z" />
           </svg>
-          {proxima ? "Continuar aula" : "Ver o curso"}
+          {proxima ? (
+            <span>
+              Continuar<span className="hidden md:inline"> aula</span>
+            </span>
+          ) : (
+            "Ver o curso"
+          )}
         </Link>
       </div>
     </section>
@@ -131,7 +146,7 @@ function RecadosDoProfessor({ avisos }: { avisos: Aviso[] }) {
   return (
     <section
       aria-labelledby="recados-recentes"
-      className="flex flex-col gap-5 rounded-3xl bg-amarelo-claro p-7 text-texto-sobre-amarelo"
+      className="hidden flex-col gap-5 rounded-3xl bg-amarelo-claro p-7 text-texto-sobre-amarelo md:flex"
     >
       <h2 id="recados-recentes" className="text-sm font-bold">
         Recados do professor
@@ -164,6 +179,36 @@ function RecadosDoProfessor({ avisos }: { avisos: Aviso[] }) {
   );
 }
 
+// No celular, só o recado mais recente, levando à lista completa.
+function RecadoMaisRecente({ aviso }: { aviso: Aviso }) {
+  return (
+    <Link
+      href="#recados"
+      className="flex min-h-12 items-center gap-4 rounded-3xl bg-amarelo-claro p-5 text-texto-sobre-amarelo md:hidden"
+    >
+      <svg
+        aria-hidden="true"
+        viewBox="0 0 24 24"
+        className="size-6 shrink-0"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z" />
+        <path d="M10 20a2 2 0 0 0 4 0" />
+      </svg>
+      <span className="min-w-0">
+        <span className="block text-base font-bold break-words">
+          {aviso.titulo}
+        </span>
+        <span className="block text-base">Recado do professor</span>
+      </span>
+    </Link>
+  );
+}
+
 function CartaoDoCurso({
   curso,
   posicao,
@@ -180,14 +225,14 @@ function CartaoDoCurso({
   return (
     <li className="overflow-hidden rounded-2xl border border-linha bg-superficie">
       <Link href={`/cursos/${curso.id}`} className="block">
-        <div className={`relative h-36 ${capa.fundo}`}>
+        <div className={`relative h-24 md:h-36 ${capa.fundo}`}>
           <Cordas
             cor={capa.cordas}
-            className="absolute inset-y-0 left-1/3 w-20"
+            className="absolute inset-y-0 left-1/3 w-16 md:w-20"
           />
         </div>
-        <div className="space-y-3 p-5">
-          <h3 className="font-titulo text-xl break-words text-texto">
+        <div className="space-y-3 p-4 md:p-5">
+          <h3 className="font-titulo text-lg break-words text-texto md:text-xl">
             {curso.titulo}
           </h3>
           <BarraProgresso
@@ -197,9 +242,17 @@ function CartaoDoCurso({
             comTexto={false}
           />
           <p className="text-sm text-texto-secundario">
-            {terminou
-              ? "Concluído"
-              : `${resumo.concluidas} de ${resumo.total} ${resumo.total === 1 ? "aula" : "aulas"} · ${resumo.percentual}%`}
+            {terminou ? (
+              "Concluído"
+            ) : (
+              <>
+                <span className="hidden md:inline">
+                  {resumo.concluidas} de {resumo.total}{" "}
+                  {resumo.total === 1 ? "aula" : "aulas"} ·{" "}
+                </span>
+                {resumo.percentual}%
+              </>
+            )}
           </p>
         </div>
       </Link>
@@ -239,11 +292,13 @@ async function MeusCursosDoAluno() {
     <>
       <CabecalhoDoAluno nome={sessao.nome} atual="cursos" />
 
-      <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-8 px-4 py-10 md:px-8">
+      <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-4 py-6 md:gap-8 md:px-8 md:py-10">
         <header className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <p className={rotuloDeSecao}>{saudacao()}</p>
-            <h1 className="font-titulo text-5xl break-words">{sessao.nome}</h1>
+            <h1 className="font-titulo text-4xl break-words md:text-5xl">
+              {sessao.nome}
+            </h1>
           </div>
           {professor && (
             <Link
@@ -268,6 +323,7 @@ async function MeusCursosDoAluno() {
               <ContinueDeOndeParou curso={continuar} concluidas={concluidas} />
             )}
             {avisos.length > 0 && <RecadosDoProfessor avisos={avisos} />}
+            {avisos.length > 0 && <RecadoMaisRecente aviso={avisos[0]} />}
           </div>
         )}
 
@@ -281,7 +337,7 @@ async function MeusCursosDoAluno() {
               seus cursos, eles aparecem nesta página.
             </p>
           ) : (
-            <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            <ul className="grid grid-cols-2 gap-3 md:gap-5 lg:grid-cols-3">
               {cursos.map((curso, posicao) => (
                 <CartaoDoCurso
                   key={curso.id}
@@ -344,6 +400,7 @@ export default function MeusCursos() {
           Política de privacidade
         </Link>
       </footer>
+      <AbasDoAluno atual="cursos" />
     </div>
   );
 }

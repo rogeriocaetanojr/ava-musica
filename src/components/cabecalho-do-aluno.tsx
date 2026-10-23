@@ -3,9 +3,13 @@ import Link from "next/link";
 import { LOGO_DO_AVA, NOME_DO_AVA } from "@/lib/site";
 import { iniciais } from "@/lib/nomes";
 
-export type SecaoDoAluno = "cursos" | "avisos";
+export type SecaoDoAluno = "cursos" | "avisos" | "perfil";
 
-const ITENS: { secao: SecaoDoAluno; rotulo: string; href: string }[] = [
+const ITENS: {
+  secao: Exclude<SecaoDoAluno, "perfil">;
+  rotulo: string;
+  href: string;
+}[] = [
   { secao: "cursos", rotulo: "Meus cursos", href: "/cursos" },
   { secao: "avisos", rotulo: "Avisos", href: "/cursos#recados" },
 ];
@@ -20,7 +24,8 @@ function textoDoSino(naoLidos: number): string {
     : `Avisos: ${naoLidos} avisos não lidos`;
 }
 
-// Cabeçalho da área do aluno: logo, navegação, sino de avisos e avatar.
+// Cabeçalho da área do aluno: logo, navegação, sino de avisos e avatar. No
+// celular fica só o logo e o sino; a navegação vai para as AbasDoAluno.
 export function CabecalhoDoAluno({
   nome,
   atual,
@@ -41,7 +46,7 @@ export function CabecalhoDoAluno({
           <span>{NOME_DO_AVA}</span>
         </Link>
 
-        <nav aria-label="Área do aluno">
+        <nav aria-label="Área do aluno" className="hidden md:block">
           <ul className="flex gap-2">
             {ITENS.map(({ secao, rotulo, href }) => (
               <li key={secao}>
@@ -90,13 +95,13 @@ export function CabecalhoDoAluno({
 
           <span
             title={nome}
-            className="inline-flex size-12 items-center justify-center rounded-full bg-bordo text-base font-bold text-superficie"
+            className="hidden size-12 items-center justify-center rounded-full bg-bordo md:inline-flex text-base font-bold text-superficie"
           >
             <span aria-hidden="true">{iniciais(nome)}</span>
             <span className="sr-only">Conectado como {nome}</span>
           </span>
 
-          <form action="/auth/sair" method="post">
+          <form action="/auth/sair" method="post" className="hidden md:block">
             <button
               type="submit"
               className={`${item} text-texto-secundario hover:text-texto`}

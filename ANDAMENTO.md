@@ -4,7 +4,6 @@
 
 ### Telas
 
-- [ ] Meus cursos no celular
 - [ ] Tela da aula no computador
 - [ ] Tela da aula no celular
 - [ ] Painel do professor no computador
@@ -41,6 +40,10 @@
 - [ ] Manual do professor e documentação do projeto
 - [ ] Lançamento com um primeiro grupo de alunos
 
+### Pendências
+
+- [ ] Sempre ter o nome do aluno: tela 'Como você se chama?' no pedido pelo código
+
 ### Melhorias futuras
 
 - [ ] Professor poder excluir cursos, módulos e aulas
@@ -75,6 +78,7 @@
 - [x] Tela de entrada no computador, com as cores e fontes aprovadas
 - [x] Tela de entrada no celular
 - [x] Meus cursos no computador
+- [x] Meus cursos no celular, com a barra de abas e a página de perfil
 
 ## Decisões
 
