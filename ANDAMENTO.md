@@ -4,7 +4,6 @@
 
 ### Telas
 
-- [ ] Convite de aluno no celular
 - [ ] Tema escuro no computador
 - [ ] Tema escuro no celular
 
@@ -79,6 +78,7 @@
 - [x] Painel do professor no computador
 - [x] Painel do professor no celular, com a barra de abas do professor
 - [x] Convite de aluno no computador
+- [x] Convite de aluno no celular
 
 ## Decisões
 
@@ -180,3 +180,4 @@
 - No celular, a área do professor tem barra de abas fixa no rodapé (`src/components/abas-do-professor.tsx`): Painel, Cursos, Alunos e Recados. A aba Cursos tem o nome acessível "Cursos e aulas", o mesmo do computador, e o teste de ponta a ponta continua igual. O cabeçalho mostra só o logo e o selo "Professor"; Ver como aluno e Sair ficam no rodapé da página.
 - No painel do celular: os indicadores são alunos ativos e cursos no ar; os aceites pendentes viram uma faixa amarela que leva a Alunos e só aparece quando há algum. Nova aula e Convidar ficam lado a lado abaixo dos indicadores. O progresso vira uma lista de cartões, um por matrícula, com o curso abaixo do nome e a barra com o percentual, ou a etiqueta Aguardando responsável ou Bloqueado. Pedidos de acesso, Recusados recentemente e Último recado continuam na tela: os pedidos acima da lista, os outros dois abaixo dela.
 - O convite de aluno fica numa página própria (`/professor/alunos/convidar`) e confere os campos na tela antes de enviar, mas quem valida de verdade, inclusive a regra dos 12 anos, continua sendo o servidor.
+- No celular, o convite tem no topo o botão voltar, "Alunos" e o título; "Como funciona o convite" vira um bloco recolhível, fechado por padrão. Os campos ficam numa coluna, com o bloco do responsável logo abaixo da data de nascimento, e Cancelar e o botão de enviar ficam fixos no rodapé, sem a barra de abas. Para o bloco mudar de lugar sem repetir campos, a tela consulta a largura no navegador (`matchMedia`) e mostra o bloco numa só posição.

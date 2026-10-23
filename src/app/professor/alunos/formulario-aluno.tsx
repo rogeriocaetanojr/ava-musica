@@ -1,7 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { type FormEvent, useActionState, useState } from "react";
+import {
+  type FormEvent,
+  useActionState,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import { Aviso } from "@/components/aviso";
 import { classesDoBotao } from "@/components/botao";
 import { Campo } from "@/components/campo";
@@ -37,6 +42,19 @@ function Icone({ caminho }: { caminho: string }) {
   );
 }
 
+// Até 767 px vale o layout de celular. No servidor conta como computador; o
+// bloco do responsável só aparece depois de digitada a data, já no navegador.
+const CELULAR = "(max-width: 767px)";
+
+function assinarCelular(avisar: () => void) {
+  const consulta = window.matchMedia(CELULAR);
+  consulta.addEventListener("change", avisar);
+  return () => consulta.removeEventListener("change", avisar);
+}
+
+// Folga para o campo focado não ficar atrás do rodapé fixo do celular.
+const FOLGA_DO_RODAPE = "max-md:scroll-mb-48";
+
 // Campo com a mensagem de erro logo abaixo, ligada por aria-describedby.
 function CampoComErro({
   nome,
@@ -47,6 +65,7 @@ function CampoComErro({
   return (
     <div className="space-y-1">
       <Campo
+        className={FOLGA_DO_RODAPE}
         name={nome}
         aria-invalid={erro ? true : undefined}
         aria-describedby={erro ? idDoErro : undefined}
@@ -90,6 +109,12 @@ export function FormularioAluno({ cursos }: { cursos: Curso[] }) {
     {},
   );
 
+  const celular = useSyncExternalStore(
+    assinarCelular,
+    () => window.matchMedia(CELULAR).matches,
+    () => false,
+  );
+
   const menor =
     ehDataValida(nascimento) &&
     nascimento <= hoje &&
@@ -122,6 +147,49 @@ export function FormularioAluno({ cursos }: { cursos: Curso[] }) {
     }
   }
 
+  // No computador o bloco fica depois dos cursos; no celular, logo abaixo da
+  // data de nascimento, que é o que o faz aparecer.
+  const blocoDoResponsavel = menor && (
+    <fieldset className="space-y-4 rounded-2xl bg-amarelo-claro p-5 text-texto-sobre-amarelo">
+      <legend className="sr-only">Responsável</legend>
+      <div className="flex gap-3">
+        <Icone caminho="M12 3l7 3v5c0 4.5-3 8.5-7 10-4-1.5-7-5.5-7-10V6z" />
+        <div className="space-y-1">
+          <p className="font-bold">Aluno com menos de 12 anos</p>
+          <p className="text-sm">
+            A conta só é liberada depois que o responsável autorizar pelo link
+            que aparece ao enviar.
+          </p>
+        </div>
+      </div>
+      <div className="grid gap-4 md:grid-cols-2">
+        <CampoComErro
+          id="responsavel-nome"
+          nome="responsavel_nome"
+          rotulo="Nome do responsável"
+          autoComplete="off"
+          required
+          maxLength={120}
+          value={responsavelNome}
+          onChange={(e) => setResponsavelNome(e.target.value)}
+          erro={erros.responsavel_nome}
+        />
+        <CampoComErro
+          id="responsavel-email"
+          nome="responsavel_email"
+          rotulo="E-mail do responsável"
+          type="email"
+          autoComplete="off"
+          required
+          maxLength={254}
+          value={responsavelEmail}
+          onChange={(e) => setResponsavelEmail(e.target.value)}
+          erro={erros.responsavel_email}
+        />
+      </div>
+    </fieldset>
+  );
+
   return (
     <form action={enviar} onSubmit={conferir} noValidate className="space-y-6">
       <fieldset className="space-y-4">
@@ -149,8 +217,10 @@ export function FormularioAluno({ cursos }: { cursos: Curso[] }) {
             max={hoje}
             value={nascimento}
             onChange={(e) => setNascimento(e.target.value)}
+            inputMode="numeric"
             erro={erros.data_nascimento}
           />
+          {celular && blocoDoResponsavel}
           <CampoComErro
             id="aluno-email"
             nome="email"
@@ -215,46 +285,7 @@ export function FormularioAluno({ cursos }: { cursos: Curso[] }) {
           ? "Aluno com menos de 12 anos: preencha os dados do responsável."
           : ""}
       </p>
-      {menor && (
-        <fieldset className="space-y-4 rounded-2xl bg-amarelo-claro p-5 text-texto-sobre-amarelo">
-          <legend className="sr-only">Responsável</legend>
-          <div className="flex gap-3">
-            <Icone caminho="M12 3l7 3v5c0 4.5-3 8.5-7 10-4-1.5-7-5.5-7-10V6z" />
-            <div className="space-y-1">
-              <p className="font-bold">Aluno com menos de 12 anos</p>
-              <p className="text-sm">
-                A conta só é liberada depois que o responsável autorizar pelo
-                link que aparece ao enviar.
-              </p>
-            </div>
-          </div>
-          <div className="grid gap-4 md:grid-cols-2">
-            <CampoComErro
-              id="responsavel-nome"
-              nome="responsavel_nome"
-              rotulo="Nome do responsável"
-              autoComplete="off"
-              required
-              maxLength={120}
-              value={responsavelNome}
-              onChange={(e) => setResponsavelNome(e.target.value)}
-              erro={erros.responsavel_nome}
-            />
-            <CampoComErro
-              id="responsavel-email"
-              nome="responsavel_email"
-              rotulo="E-mail do responsável"
-              type="email"
-              autoComplete="off"
-              required
-              maxLength={254}
-              value={responsavelEmail}
-              onChange={(e) => setResponsavelEmail(e.target.value)}
-              erro={erros.responsavel_email}
-            />
-          </div>
-        </fieldset>
-      )}
+      {!celular && blocoDoResponsavel}
 
       {estado.erro && <Aviso role="alert">{estado.erro}</Aviso>}
       {estado.sucesso && (
@@ -269,10 +300,17 @@ export function FormularioAluno({ cursos }: { cursos: Curso[] }) {
         </div>
       )}
 
-      <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+      <div
+        aria-hidden="true"
+        className="h-[calc(9rem+env(safe-area-inset-bottom))] md:hidden"
+      />
+      <div className="flex gap-2 max-md:fixed max-md:inset-x-0 max-md:bottom-0 max-md:z-10 max-md:flex-col max-md:border-t max-md:border-linha max-md:bg-superficie max-md:px-4 max-md:pt-2 max-md:pb-[calc(1rem+env(safe-area-inset-bottom))] md:flex-row md:justify-end md:gap-3">
         <Link
           href="/professor/alunos"
-          className={classesDoBotao("secundario", "sm:w-auto")}
+          className={classesDoBotao(
+            "secundario",
+            "md:w-auto max-md:min-h-12 max-md:border-0 max-md:bg-transparent max-md:text-bordo max-md:underline",
+          )}
         >
           Cancelar
         </Link>
@@ -280,7 +318,7 @@ export function FormularioAluno({ cursos }: { cursos: Curso[] }) {
           type="submit"
           disabled={enviando}
           aria-busy={enviando}
-          className={classesDoBotao("primario", "sm:w-auto")}
+          className={classesDoBotao("primario", "md:w-auto")}
         >
           <span className="text-amarelo">
             <Icone caminho="M22 2L11 13 M22 2l-7 20-4-9-9-4z" />

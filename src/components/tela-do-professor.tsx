@@ -13,12 +13,15 @@ async function CabecalhoComSessao({ atual }: { atual: SecaoDoProfessor }) {
 
 // Moldura das subpáginas do professor: o mesmo cabeçalho e as mesmas abas do
 // painel no lugar da moldura geral do site, que fica só nas páginas públicas.
-// Enquanto a sessão carrega, o cabeçalho aparece sem o avatar.
+// Enquanto a sessão carrega, o cabeçalho aparece sem o avatar. Telas com
+// rodapé fixo próprio no celular, como o convite, ficam sem as abas.
 export function TelaDoProfessor({
   atual,
+  semAbas = false,
   children,
 }: {
   atual: SecaoDoProfessor;
+  semAbas?: boolean;
   children: ReactNode;
 }) {
   return (
@@ -27,7 +30,7 @@ export function TelaDoProfessor({
         <CabecalhoComSessao atual={atual} />
       </Suspense>
       {children}
-      <AbasDoProfessor atual={atual} />
+      {!semAbas && <AbasDoProfessor atual={atual} />}
     </div>
   );
 }
