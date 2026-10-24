@@ -4,7 +4,6 @@
 
 ### Telas
 
-- [ ] Cursos do professor no computador
 - [ ] Cursos do professor no celular
 - [ ] Alunos do professor no computador
 - [ ] Alunos do professor no celular
@@ -86,6 +85,7 @@
 - [x] Convite de aluno no celular
 - [x] Curso do aluno no computador
 - [x] Curso do aluno no celular, com os módulos recolhíveis e o da próxima aula aberto
+- [x] Cursos do professor no computador
 
 ## Decisões
 
@@ -193,3 +193,5 @@
 - A action da tela do nome começa com `exigirAluno({ semNome: true })`, que aceita só quem está logado, sem bloqueio e ainda sem nome, mesmo com o pedido pendente.
 - O nome só muda pelas funções do banco: `definir_meu_nome`, que grava o nome uma vez só, e `definir_nome_do_aluno`, que só o professor usa e que registra `renomear` na auditoria para qualquer idade. Um gatilho barra a mudança direta da coluna, como no bloqueio e na liberação. Na ficha do aluno, o professor corrige o nome, e a mudança aparece em "Últimos acessos" como "Alterou o nome".
 - O nome tem até 120 caracteres, sem espaços sobrando e sem `@`, para ninguém digitar o e-mail no lugar. Uma conta antiga ainda sem nome aparece como "Sem nome" nas telas do professor, nunca com o e-mail.
+- No computador, os cursos do professor aparecem em cartões com capa colorida e cordas, a contagem de módulos e aulas e a etiqueta Publicado ou Rascunho. Para a contagem, a lista lê também os módulos e as aulas de cada curso (só os ids), sob as mesmas regras de acesso. No computador largo, o formulário de novo curso fica fixo à esquerda e os cartões, em três colunas, à direita; na página do curso, os dados do curso ficam fixos à esquerda e os módulos, separados por divisórias, num só cartão à direita.
+- Na página do curso no computador, o título dos módulos e das aulas aparece como texto, com um botão de editar que abre o campo de renomear; no celular o campo continua sempre à vista. Subir, descer e editar são botões de ícone de 48 px com o nome no aria-label, sempre na mesma coluna, editando ou não; as setas desativadas mantêm o tamanho. Nova aula e Novo módulo continuam como campos sempre visíveis. Ainda não há exclusão de módulo nem de aula.

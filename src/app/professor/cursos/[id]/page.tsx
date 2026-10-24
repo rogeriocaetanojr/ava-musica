@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { TelaDoProfessor } from "@/components/tela-do-professor";
+import { BotaoVoltar } from "@/components/botao-voltar";
 import { CONTEINER } from "@/components/conteiner";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
@@ -18,6 +19,11 @@ import {
   renomearAula,
   renomearModulo,
 } from "./acoes";
+import {
+  BotaoEditar,
+  EdicaoDoTitulo,
+  TituloEditavel,
+} from "./edicao-do-titulo";
 import { FormularioTitulo } from "./formulario-titulo";
 
 type Aula = { id: string; titulo: string; ordem: number; publicada: boolean };
@@ -34,7 +40,58 @@ type Curso = {
 };
 
 const botaoPequeno =
-  "rounded-md border border-current px-3 py-2 text-sm disabled:opacity-30";
+  "rounded-md border border-current px-3 py-2 text-sm disabled:opacity-30 md:inline-flex md:min-h-12 md:items-center md:rounded-xl md:border-linha md:bg-superficie md:px-4 md:font-bold md:text-texto md:hover:border-borda-campo";
+
+// No computador, os botões de ordem viram quadrados de 48 px só com o ícone;
+// desativados, mantêm o tamanho e ficam apagados.
+const botaoDeIcone = `${botaoPequeno} md:size-12 md:justify-center md:px-0 md:disabled:cursor-not-allowed md:disabled:bg-fundo md:disabled:text-borda-campo/50 md:disabled:opacity-100`;
+
+// Largura de editar, subir e descer lado a lado, para o botão Adicionar
+// alinhar com essa coluna.
+const LARGURA_DA_COLUNA = "md:w-40";
+
+const tituloDeSecao =
+  "text-xl font-semibold md:font-titulo md:text-2xl md:font-normal md:text-texto";
+
+function Etiqueta({ publicado, texto }: { publicado: boolean; texto: string }) {
+  return (
+    <span
+      className={`rounded px-2 py-1 text-xs font-medium ${
+        publicado
+          ? "bg-green-100 text-green-800 md:bg-linha md:text-bordo"
+          : "bg-yellow-100 text-yellow-800 md:bg-amarelo-claro md:text-texto-sobre-amarelo"
+      } md:rounded-full md:px-3 md:font-bold`}
+    >
+      {texto}
+    </span>
+  );
+}
+
+function Seta({ direcao }: { direcao: Direcao }) {
+  return (
+    <>
+      <span className="md:hidden">{direcao === "subir" ? "↑" : "↓"}</span>
+      <svg
+        aria-hidden="true"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="hidden size-5 md:block"
+      >
+        <path
+          d={
+            direcao === "subir"
+              ? "M12 19V5M6 11l6-6 6 6"
+              : "M12 5v14M6 13l6 6 6-6"
+          }
+        />
+      </svg>
+    </>
+  );
+}
 
 function BotoesDeOrdem({
   mover,
@@ -54,9 +111,9 @@ function BotoesDeOrdem({
           type="submit"
           disabled={primeiro}
           aria-label={`Subir ${nome}`}
-          className={botaoPequeno}
+          className={botaoDeIcone}
         >
-          ↑
+          <Seta direcao="subir" />
         </button>
       </form>
       <form action={mover.bind(null, "descer")}>
@@ -64,9 +121,9 @@ function BotoesDeOrdem({
           type="submit"
           disabled={ultimo}
           aria-label={`Descer ${nome}`}
-          className={botaoPequeno}
+          className={botaoDeIcone}
         >
-          ↓
+          <Seta direcao="descer" />
         </button>
       </form>
     </div>
@@ -83,40 +140,54 @@ function ItemAula({
   ultima: boolean;
 }) {
   return (
-    <li className="space-y-2 rounded-md border border-current/30 p-3">
-      <FormularioTitulo
-        acao={renomearAula.bind(null, aula.id)}
-        rotulo="Título da aula"
-        textoDoBotao="Salvar"
-        inicial={aula.titulo}
-      />
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <span
-            className={`rounded px-2 py-1 text-xs font-medium ${
-              aula.publicada
-                ? "bg-green-100 text-green-800"
-                : "bg-yellow-100 text-yellow-800"
-            }`}
-          >
-            {aula.publicada ? "Publicada" : "Rascunho"}
-          </span>
-          <form action={publicarAula.bind(null, aula.id, !aula.publicada)}>
-            <button type="submit" className={botaoPequeno}>
-              {aula.publicada ? "Despublicar" : "Publicar"}
-            </button>
-          </form>
-          <Link href={`/professor/aulas/${aula.id}`} className={botaoPequeno}>
-            Conteúdo
-          </Link>
+    <li className="space-y-2 rounded-md border border-current/30 p-3 md:flex md:items-center md:gap-2 md:space-y-0 md:rounded-none md:border-0 md:border-t md:border-linha md:px-0 md:py-3 md:first:border-t-0">
+      <EdicaoDoTitulo>
+        <TituloEditavel
+          titulo={aula.titulo}
+          classeDoTitulo="font-bold text-texto"
+          extra={
+            <Etiqueta
+              publicado={aula.publicada}
+              texto={aula.publicada ? "Publicada" : "Rascunho"}
+            />
+          }
+        >
+          <FormularioTitulo
+            acao={renomearAula.bind(null, aula.id)}
+            rotulo="Título da aula"
+            textoDoBotao="Salvar"
+            inicial={aula.titulo}
+          />
+        </TituloEditavel>
+        <div className="flex flex-wrap items-center justify-between gap-2 md:contents">
+          <div className="flex items-center gap-2 md:contents">
+            <span className="md:hidden">
+              <Etiqueta
+                publicado={aula.publicada}
+                texto={aula.publicada ? "Publicada" : "Rascunho"}
+              />
+            </span>
+            <form action={publicarAula.bind(null, aula.id, !aula.publicada)}>
+              <button
+                type="submit"
+                className={`${botaoPequeno} md:w-32 md:justify-center`}
+              >
+                {aula.publicada ? "Despublicar" : "Publicar"}
+              </button>
+            </form>
+            <Link href={`/professor/aulas/${aula.id}`} className={botaoPequeno}>
+              Conteúdo
+            </Link>
+            <BotaoEditar nome={`a aula ${aula.titulo}`} />
+          </div>
+          <BotoesDeOrdem
+            mover={moverAula.bind(null, aula.id)}
+            primeiro={primeira}
+            ultimo={ultima}
+            nome={`a aula ${aula.titulo}`}
+          />
         </div>
-        <BotoesDeOrdem
-          mover={moverAula.bind(null, aula.id)}
-          primeiro={primeira}
-          ultimo={ultima}
-          nome={`a aula ${aula.titulo}`}
-        />
-      </div>
+      </EdicaoDoTitulo>
     </li>
   );
 }
@@ -135,29 +206,43 @@ function ItemModulo({
   const aulas = ordenar(modulo.aulas);
 
   return (
-    <li className="space-y-4 rounded-md border border-current p-3 sm:p-4">
-      <div className="space-y-2">
-        <div className="flex items-center justify-between gap-2">
-          <h3 className="font-semibold">Módulo {posicao}</h3>
-          <BotoesDeOrdem
-            mover={moverModulo.bind(null, modulo.id)}
-            primeiro={primeiro}
-            ultimo={ultimo}
-            nome={`o módulo ${modulo.titulo}`}
-          />
+    <li className="space-y-4 rounded-md border border-current p-3 sm:p-4 md:rounded-3xl md:border-linha md:bg-superficie md:p-6 lg:rounded-none lg:border-x-0 lg:border-t-0 lg:bg-transparent lg:p-0 lg:py-6 lg:first:pt-0 lg:last:border-b-0 lg:last:pb-0">
+      <EdicaoDoTitulo>
+        <div className="space-y-2 md:flex md:items-center md:gap-2 md:space-y-0">
+          <div className="flex items-center justify-between gap-2 md:contents">
+            <h3 className="font-semibold md:order-first md:mr-2 md:shrink-0 md:text-sm md:font-bold md:text-bordo">
+              Módulo {posicao}
+            </h3>
+            <div className="md:order-last md:flex md:gap-2">
+              <BotaoEditar nome={`o módulo ${modulo.titulo}`} />
+              <BotoesDeOrdem
+                mover={moverModulo.bind(null, modulo.id)}
+                primeiro={primeiro}
+                ultimo={ultimo}
+                nome={`o módulo ${modulo.titulo}`}
+              />
+            </div>
+          </div>
+          <TituloEditavel
+            titulo={modulo.titulo}
+            classeDoTitulo="font-titulo text-xl text-texto"
+          >
+            <FormularioTitulo
+              acao={renomearModulo.bind(null, modulo.id)}
+              rotulo="Título do módulo"
+              textoDoBotao="Salvar"
+              inicial={modulo.titulo}
+            />
+          </TituloEditavel>
         </div>
-        <FormularioTitulo
-          acao={renomearModulo.bind(null, modulo.id)}
-          rotulo="Título do módulo"
-          textoDoBotao="Salvar"
-          inicial={modulo.titulo}
-        />
-      </div>
+      </EdicaoDoTitulo>
 
       {aulas.length === 0 ? (
-        <p className="text-sm">Nenhuma aula neste módulo.</p>
+        <p className="text-sm md:text-texto-secundario">
+          Nenhuma aula neste módulo.
+        </p>
       ) : (
-        <ol className="space-y-3">
+        <ol className="space-y-3 md:space-y-0">
           {aulas.map((aula, indice) => (
             <ItemAula
               key={aula.id}
@@ -169,11 +254,14 @@ function ItemModulo({
         </ol>
       )}
 
-      <FormularioTitulo
-        acao={criarAula.bind(null, modulo.id)}
-        rotulo="Nova aula"
-        textoDoBotao="Adicionar"
-      />
+      <div className="md:border-t md:border-linha md:pt-4">
+        <FormularioTitulo
+          acao={criarAula.bind(null, modulo.id)}
+          rotulo="Nova aula"
+          textoDoBotao="Adicionar"
+          classeDoBotao={LARGURA_DA_COLUNA}
+        />
+      </div>
     </li>
   );
 }
@@ -198,47 +286,67 @@ async function EditorDoCurso({ params }: { params: Promise<{ id: string }> }) {
 
   return (
     <>
-      <h1 className="text-2xl font-bold break-words">{curso.titulo}</h1>
+      <div className="md:flex md:items-center md:gap-4">
+        <div className="hidden md:block">
+          <BotaoVoltar href="/professor/cursos" rotulo="Voltar para Cursos" />
+        </div>
+        <div className="min-w-0 md:flex md:flex-wrap md:items-center md:gap-3">
+          <h1 className="text-2xl font-bold break-words md:font-titulo md:text-5xl md:font-normal md:text-texto">
+            {curso.titulo}
+          </h1>
+          <span className="hidden md:inline">
+            <Etiqueta
+              publicado={curso.publicado}
+              texto={curso.publicado ? "Publicado" : "Rascunho"}
+            />
+          </span>
+        </div>
+      </div>
 
-      <section className="space-y-4">
-        <h2 className="text-xl font-semibold">Dados do curso</h2>
-        <FormularioCurso
-          acao={editarCurso.bind(null, curso.id)}
-          textoDoBotao="Salvar curso"
-          inicial={{
-            titulo: curso.titulo,
-            instrumento: curso.instrumento,
-            nivel: curso.nivel ?? "",
-            descricao: curso.descricao ?? "",
-            capa_url: curso.capa_url ?? "",
-            publicado: curso.publicado ? "on" : "",
-          }}
-        />
-      </section>
+      <div className="flex flex-col gap-8 lg:grid lg:grid-cols-12 lg:items-start lg:gap-6">
+        <section className="space-y-4 md:max-w-3xl md:rounded-3xl md:border md:border-linha md:bg-superficie md:p-6 lg:sticky lg:top-6 lg:col-span-5 lg:max-w-none">
+          <h2 className={tituloDeSecao}>Dados do curso</h2>
+          <FormularioCurso
+            acao={editarCurso.bind(null, curso.id)}
+            textoDoBotao="Salvar curso"
+            inicial={{
+              titulo: curso.titulo,
+              instrumento: curso.instrumento,
+              nivel: curso.nivel ?? "",
+              descricao: curso.descricao ?? "",
+              capa_url: curso.capa_url ?? "",
+              publicado: curso.publicado ? "on" : "",
+            }}
+          />
+        </section>
 
-      <section className="space-y-4">
-        <h2 className="text-xl font-semibold">Módulos e aulas</h2>
-        {modulos.length === 0 ? (
-          <p>Nenhum módulo criado ainda.</p>
-        ) : (
-          <ol className="space-y-4">
-            {modulos.map((modulo, indice) => (
-              <ItemModulo
-                key={modulo.id}
-                modulo={modulo}
-                posicao={indice + 1}
-                primeiro={indice === 0}
-                ultimo={indice === modulos.length - 1}
-              />
-            ))}
-          </ol>
-        )}
-        <FormularioTitulo
-          acao={criarModulo.bind(null, curso.id)}
-          rotulo="Novo módulo"
-          textoDoBotao="Adicionar"
-        />
-      </section>
+        <section className="space-y-4 md:space-y-6 lg:col-span-7 lg:rounded-3xl lg:border lg:border-linha lg:bg-superficie lg:p-6">
+          <h2 className={tituloDeSecao}>Módulos e aulas</h2>
+          {modulos.length === 0 ? (
+            <p>Nenhum módulo criado ainda.</p>
+          ) : (
+            <ol className="space-y-4 md:space-y-6 lg:space-y-0">
+              {modulos.map((modulo, indice) => (
+                <ItemModulo
+                  key={modulo.id}
+                  modulo={modulo}
+                  posicao={indice + 1}
+                  primeiro={indice === 0}
+                  ultimo={indice === modulos.length - 1}
+                />
+              ))}
+            </ol>
+          )}
+          <div className="md:max-w-3xl md:rounded-3xl md:border md:border-dashed md:border-borda-campo md:p-6 lg:max-w-none lg:rounded-none lg:border-x-0 lg:border-b-0 lg:border-solid lg:border-linha lg:px-0 lg:pb-0">
+            <FormularioTitulo
+              acao={criarModulo.bind(null, curso.id)}
+              rotulo="Novo módulo"
+              textoDoBotao="Adicionar"
+              classeDoBotao={LARGURA_DA_COLUNA}
+            />
+          </div>
+        </section>
+      </div>
     </>
   );
 }
@@ -251,9 +359,9 @@ export default function EditarCurso({
   return (
     <TelaDoProfessor atual="cursos">
       <main
-        className={`${CONTEINER} flex max-w-2xl flex-1 flex-col gap-8 py-8`}
+        className={`${CONTEINER} flex max-w-2xl flex-1 flex-col gap-8 py-8 md:py-10`}
       >
-        <Link href="/professor/cursos" className="text-sm underline">
+        <Link href="/professor/cursos" className="text-sm underline md:hidden">
           ← Cursos
         </Link>
         <Suspense fallback={<p>Carregando…</p>}>
