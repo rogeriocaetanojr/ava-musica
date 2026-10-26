@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { BotaoVoltar } from "@/components/botao-voltar";
 import { TelaDoProfessor } from "@/components/tela-do-professor";
 import { CONTEINER } from "@/components/conteiner";
 import { Suspense } from "react";
@@ -6,8 +6,7 @@ import { exigirProfessor } from "@/lib/auth";
 import { formatarDataHora } from "@/lib/datas";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 import { apagarAviso, criarAviso, editarAviso } from "./acoes";
-import { BotaoApagar } from "./botao-apagar";
-import { FormularioAviso } from "./formulario-aviso";
+import { PainelDeRecados } from "./painel-de-recados";
 
 type Aviso = {
   id: string;
@@ -17,6 +16,15 @@ type Aviso = {
   publicado_em: string;
 };
 type Curso = { id: string; titulo: string };
+
+function Cabecalho() {
+  return (
+    <div className="flex items-center gap-4">
+      <BotaoVoltar href="/professor" rotulo="Voltar para Painel" />
+      <h1 className="font-titulo text-3xl text-texto md:text-5xl">Recados</h1>
+    </div>
+  );
+}
 
 async function Avisos() {
   await exigirProfessor();
@@ -34,66 +42,28 @@ async function Avisos() {
   const lista = (avisos ?? []) as Aviso[];
 
   return (
-    <>
-      <section className="space-y-4">
-        <h2 className="text-xl font-semibold">Novo aviso</h2>
-        <FormularioAviso
-          acao={criarAviso}
-          cursos={listaCursos}
-          textoDoBotao="Publicar aviso"
-          prefixo="novo"
-        />
-      </section>
-
-      <section className="space-y-3">
-        <h2 className="text-xl font-semibold">Avisos publicados</h2>
-        {error ? (
-          <p role="alert" className="rounded-md bg-red-100 p-3 text-red-800">
-            Não foi possível carregar os avisos.
-          </p>
-        ) : lista.length === 0 ? (
-          <p>Nenhum aviso publicado ainda.</p>
-        ) : (
-          <ul className="space-y-3">
-            {lista.map((aviso) => (
-              <li
-                key={aviso.id}
-                className="space-y-2 rounded-md border border-current/30 p-4"
-              >
-                <h3 className="font-medium break-words">{aviso.titulo}</h3>
-                <p className="text-sm">
-                  {aviso.curso_id
-                    ? `Alunos de ${nomeDoCurso.get(aviso.curso_id) ?? "um curso"}`
-                    : "Todos os alunos"}{" "}
-                  · {formatarDataHora(aviso.publicado_em)}
-                </p>
-                <p className="break-words whitespace-pre-line">{aviso.texto}</p>
-                <details>
-                  <summary className="cursor-pointer py-2 text-sm underline">
-                    Editar
-                  </summary>
-                  <FormularioAviso
-                    acao={editarAviso.bind(null, aviso.id)}
-                    cursos={listaCursos}
-                    inicial={{
-                      titulo: aviso.titulo,
-                      texto: aviso.texto,
-                      curso_id: aviso.curso_id ?? "",
-                    }}
-                    textoDoBotao="Salvar aviso"
-                    prefixo={aviso.id}
-                  />
-                </details>
-                <BotaoApagar
-                  apagar={apagarAviso.bind(null, aviso.id)}
-                  className="rounded-md border border-current px-3 py-2 text-sm"
-                />
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
-    </>
+    <PainelDeRecados
+      cabecalho={<Cabecalho />}
+      criar={criarAviso}
+      cursos={listaCursos}
+      recados={
+        error
+          ? null
+          : lista.map((aviso) => ({
+              id: aviso.id,
+              titulo: aviso.titulo,
+              texto: aviso.texto,
+              curso_id: aviso.curso_id,
+              destinoEData: `${
+                aviso.curso_id
+                  ? `Alunos de ${nomeDoCurso.get(aviso.curso_id) ?? "um curso"}`
+                  : "Todos os alunos"
+              } · ${formatarDataHora(aviso.publicado_em)}`,
+              editar: editarAviso.bind(null, aviso.id),
+              apagar: apagarAviso.bind(null, aviso.id),
+            }))
+      }
+    />
   );
 }
 
@@ -101,15 +71,16 @@ export default function AvisosDoProfessor() {
   return (
     <TelaDoProfessor atual="recados">
       <main
-        className={`${CONTEINER} flex max-w-2xl flex-1 flex-col gap-8 py-8`}
+        className={`${CONTEINER} flex max-w-6xl flex-1 flex-col gap-6 py-6 md:gap-8 md:py-10`}
       >
-        <div className="space-y-2">
-          <Link href="/professor" className="text-sm underline">
-            ← Painel
-          </Link>
-          <h1 className="text-2xl font-bold">Avisos</h1>
-        </div>
-        <Suspense fallback={<p>Carregando…</p>}>
+        <Suspense
+          fallback={
+            <>
+              <Cabecalho />
+              <p>Carregando…</p>
+            </>
+          }
+        >
           <Avisos />
         </Suspense>
       </main>

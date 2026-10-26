@@ -24,10 +24,10 @@ export function validarAviso(formData: FormData): Resultado {
   };
   const falha = (erro: string) => ({ ok: false as const, erro, valores });
 
-  if (!valores.titulo) return falha("Informe o título do aviso.");
+  if (!valores.titulo) return falha("Informe o título do recado.");
   if (valores.titulo.length > 120)
     return falha("O título pode ter no máximo 120 caracteres.");
-  if (!valores.texto) return falha("Escreva o texto do aviso.");
+  if (!valores.texto) return falha("Escreva o texto do recado.");
   if (valores.texto.length > 2000)
     return falha("O texto pode ter no máximo 2000 caracteres.");
   if (valores.curso_id && !ehUuid(valores.curso_id))

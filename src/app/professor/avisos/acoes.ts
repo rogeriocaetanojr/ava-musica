@@ -10,8 +10,8 @@ import {
 } from "../cursos/validacao";
 import { validarAviso } from "./validacao";
 
-const ERRO_ID = "Aviso não encontrado. Recarregue a página.";
-const ERRO_BANCO = "Não foi possível salvar o aviso. Tente de novo.";
+const ERRO_ID = "Recado não encontrado. Recarregue a página.";
+const ERRO_BANCO = "Não foi possível salvar o recado. Tente de novo.";
 
 function atualizarTelas() {
   revalidatePath("/professor/avisos");
@@ -33,8 +33,8 @@ export async function criarAviso(
   if (error) return { erro: ERRO_BANCO, valores: valoresDigitados(formData) };
 
   atualizarTelas();
-  // valores vazios limpam o formulário para o próximo aviso.
-  return { sucesso: "Aviso publicado.", valores: {} };
+  // valores vazios limpam o formulário para o próximo recado.
+  return { sucesso: "Recado publicado.", valores: {} };
 }
 
 export async function editarAviso(
@@ -57,7 +57,7 @@ export async function editarAviso(
   if (error) return { erro: ERRO_BANCO, valores: valoresDigitados(formData) };
 
   atualizarTelas();
-  return { sucesso: "Aviso salvo.", valores: valoresDigitados(formData) };
+  return { sucesso: "Recado salvo.", valores: valoresDigitados(formData) };
 }
 
 export async function apagarAviso(avisoId: string): Promise<void> {

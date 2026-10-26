@@ -1,6 +1,8 @@
 "use client";
 
 import { useActionState } from "react";
+import { Botao } from "@/components/botao";
+import { Campo } from "@/components/campo";
 import type { EstadoFormulario } from "../cursos/validacao";
 
 type Props = {
@@ -13,10 +15,14 @@ type Props = {
   textoDoBotao: string;
   // Prefixo dos ids dos campos, porque a página tem vários formulários.
   prefixo: string;
+  // Chamado depois de salvar sem erro (fecha o painel).
+  aoSalvar?: () => void;
 };
 
+// Mesmo visual do Campo, para a mensagem e o destino.
 const campo =
-  "w-full rounded-md border border-current bg-transparent px-3 py-3";
+  "min-h-14 w-full rounded-xl border border-borda-campo bg-superficie px-4 py-3 text-base text-texto placeholder:text-texto-secundario";
+const rotulo = "block text-sm font-bold text-texto";
 
 export function FormularioAviso({
   acao,
@@ -24,37 +30,34 @@ export function FormularioAviso({
   inicial = {},
   textoDoBotao,
   prefixo,
+  aoSalvar,
 }: Props) {
-  const [estado, enviar, enviando] = useActionState(acao, {});
+  const [estado, enviar, enviando] = useActionState(
+    async (anterior: EstadoFormulario, formData: FormData) => {
+      const resultado = await acao(anterior, formData);
+      if (!resultado.erro) aoSalvar?.();
+      return resultado;
+    },
+    {},
+  );
   const valores = estado.valores ?? inicial;
 
   // A chave muda com os valores devolvidos, para os campos recarregarem
-  // (e o formulário de novo aviso ficar limpo depois de publicar).
+  // (e o formulário de novo recado ficar limpo depois de publicar).
   return (
     <form key={JSON.stringify(valores)} action={enviar} className="space-y-4">
-      <div className="space-y-1">
-        <label
-          htmlFor={`${prefixo}-titulo`}
-          className="block text-sm font-medium"
-        >
-          Título
-        </label>
-        <input
-          id={`${prefixo}-titulo`}
-          name="titulo"
-          required
-          maxLength={120}
-          defaultValue={valores.titulo}
-          className={campo}
-        />
-      </div>
+      <Campo
+        id={`${prefixo}-titulo`}
+        rotulo="Título"
+        name="titulo"
+        required
+        maxLength={120}
+        defaultValue={valores.titulo}
+      />
 
-      <div className="space-y-1">
-        <label
-          htmlFor={`${prefixo}-texto`}
-          className="block text-sm font-medium"
-        >
-          Texto
+      <div className="space-y-2">
+        <label htmlFor={`${prefixo}-texto`} className={rotulo}>
+          Mensagem
         </label>
         <textarea
           id={`${prefixo}-texto`}
@@ -67,11 +70,8 @@ export function FormularioAviso({
         />
       </div>
 
-      <div className="space-y-1">
-        <label
-          htmlFor={`${prefixo}-curso`}
-          className="block text-sm font-medium"
-        >
+      <div className="space-y-2">
+        <label htmlFor={`${prefixo}-curso`} className={rotulo}>
           Para quem
         </label>
         <select
@@ -89,21 +89,20 @@ export function FormularioAviso({
         </select>
       </div>
 
-      <button
-        type="submit"
-        disabled={enviando}
-        className="w-full rounded-md border border-current px-4 py-3 font-medium disabled:opacity-60 sm:w-auto"
-      >
+      <Botao type="submit" disabled={enviando} className="sm:w-auto">
         {enviando ? "Salvando…" : textoDoBotao}
-      </button>
+      </Botao>
 
       {estado.erro && (
-        <p role="alert" className="rounded-md bg-red-100 p-3 text-red-800">
+        <p
+          role="alert"
+          className="rounded-xl bg-amarelo-claro p-4 text-texto-sobre-amarelo"
+        >
           {estado.erro}
         </p>
       )}
       {estado.sucesso && (
-        <p role="status" className="rounded-md bg-green-100 p-3 text-green-800">
+        <p role="status" className="rounded-xl bg-linha p-4 text-sucesso">
           {estado.sucesso}
         </p>
       )}
