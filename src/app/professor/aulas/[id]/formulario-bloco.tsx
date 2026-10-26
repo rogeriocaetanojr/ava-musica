@@ -19,6 +19,8 @@ type Props = {
   email: string;
   // Limpa os campos depois de salvar (formulário de bloco novo).
   limparAoSalvar?: boolean;
+  // Chamado depois de salvar sem erro (fecha o painel no celular).
+  aoSalvar?: () => void;
 };
 
 const DICAS: Record<TipoDeBloco, string> = {
@@ -44,6 +46,7 @@ export function FormularioBloco({
   inicial,
   email,
   limparAoSalvar = false,
+  aoSalvar,
 }: Props) {
   const id = useId();
   const [tipo, setTipo] = useState<TipoDeBloco>(inicial?.tipo ?? "texto");
@@ -59,6 +62,7 @@ export function FormularioBloco({
         setTexto("");
         setUrl("");
       }
+      if (!resultado.erro) aoSalvar?.();
       return resultado;
     },
     {},

@@ -20,6 +20,7 @@ import { ehUuid } from "../../cursos/validacao";
 import { criarBloco, editarBloco, moverBloco, removerBloco } from "./acoes";
 import { BotaoRemover } from "./botao-remover";
 import { FormularioBloco } from "./formulario-bloco";
+import { NovoBloco } from "./novo-bloco";
 import { FormularioDados } from "./formulario-dados";
 import { NOMES_DOS_TIPOS } from "./validacao";
 
@@ -231,7 +232,18 @@ async function EditorDaAula({ params }: { params: Promise<{ id: string }> }) {
     <>
       <div className="flex flex-wrap items-center gap-4">
         <BotaoVoltar href={linkDoCurso} rotulo="Voltar ao curso" />
-        <nav aria-label="Trilha da aula" className="min-w-0 flex-1">
+        <div className="min-w-0 flex-1 md:hidden">
+          <p className="text-base font-bold break-words text-bordo">
+            {aula.modulos.cursos.titulo}
+          </p>
+          <p className="text-sm break-words text-texto-secundario">
+            {aula.modulos.titulo} · {aula.titulo}
+          </p>
+        </div>
+        <nav
+          aria-label="Trilha da aula"
+          className="hidden min-w-0 flex-1 md:block"
+        >
           <ol className="flex flex-wrap items-center gap-x-2 text-base">
             <li>
               <Link
@@ -267,7 +279,10 @@ async function EditorDaAula({ params }: { params: Promise<{ id: string }> }) {
             {blocos.length === 1 ? "bloco" : "blocos"}
           </p>
         </div>
-        <form action={publicarAula.bind(null, aula.id, !aula.publicada)}>
+        <form
+          action={publicarAula.bind(null, aula.id, !aula.publicada)}
+          className="hidden md:block"
+        >
           <button
             type="submit"
             className={classesDoBotao(
@@ -282,17 +297,25 @@ async function EditorDaAula({ params }: { params: Promise<{ id: string }> }) {
 
       <div className="flex flex-col gap-6 md:gap-8 lg:grid lg:grid-cols-12 lg:items-start lg:gap-6">
         <div className="flex flex-col gap-6 md:gap-8 lg:col-span-8">
-          <section
-            className={`space-y-4 border-dashed border-borda-campo ${cartao}`}
-          >
-            <h2 className={tituloDeSecao}>Novo bloco</h2>
-            <FormularioBloco
-              acao={criarBloco.bind(null, aula.id)}
-              textoDoBotao="Adicionar bloco"
-              email={sessao.email}
-              limparAoSalvar
-            />
-          </section>
+          <NovoBloco
+            acao={criarBloco.bind(null, aula.id)}
+            email={sessao.email}
+            className={cartao}
+            classeDoTitulo={tituloDeSecao}
+            publicar={
+              <form action={publicarAula.bind(null, aula.id, !aula.publicada)}>
+                <button
+                  type="submit"
+                  className={classesDoBotao(
+                    aula.publicada ? "secundario" : "primario",
+                    "px-3",
+                  )}
+                >
+                  {aula.publicada ? "Despublicar" : "Publicar"}
+                </button>
+              </form>
+            }
+          />
 
           <section className={`space-y-4 ${cartao}`}>
             <h2 className={tituloDeSecao}>Dados da aula</h2>
@@ -306,7 +329,9 @@ async function EditorDaAula({ params }: { params: Promise<{ id: string }> }) {
             <h2 className={tituloDeSecao}>Conteúdo da aula</h2>
             {blocos.length === 0 ? (
               <p className="text-texto-secundario">
-                Nenhum bloco ainda. Adicione o primeiro acima.
+                Nenhum bloco ainda. Adicione o primeiro{" "}
+                <span className="md:hidden">em Novo bloco</span>
+                <span className="hidden md:inline">acima</span>.
               </p>
             ) : (
               <ol className="space-y-4">
@@ -327,7 +352,7 @@ async function EditorDaAula({ params }: { params: Promise<{ id: string }> }) {
 
         <aside
           aria-labelledby="como-o-aluno-ve"
-          className={`space-y-4 lg:sticky lg:top-6 lg:col-span-4 ${cartao}`}
+          className={`hidden space-y-4 md:block lg:sticky lg:top-6 lg:col-span-4 ${cartao}`}
         >
           <h2 id="como-o-aluno-ve" className={tituloDeSecao}>
             Como o aluno vê
@@ -360,6 +385,14 @@ async function EditorDaAula({ params }: { params: Promise<{ id: string }> }) {
             Abrir como aluno
           </Link>
         </aside>
+
+        {/* No celular, a lista de blocos já mostra a ordem: fica só o link. */}
+        <Link
+          href={`/aulas/${aula.id}`}
+          className={classesDoBotao("secundario", "md:hidden")}
+        >
+          Abrir como aluno
+        </Link>
       </div>
     </>
   );
@@ -371,9 +404,9 @@ export default function EditarAula({
   params: Promise<{ id: string }>;
 }) {
   return (
-    <TelaDoProfessor atual="cursos">
+    <TelaDoProfessor atual="cursos" semAbas>
       <main
-        className={`${CONTEINER} flex max-w-2xl flex-1 flex-col gap-6 py-6 md:gap-8 md:py-10`}
+        className={`${CONTEINER} flex max-w-2xl flex-1 flex-col gap-6 pt-6 pb-32 md:gap-8 md:py-10`}
       >
         <Suspense fallback={<p>Carregando…</p>}>
           <EditorDaAula params={params} />

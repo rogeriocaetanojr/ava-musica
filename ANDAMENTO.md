@@ -5,7 +5,6 @@
 ### Telas
 
 - [ ] Conteúdo da aula do professor no computador
-- [ ] Conteúdo da aula do professor no celular
 - [ ] Alunos do professor no computador
 - [ ] Alunos do professor no celular
 - [ ] Recados do professor no computador
@@ -88,6 +87,7 @@
 - [x] Curso do aluno no celular, com os módulos recolhíveis e o da próxima aula aberto
 - [x] Cursos do professor no computador
 - [x] Cursos do professor no celular, com os módulos recolhíveis
+- [x] Conteúdo da aula do professor no celular, com o rodapé fixo para adicionar bloco e publicar
 
 ## Decisões
 

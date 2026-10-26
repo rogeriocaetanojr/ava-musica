@@ -26,7 +26,7 @@ function formularioDoCampo(page: Page, rotulo: string) {
 
 test("professor cria curso, módulo e aula com texto e YouTube e publica", async ({
   page,
-}) => {
+}, testInfo) => {
   await entrar(page, PROFESSOR);
   await expect(page).toHaveURL(/\/professor$/);
 
@@ -53,10 +53,18 @@ test("professor cria curso, módulo e aula com texto e YouTube e publica", async
   const novoBloco = page
     .locator("section")
     .filter({ has: page.getByRole("heading", { name: "Novo bloco" }) });
+  // No celular, o formulário fica num painel que abre pelo rodapé.
+  const abrirNovoBloco = async () => {
+    if (testInfo.project.name === "celular")
+      await page.getByRole("button", { name: "Novo bloco" }).click();
+  };
+  await abrirNovoBloco();
   await novoBloco.getByLabel("Tipo").selectOption("Texto");
   await novoBloco.getByLabel("Texto", { exact: true }).fill(TEXTO_DA_AULA);
   await novoBloco.getByRole("button", { name: "Adicionar bloco" }).click();
   await expect(page.getByText("Rascunho · 1 bloco")).toBeVisible();
+
+  await abrirNovoBloco();
 
   await novoBloco.getByLabel("Tipo").selectOption("Vídeo do YouTube");
   await novoBloco.getByLabel("Título (opcional)").fill("Vídeo da postura");
