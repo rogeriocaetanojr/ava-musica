@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState, useState } from "react";
 import { classesDoBotao } from "@/components/botao";
 import { formatarDataHora } from "@/lib/datas";
@@ -28,7 +29,7 @@ export function PedidosDeAcesso({ pedidos }: { pedidos: Pedido[] }) {
   return (
     <section
       aria-labelledby="pedidos-de-acesso"
-      className="space-y-4 rounded-3xl border border-amarelo bg-superficie p-6"
+      className="space-y-4 rounded-3xl border border-amarelo bg-superficie p-5"
     >
       <h2 id="pedidos-de-acesso" className="font-titulo text-2xl text-texto">
         Pedidos de acesso
@@ -66,14 +67,25 @@ function CartaoDoPedido({
   const [abrindo, setAbrindo] = useState<"liberar" | "recusar" | null>(null);
 
   return (
-    <div className="space-y-3 rounded-2xl border border-linha bg-fundo p-4">
-      <div className="space-y-1">
-        <p className="font-bold text-texto break-words">{pedido.nome}</p>
-        <p className="text-sm break-all">{pedido.email}</p>
-        <p className="text-sm">
+    <div className="space-y-2 rounded-2xl border border-linha bg-fundo p-3">
+      <div className="space-y-0.5">
+        <p className="text-sm font-bold text-texto break-words">
+          {pedido.nome}
+        </p>
+        <p className="text-xs break-all text-texto-secundario">
+          {pedido.email}
+        </p>
+        <p className="text-xs text-texto-secundario">
           Pediu acesso em {formatarDataHora(pedido.pedido_em)}
         </p>
       </div>
+      <Link
+        href={`/professor/alunos/${pedido.id}`}
+        aria-label={`Ver ficha de ${pedido.nome}`}
+        className="inline-flex min-h-12 items-center text-sm font-bold text-bordo underline"
+      >
+        Ver ficha
+      </Link>
 
       {abrindo === "liberar" ? (
         <FormularioLiberacao
@@ -88,18 +100,18 @@ function CartaoDoPedido({
           aoResolver={aoResolver}
         />
       ) : (
-        <div className="flex flex-wrap gap-2">
+        <div className="flex gap-2">
           <button
             type="button"
             onClick={() => setAbrindo("liberar")}
-            className={classesDoBotao("secundario", "sm:w-auto")}
+            className="inline-flex min-h-12 flex-1 items-center justify-center rounded-xl border border-linha bg-superficie px-3 py-2 text-sm font-bold text-texto transition-colors hover:border-borda-campo"
           >
             Liberar
           </button>
           <button
             type="button"
             onClick={() => setAbrindo("recusar")}
-            className={classesDoBotao("secundario", "sm:w-auto")}
+            className="inline-flex min-h-12 flex-1 items-center justify-center rounded-xl border border-linha bg-superficie px-3 py-2 text-sm font-bold text-texto transition-colors hover:border-borda-campo"
           >
             Recusar
           </button>

@@ -3,13 +3,15 @@ import { TelaDoProfessor } from "@/components/tela-do-professor";
 import { CONTEINER } from "@/components/conteiner";
 import { Suspense } from "react";
 import { Aviso } from "@/components/aviso";
-import { classesDoBotao } from "@/components/botao";
 import { exigirProfessor } from "@/lib/auth";
 import { nomeParaExibir } from "@/lib/nomes";
+import { resumoParaProfessor } from "@/lib/painel";
 import { criarClienteAdmin } from "@/lib/supabase/admin";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
+import { dadosDoPainel } from "../progresso/dados";
 import { PedidosDeAcesso } from "./pedidos-de-acesso";
 import { RecusadosRecentes } from "./recusados-recentes";
+import { type LinhaDaTurma, TabelaDeAlunos } from "./tabela-de-alunos";
 import { CORES_DOS_STATUS, NOMES_DOS_STATUS, statusDoAluno } from "./validacao";
 
 type Aluno = {
@@ -35,11 +37,25 @@ async function ultimosAcessos(): Promise<Map<string, string | null>> {
   );
 }
 
-async function ListaDeAlunos() {
+// Cores dos avatares, alternadas pela ordem da lista, como no painel.
+const AVATARES = [
+  "bg-bordo text-amarelo",
+  "bg-amarelo text-texto-sobre-amarelo",
+  "bg-amarelo-claro text-texto-sobre-amarelo",
+  "bg-vinho text-amarelo-claro",
+];
+
+async function ListaDeAlunos({
+  pedidos,
+  recusados,
+}: {
+  pedidos: React.ReactNode;
+  recusados: React.ReactNode;
+}) {
   await exigirProfessor();
 
   const supabase = await criarClienteServidor();
-  const [{ data: alunos }, acessos] = await Promise.all([
+  const [{ data: alunos }, acessos, painel] = await Promise.all([
     supabase
       .from("perfis")
       .select(
@@ -50,52 +66,54 @@ async function ListaDeAlunos() {
       .or("liberado_em.not.is.null,pedido_em.not.is.null")
       .order("nome"),
     ultimosAcessos(),
+    // Só leitura, para o progresso de cada matrícula.
+    dadosDoPainel(),
   ]);
   const lista = (alunos ?? []) as unknown as Aluno[];
+  const cursos = new Map((painel?.cursos ?? []).map((c) => [c.id, c]));
+
+  // Quem está pendente já aparece em Pedidos de acesso, então fica fora da turma.
+  const linhas: LinhaDaTurma[] = lista.flatMap((aluno, indice) => {
+    const status = statusDoAluno({
+      bloqueado: aluno.bloqueado_em !== null,
+      pendente: aluno.liberado_em === null,
+      menor_de_12: aluno.menor_de_12,
+      aceito: Boolean(aluno.responsaveis?.aceito_em),
+      ultimo_acesso: acessos.get(aluno.id),
+    });
+    if (status === "pendente") return [];
+    const registros = (painel?.progresso ?? []).filter(
+      (r) => r.aluno_id === aluno.id,
+    );
+    return [
+      {
+        id: aluno.id,
+        nome: nomeParaExibir(aluno.nome),
+        email: aluno.email,
+        avatar: AVATARES[indice % AVATARES.length],
+        etiqueta: {
+          texto: NOMES_DOS_STATUS[status],
+          classe: CORES_DOS_STATUS[status],
+        },
+        cursos: aluno.matriculas.flatMap(({ curso_id }) => {
+          const curso = cursos.get(curso_id);
+          if (!curso) return [];
+          return [
+            {
+              id: curso.id,
+              titulo: curso.titulo,
+              percentual: painel
+                ? resumoParaProfessor(curso.modulos, registros).percentual
+                : null,
+            },
+          ];
+        }),
+      },
+    ];
+  });
 
   return (
-    <section className="space-y-4">
-      <h2 className="text-xl font-semibold">Turma</h2>
-      {lista.length === 0 ? (
-        <p>Nenhum aluno cadastrado ainda.</p>
-      ) : (
-        <ul className="space-y-3">
-          {lista.map((aluno) => {
-            const status = statusDoAluno({
-              bloqueado: aluno.bloqueado_em !== null,
-              pendente: aluno.liberado_em === null,
-              menor_de_12: aluno.menor_de_12,
-              aceito: Boolean(aluno.responsaveis?.aceito_em),
-              ultimo_acesso: acessos.get(aluno.id),
-            });
-            const cursosDoAluno = aluno.matriculas.length;
-            return (
-              <li key={aluno.id}>
-                <Link
-                  href={`/professor/alunos/${aluno.id}`}
-                  className="block space-y-1 rounded-md border border-current p-3 hover:bg-current/5"
-                >
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <span className="font-medium break-words">
-                      {nomeParaExibir(aluno.nome)}
-                    </span>
-                    <span
-                      className={`rounded px-2 py-1 text-xs font-medium ${CORES_DOS_STATUS[status]}`}
-                    >
-                      {NOMES_DOS_STATUS[status]}
-                    </span>
-                  </div>
-                  <p className="text-sm break-all">{aluno.email}</p>
-                  <p className="text-sm">
-                    {cursosDoAluno} {cursosDoAluno === 1 ? "curso" : "cursos"}
-                  </p>
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-      )}
-    </section>
+    <TabelaDeAlunos linhas={linhas} pedidos={pedidos} recusados={recusados} />
   );
 }
 
@@ -140,39 +158,38 @@ export default function Alunos() {
   return (
     <TelaDoProfessor atual="alunos">
       <main
-        className={`${CONTEINER} flex max-w-2xl flex-1 flex-col gap-8 py-8`}
+        className={`${CONTEINER} flex max-w-6xl flex-1 flex-col gap-6 py-6 md:gap-8 md:py-10`}
       >
-        <Link href="/professor" className="text-sm underline">
+        <Link
+          href="/professor"
+          className="inline-flex min-h-12 items-center self-start text-sm font-bold text-bordo underline"
+        >
           ← Painel
         </Link>
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <h1 className="text-2xl font-bold">Alunos</h1>
-          <Link
-            href="/professor/alunos/convidar"
-            className={classesDoBotao("primario", "sm:w-auto")}
-          >
-            Convidar aluno
-          </Link>
-        </div>
-        <Suspense>
-          <Pedidos />
-        </Suspense>
-        <section
-          aria-labelledby="recusados-recentes"
-          className="space-y-4 rounded-3xl border border-linha bg-superficie p-6"
-        >
-          <h2
-            id="recusados-recentes"
-            className="font-titulo text-2xl text-texto"
-          >
-            Recusados recentemente
-          </h2>
-          <Suspense fallback={<p>Carregando…</p>}>
-            <Recusados />
-          </Suspense>
-        </section>
         <Suspense fallback={<p>Carregando…</p>}>
-          <ListaDeAlunos />
+          <ListaDeAlunos
+            pedidos={
+              <Suspense>
+                <Pedidos />
+              </Suspense>
+            }
+            recusados={
+              <section
+                aria-labelledby="recusados-recentes"
+                className="space-y-4 rounded-3xl border border-linha bg-superficie p-5"
+              >
+                <h2
+                  id="recusados-recentes"
+                  className="font-titulo text-2xl text-texto"
+                >
+                  Recusados recentemente
+                </h2>
+                <Suspense fallback={<p>Carregando…</p>}>
+                  <Recusados />
+                </Suspense>
+              </section>
+            }
+          />
         </Suspense>
       </main>
     </TelaDoProfessor>

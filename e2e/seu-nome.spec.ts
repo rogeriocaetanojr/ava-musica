@@ -66,10 +66,9 @@ test("sem nome, a tela do nome vem antes de tudo e o pedido só chega ao profess
   const pedido = pedidos.getByRole("listitem").filter({ hasText: email });
   await expect(pedido.getByText(nome)).toBeVisible();
 
-  // Na ficha, o professor corrige o nome, e a mudança fica na auditoria.
-  await secao(professor, "Turma")
-    .getByRole("link", { name: new RegExp(nome) })
-    .click();
+  // Na ficha, aberta pelo pedido, o professor corrige o nome, e a mudança
+  // fica na auditoria.
+  await pedido.getByRole("link", { name: `Ver ficha de ${nome}` }).click();
   await expect(professor.getByRole("heading", { name: nome })).toBeVisible();
   await professor.getByLabel("Nome completo").fill(nomeCorrigido);
   await professor.getByRole("button", { name: "Salvar nome" }).click();

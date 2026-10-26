@@ -19,7 +19,10 @@ export function FormularioNome({
 
   return (
     <form action={enviar} className="space-y-2">
-      <label htmlFor="nome-do-aluno" className="block text-sm font-medium">
+      <label
+        htmlFor="nome-do-aluno"
+        className="block text-sm font-bold text-texto"
+      >
         Nome completo
       </label>
       <div className="flex gap-2">
@@ -30,12 +33,12 @@ export function FormularioNome({
           maxLength={120}
           autoComplete="off"
           defaultValue={estado.valores?.nome ?? nome}
-          className="min-w-0 flex-1 rounded-md border border-current bg-transparent px-3 py-2"
+          className="min-h-12 min-w-0 flex-1 rounded-xl border border-borda-campo bg-superficie px-4 py-2 text-base text-texto"
         />
         <button
           type="submit"
           disabled={enviando}
-          className="shrink-0 rounded-md border border-current px-3 py-2 text-sm font-medium disabled:opacity-60"
+          className="inline-flex min-h-12 items-center justify-center shrink-0 rounded-xl border border-linha bg-superficie px-5 py-3 font-bold text-texto hover:border-borda-campo disabled:opacity-60"
         >
           {enviando ? "Salvando…" : "Salvar nome"}
         </button>
@@ -43,7 +46,7 @@ export function FormularioNome({
       {estado.erro && (
         <p
           role="alert"
-          className="rounded-md bg-red-100 p-2 text-sm text-red-800"
+          className="rounded-xl bg-amarelo-claro p-4 text-sm text-texto-sobre-amarelo"
         >
           {estado.erro}
         </p>

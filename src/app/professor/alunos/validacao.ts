@@ -147,11 +147,11 @@ export const NOMES_DOS_STATUS: Record<StatusDoAluno, string> = {
 };
 
 export const CORES_DOS_STATUS: Record<StatusDoAluno, string> = {
-  bloqueado: "bg-red-100 text-red-800",
-  pendente: "bg-orange-100 text-orange-800",
-  aguardando: "bg-yellow-100 text-yellow-800",
-  convidado: "bg-blue-100 text-blue-800",
-  ativo: "bg-green-100 text-green-800",
+  bloqueado: "bg-vinho text-superficie",
+  pendente: "bg-amarelo text-texto-sobre-amarelo",
+  aguardando: "bg-amarelo-claro text-texto-sobre-amarelo",
+  convidado: "border border-linha bg-fundo text-texto",
+  ativo: "bg-linha text-bordo",
 };
 
 // Bloqueado: o professor pausou o acesso (vale acima dos outros).

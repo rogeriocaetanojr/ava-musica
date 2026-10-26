@@ -25,7 +25,7 @@ export function BotaoBloqueio({
 
   return (
     <form action={enviar} className="space-y-3">
-      <p className="text-sm">
+      <p className="text-sm text-texto-secundario">
         {bloqueado ? (
           <>
             <strong className="break-words">{nome}</strong> não consegue entrar
@@ -40,12 +40,18 @@ export function BotaoBloqueio({
         )}
       </p>
       {estado.erro && (
-        <p role="alert" className="rounded-md bg-red-100 p-3 text-red-800">
+        <p
+          role="alert"
+          className="rounded-xl bg-amarelo-claro p-4 text-sm text-texto-sobre-amarelo"
+        >
           {estado.erro}
         </p>
       )}
       {estado.sucesso && (
-        <p role="status" className="rounded-md bg-green-100 p-3 text-green-800">
+        <p
+          role="status"
+          className="rounded-xl bg-linha p-4 text-sm text-sucesso"
+        >
           {estado.sucesso}
         </p>
       )}
@@ -56,8 +62,8 @@ export function BotaoBloqueio({
             disabled={enviando}
             className={
               bloqueado
-                ? "rounded-md border border-current px-4 py-2 font-semibold disabled:opacity-50"
-                : "rounded-md bg-red-700 px-4 py-2 font-semibold text-white disabled:opacity-50"
+                ? "inline-flex min-h-12 items-center justify-center rounded-xl border border-linha bg-superficie px-5 py-3 font-bold text-texto hover:border-borda-campo disabled:opacity-60"
+                : "inline-flex min-h-12 items-center justify-center rounded-xl bg-bordo px-5 py-3 font-bold text-superficie hover:bg-vinho disabled:opacity-60"
             }
           >
             {enviando ? "Salvando…" : `Confirmar: ${acao.toLowerCase()}`}
@@ -66,7 +72,7 @@ export function BotaoBloqueio({
             type="button"
             disabled={enviando}
             onClick={() => setConfirmando(false)}
-            className="rounded-md border border-current px-4 py-2 disabled:opacity-50"
+            className="inline-flex min-h-12 items-center justify-center rounded-xl border border-linha bg-superficie px-5 py-3 font-bold text-texto hover:border-borda-campo disabled:opacity-60"
           >
             Cancelar
           </button>
@@ -75,7 +81,7 @@ export function BotaoBloqueio({
         <button
           type="button"
           onClick={() => setConfirmando(true)}
-          className="rounded-md border border-current px-4 py-2"
+          className="inline-flex min-h-12 items-center justify-center rounded-xl border border-linha bg-superficie px-5 py-3 font-bold text-texto hover:border-borda-campo"
         >
           {acao}
         </button>

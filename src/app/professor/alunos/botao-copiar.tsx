@@ -20,7 +20,7 @@ export function BotaoCopiar({
         value={texto}
         aria-label={rotulo}
         onFocus={(e) => e.target.select()}
-        className="min-w-0 flex-1 rounded-md border border-current bg-transparent px-3 py-2 text-sm"
+        className="min-h-12 min-w-0 flex-1 rounded-xl border border-borda-campo bg-superficie px-4 py-2 text-sm text-texto"
       />
       <button
         type="button"
@@ -32,7 +32,7 @@ export function BotaoCopiar({
             setCopiado(false);
           }
         }}
-        className="shrink-0 rounded-md border border-current px-3 py-2 text-sm font-medium"
+        className="inline-flex min-h-12 items-center justify-center shrink-0 rounded-xl border border-linha bg-superficie px-5 py-3 font-bold text-texto hover:border-borda-campo"
       >
         {copiado ? "Copiado" : "Copiar"}
       </button>

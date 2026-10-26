@@ -82,7 +82,7 @@ function CartaoDaRecusa({
       <button
         type="submit"
         disabled={enviando}
-        className={classesDoBotao("secundario", "sm:w-auto")}
+        className={classesDoBotao("secundario")}
       >
         {enviando ? "Salvando…" : "Permitir novo pedido"}
       </button>
@@ -131,7 +131,7 @@ function PermitirPorEmail({
       <button
         type="submit"
         disabled={enviando}
-        className={classesDoBotao("secundario", "sm:w-auto")}
+        className={classesDoBotao("secundario")}
       >
         {enviando ? "Salvando…" : "Permitir"}
       </button>

@@ -14,17 +14,23 @@ export function BotaoReenviar({ alunoId }: { alunoId: string }) {
       <button
         type="submit"
         disabled={enviando}
-        className="rounded-md border border-current px-3 py-2 text-sm disabled:opacity-60"
+        className="inline-flex min-h-12 items-center justify-center rounded-xl border border-linha bg-superficie px-5 py-3 font-bold text-texto hover:border-borda-campo disabled:opacity-60"
       >
         {enviando ? "Reenviando…" : "Reenviar convite"}
       </button>
       {estado.erro && (
-        <p role="alert" className="rounded-md bg-red-100 p-3 text-red-800">
+        <p
+          role="alert"
+          className="rounded-xl bg-amarelo-claro p-4 text-sm text-texto-sobre-amarelo"
+        >
           {estado.erro}
         </p>
       )}
       {estado.sucesso && (
-        <p role="status" className="rounded-md bg-green-100 p-3 text-green-800">
+        <p
+          role="status"
+          className="rounded-xl bg-linha p-4 text-sm text-sucesso"
+        >
           {estado.sucesso}
         </p>
       )}

@@ -22,12 +22,12 @@ export function FormularioExclusao({
 
   return (
     <form action={enviar} className="space-y-3">
-      <p className="text-sm">
+      <p className="text-sm text-texto-secundario">
         Apaga a conta, o responsável, as matrículas e todo o progresso de{" "}
         <strong className="break-words">{nome}</strong>. Não dá para desfazer.
       </p>
-      <label className="block space-y-1">
-        <span className="text-sm font-medium">
+      <label className="block space-y-2">
+        <span className="block text-sm font-bold text-texto">
           Para confirmar, digite o nome do aluno
         </span>
         <input
@@ -35,18 +35,21 @@ export function FormularioExclusao({
           autoComplete="off"
           value={digitado}
           onChange={(e) => setDigitado(e.target.value)}
-          className="w-full rounded-md border border-current bg-transparent px-3 py-2"
+          className="min-h-14 w-full rounded-xl border border-borda-campo bg-superficie px-4 py-3 text-base text-texto"
         />
       </label>
       {estado.erro && (
-        <p role="alert" className="rounded-md bg-red-100 p-3 text-red-800">
+        <p
+          role="alert"
+          className="rounded-xl bg-amarelo-claro p-4 text-sm text-texto-sobre-amarelo"
+        >
           {estado.erro}
         </p>
       )}
       <button
         type="submit"
         disabled={!confere || enviando}
-        className="rounded-md bg-red-700 px-4 py-2 font-semibold text-white disabled:opacity-50"
+        className="inline-flex min-h-12 items-center justify-center rounded-xl bg-bordo px-5 py-3 font-bold text-superficie hover:bg-vinho disabled:opacity-60"
       >
         {enviando ? "Excluindo…" : "Excluir todos os dados"}
       </button>
