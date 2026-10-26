@@ -25,15 +25,13 @@ function normalizar(texto: string): string {
 
 // Cabeçalho com a busca pelo nome e a turma, filtrada no navegador sobre a
 // lista já carregada. No computador, pedidos e recusados ficam numa coluna fixa
-// à direita; no celular, os pedidos vêm antes da turma e os recusados depois.
+// à direita; no celular, ficam no painel aberto pelo botão abaixo do cabeçalho.
 export function TabelaDeAlunos({
   linhas,
   pedidos,
-  recusados,
 }: {
   linhas: LinhaDaTurma[];
   pedidos: ReactNode;
-  recusados: ReactNode;
 }) {
   const [busca, setBusca] = useState("");
   const termo = normalizar(busca.trim());
@@ -48,15 +46,14 @@ export function TabelaDeAlunos({
         <BuscaDeAlunos valor={busca} aoMudar={setBusca} />
         <Link
           href="/professor/alunos/convidar"
-          className={classesDoBotao("primario", "sm:w-auto")}
+          className={classesDoBotao("primario", "max-md:hidden sm:w-auto")}
         >
           Convidar aluno
         </Link>
       </div>
       <div className="flex flex-col gap-6 lg:grid lg:grid-cols-12 lg:items-start lg:gap-8">
         <div className="contents lg:col-span-4 lg:col-start-9 lg:row-start-1 lg:flex lg:flex-col lg:gap-6">
-          <div className="order-1 lg:order-none">{pedidos}</div>
-          <div className="order-3 lg:order-none">{recusados}</div>
+          {pedidos}
         </div>
         <section
           aria-labelledby="turma"
@@ -82,115 +79,189 @@ export function TabelaDeAlunos({
               Nenhum aluno com esse nome.
             </p>
           ) : (
-            <div className="overflow-x-auto lg:overflow-visible">
-              <table className="w-full min-w-[46rem] text-left text-sm">
-                <thead className="border-b border-linha bg-superficie text-xs font-bold text-texto-secundario">
-                  <tr>
-                    <th scope="col" className="px-6 py-3">
-                      Aluno
-                    </th>
-                    <th scope="col" className="px-3 py-3">
-                      Cursos
-                    </th>
-                    <th scope="col" className="px-3 py-3">
-                      Progresso
-                    </th>
-                    <th scope="col" className="px-6 py-3">
-                      Situação
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-linha">
-                  {visiveis.map((linha) => (
-                    <tr key={linha.id} className="align-top">
-                      <td className="px-6 py-3">
-                        <Link
-                          href={`/professor/alunos/${linha.id}`}
-                          className="flex min-h-12 items-center gap-3 font-bold text-texto hover:underline"
-                        >
-                          <span
-                            aria-hidden="true"
-                            className={`inline-flex size-10 shrink-0 items-center justify-center rounded-full text-xs font-bold ${linha.avatar}`}
-                          >
-                            {iniciais(linha.nome)}
-                          </span>
-                          <span className="min-w-0">
-                            <span className="block break-words">
-                              {linha.nome}
-                            </span>
-                            <span className="block text-xs font-normal break-all text-texto-secundario">
-                              {linha.email}
-                            </span>
-                          </span>
-                        </Link>
-                      </td>
-                      <td className="px-3 py-3">
-                        {linha.cursos.length === 0 ? (
-                          <span className="flex min-h-12 items-center text-texto-secundario">
-                            Sem matrículas
-                          </span>
-                        ) : (
-                          <ul className="space-y-2">
-                            {linha.cursos.map((curso) => (
-                              <li
-                                key={curso.id}
-                                className="flex min-h-6 items-center break-words"
-                              >
-                                {curso.titulo}
-                              </li>
-                            ))}
-                          </ul>
-                        )}
-                      </td>
-                      <td className="px-3 py-3">
-                        {linha.cursos.length === 0 ? (
-                          <span
-                            aria-label="Sem progresso"
-                            className="flex min-h-12 items-center"
-                          >
-                            —
-                          </span>
-                        ) : (
-                          <ul className="space-y-2">
-                            {linha.cursos.map((curso) => (
-                              <li
-                                key={curso.id}
-                                className="flex min-h-6 min-w-36 items-center gap-3"
-                              >
-                                {curso.percentual === null ? (
-                                  <span aria-label="Sem progresso">—</span>
-                                ) : (
-                                  <>
-                                    <div className="flex-1">
-                                      <BarraProgresso
-                                        percentual={curso.percentual}
-                                        rotulo={`Progresso de ${linha.nome} em ${curso.titulo}`}
-                                        cor="bordo"
-                                        comTexto={false}
-                                      />
-                                    </div>
-                                    <span className="w-10 text-right">
-                                      {curso.percentual}%
-                                    </span>
-                                  </>
-                                )}
-                              </li>
-                            ))}
-                          </ul>
-                        )}
-                      </td>
-                      <td className="px-6 py-3 align-middle">
+            <>
+              <ul
+                aria-label="Alunos da turma"
+                className="divide-y divide-linha border-t border-linha md:hidden"
+              >
+                {visiveis.map((linha) => (
+                  <li key={linha.id}>
+                    <Link
+                      href={`/professor/alunos/${linha.id}`}
+                      className="block min-h-12 space-y-3 px-5 py-4 hover:bg-fundo"
+                    >
+                      <span className="flex items-center gap-3">
                         <span
-                          className={`inline-block rounded-full px-3 py-1 text-xs font-bold ${linha.etiqueta.classe}`}
+                          aria-hidden="true"
+                          className={`inline-flex size-10 shrink-0 items-center justify-center rounded-full text-xs font-bold ${linha.avatar}`}
+                        >
+                          {iniciais(linha.nome)}
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="block font-bold break-words text-texto">
+                            {linha.nome}
+                          </span>
+                          <span className="block text-xs break-all text-texto-secundario">
+                            {linha.email}
+                          </span>
+                        </span>
+                        <span
+                          className={`shrink-0 rounded-full px-3 py-1 text-xs font-bold ${linha.etiqueta.classe}`}
                         >
                           {linha.etiqueta.texto}
                         </span>
-                      </td>
+                      </span>
+                      {linha.cursos.length === 0 ? (
+                        <span className="block text-sm text-texto-secundario">
+                          Sem matrículas
+                        </span>
+                      ) : (
+                        <div className="space-y-2">
+                          {linha.cursos.map((curso) => (
+                            <div key={curso.id} className="space-y-1">
+                              <span className="block text-sm break-words text-texto">
+                                {curso.titulo}
+                              </span>
+                              {curso.percentual === null ? (
+                                <span
+                                  aria-label="Sem progresso"
+                                  className="block text-sm text-texto-secundario"
+                                >
+                                  —
+                                </span>
+                              ) : (
+                                <div className="flex items-center gap-3">
+                                  <div className="flex-1">
+                                    <BarraProgresso
+                                      percentual={curso.percentual}
+                                      rotulo={`Progresso de ${linha.nome} em ${curso.titulo}`}
+                                      cor="bordo"
+                                      comTexto={false}
+                                    />
+                                  </div>
+                                  <span className="w-10 text-right text-sm text-texto">
+                                    {curso.percentual}%
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+              <div className="hidden overflow-x-auto md:block lg:overflow-visible">
+                <table className="w-full min-w-[46rem] text-left text-sm">
+                  <thead className="border-b border-linha bg-superficie text-xs font-bold text-texto-secundario">
+                    <tr>
+                      <th scope="col" className="px-6 py-3">
+                        Aluno
+                      </th>
+                      <th scope="col" className="px-3 py-3">
+                        Cursos
+                      </th>
+                      <th scope="col" className="px-3 py-3">
+                        Progresso
+                      </th>
+                      <th scope="col" className="px-6 py-3">
+                        Situação
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="divide-y divide-linha">
+                    {visiveis.map((linha) => (
+                      <tr key={linha.id} className="align-top">
+                        <td className="px-6 py-3">
+                          <Link
+                            href={`/professor/alunos/${linha.id}`}
+                            className="flex min-h-12 items-center gap-3 font-bold text-texto hover:underline"
+                          >
+                            <span
+                              aria-hidden="true"
+                              className={`inline-flex size-10 shrink-0 items-center justify-center rounded-full text-xs font-bold ${linha.avatar}`}
+                            >
+                              {iniciais(linha.nome)}
+                            </span>
+                            <span className="min-w-0">
+                              <span className="block break-words">
+                                {linha.nome}
+                              </span>
+                              <span className="block text-xs font-normal break-all text-texto-secundario">
+                                {linha.email}
+                              </span>
+                            </span>
+                          </Link>
+                        </td>
+                        <td className="px-3 py-3">
+                          {linha.cursos.length === 0 ? (
+                            <span className="flex min-h-12 items-center text-texto-secundario">
+                              Sem matrículas
+                            </span>
+                          ) : (
+                            <ul className="space-y-2">
+                              {linha.cursos.map((curso) => (
+                                <li
+                                  key={curso.id}
+                                  className="flex min-h-6 items-center break-words"
+                                >
+                                  {curso.titulo}
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                        </td>
+                        <td className="px-3 py-3">
+                          {linha.cursos.length === 0 ? (
+                            <span
+                              aria-label="Sem progresso"
+                              className="flex min-h-12 items-center"
+                            >
+                              —
+                            </span>
+                          ) : (
+                            <ul className="space-y-2">
+                              {linha.cursos.map((curso) => (
+                                <li
+                                  key={curso.id}
+                                  className="flex min-h-6 min-w-36 items-center gap-3"
+                                >
+                                  {curso.percentual === null ? (
+                                    <span aria-label="Sem progresso">—</span>
+                                  ) : (
+                                    <>
+                                      <div className="flex-1">
+                                        <BarraProgresso
+                                          percentual={curso.percentual}
+                                          rotulo={`Progresso de ${linha.nome} em ${curso.titulo}`}
+                                          cor="bordo"
+                                          comTexto={false}
+                                        />
+                                      </div>
+                                      <span className="w-10 text-right">
+                                        {curso.percentual}%
+                                      </span>
+                                    </>
+                                  )}
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                        </td>
+                        <td className="px-6 py-3 align-middle">
+                          <span
+                            className={`inline-block rounded-full px-3 py-1 text-xs font-bold ${linha.etiqueta.classe}`}
+                          >
+                            {linha.etiqueta.texto}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
         </section>
       </div>

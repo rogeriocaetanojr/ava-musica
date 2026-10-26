@@ -20,6 +20,12 @@ function secao(pagina: Page, titulo: string) {
     .filter({ has: pagina.getByRole("heading", { name: titulo }) });
 }
 
+// No celular, os pedidos ficam num painel aberto pelo botão com a quantidade.
+async function abrirPedidos(pagina: Page, projeto: string) {
+  if (projeto !== "celular") return;
+  await pagina.getByRole("button", { name: /^Pedidos de acesso/ }).click();
+}
+
 // Um e-mail novo por execução: o banco só é recriado no início dos testes.
 function emailNovo(prefixo: string, projeto: string): string {
   return `${prefixo}-${projeto}-${Date.now()}@teste.local`;
@@ -75,6 +81,7 @@ test("pedido pelo e-mail só conta depois do código, avisa uma vez e é liberad
   await professor.goto("/professor");
   await professor.getByRole("link", { name: /pedidos? de acesso/ }).click();
   await expect(professor).toHaveURL(/\/professor\/alunos$/);
+  await abrirPedidos(professor, testInfo.project.name);
   const pedido = pedidos.getByRole("listitem").filter({ hasText: email });
   await expect(pedido).toHaveCount(1);
   await expect(pedido.getByText(nome)).toBeVisible();

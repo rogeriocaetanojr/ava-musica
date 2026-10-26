@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BotaoVoltar } from "@/components/botao-voltar";
 import { TelaDoProfessor } from "@/components/tela-do-professor";
 import { CONTEINER } from "@/components/conteiner";
 import { Suspense } from "react";
@@ -9,6 +10,7 @@ import { resumoParaProfessor } from "@/lib/painel";
 import { criarClienteAdmin } from "@/lib/supabase/admin";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 import { dadosDoPainel } from "../progresso/dados";
+import { GavetaDePedidos } from "./gaveta-de-pedidos";
 import { PedidosDeAcesso } from "./pedidos-de-acesso";
 import { RecusadosRecentes } from "./recusados-recentes";
 import { type LinhaDaTurma, TabelaDeAlunos } from "./tabela-de-alunos";
@@ -45,13 +47,7 @@ const AVATARES = [
   "bg-vinho text-amarelo-claro",
 ];
 
-async function ListaDeAlunos({
-  pedidos,
-  recusados,
-}: {
-  pedidos: React.ReactNode;
-  recusados: React.ReactNode;
-}) {
+async function ListaDeAlunos({ pedidos }: { pedidos: React.ReactNode }) {
   await exigirProfessor();
 
   const supabase = await criarClienteServidor();
@@ -112,14 +108,12 @@ async function ListaDeAlunos({
     ];
   });
 
-  return (
-    <TabelaDeAlunos linhas={linhas} pedidos={pedidos} recusados={recusados} />
-  );
+  return <TabelaDeAlunos linhas={linhas} pedidos={pedidos} />;
 }
 
 // Quem pediu acesso (pelo Google ou pelo e-mail) e ainda espera liberação, do
 // mais antigo ao mais novo. A conta criada e nunca confirmada fica de fora.
-async function Pedidos() {
+async function Pedidos({ recusados }: { recusados: React.ReactNode }) {
   await exigirProfessor();
 
   const supabase = await criarClienteServidor();
@@ -133,11 +127,23 @@ async function Pedidos() {
     .order("pedido_em");
   if (error || !pedidos)
     return (
-      <Aviso role="alert">
-        Não foi possível carregar os pedidos de acesso.
-      </Aviso>
+      <GavetaDePedidos
+        quantidade={null}
+        pedidos={
+          <Aviso role="alert">
+            Não foi possível carregar os pedidos de acesso.
+          </Aviso>
+        }
+        recusados={recusados}
+      />
     );
-  return <PedidosDeAcesso pedidos={pedidos} />;
+  return (
+    <GavetaDePedidos
+      quantidade={pedidos.length}
+      pedidos={<PedidosDeAcesso pedidos={pedidos} />}
+      recusados={recusados}
+    />
+  );
 }
 
 async function Recusados() {
@@ -160,9 +166,12 @@ export default function Alunos() {
       <main
         className={`${CONTEINER} flex max-w-6xl flex-1 flex-col gap-6 py-6 md:gap-8 md:py-10`}
       >
+        <div className="md:hidden">
+          <BotaoVoltar href="/professor" rotulo="Voltar para Painel" />
+        </div>
         <Link
           href="/professor"
-          className="inline-flex min-h-12 items-center self-start text-sm font-bold text-bordo underline"
+          className="hidden min-h-12 items-center self-start text-sm font-bold text-bordo underline md:inline-flex"
         >
           ← Painel
         </Link>
@@ -170,24 +179,25 @@ export default function Alunos() {
           <ListaDeAlunos
             pedidos={
               <Suspense>
-                <Pedidos />
+                <Pedidos
+                  recusados={
+                    <section
+                      aria-labelledby="recusados-recentes"
+                      className="space-y-4 rounded-3xl border border-linha bg-superficie p-5"
+                    >
+                      <h2
+                        id="recusados-recentes"
+                        className="font-titulo text-2xl text-texto"
+                      >
+                        Recusados recentemente
+                      </h2>
+                      <Suspense fallback={<p>Carregando…</p>}>
+                        <Recusados />
+                      </Suspense>
+                    </section>
+                  }
+                />
               </Suspense>
-            }
-            recusados={
-              <section
-                aria-labelledby="recusados-recentes"
-                className="space-y-4 rounded-3xl border border-linha bg-superficie p-5"
-              >
-                <h2
-                  id="recusados-recentes"
-                  className="font-titulo text-2xl text-texto"
-                >
-                  Recusados recentemente
-                </h2>
-                <Suspense fallback={<p>Carregando…</p>}>
-                  <Recusados />
-                </Suspense>
-              </section>
             }
           />
         </Suspense>

@@ -21,15 +21,16 @@ const alerta =
 
 // O aviso fica aqui, fora de cada pedido: depois de liberar ou recusar o
 // pedido sai da lista, mas a confirmação continua na tela. Sem pedidos e sem
-// confirmação, a seção não aparece.
+// confirmação, a seção só aparece no celular, dentro do painel de pedidos,
+// com a mensagem de vazio.
 export function PedidosDeAcesso({ pedidos }: { pedidos: Pedido[] }) {
   const [aviso, setAviso] = useState("");
-  if (pedidos.length === 0 && !aviso) return null;
+  const vazia = pedidos.length === 0 && !aviso;
 
   return (
     <section
       aria-labelledby="pedidos-de-acesso"
-      className="space-y-4 rounded-3xl border border-amarelo bg-superficie p-5"
+      className={`space-y-4 rounded-3xl border border-amarelo bg-superficie p-5 ${vazia ? "md:hidden" : ""}`}
     >
       <h2 id="pedidos-de-acesso" className="font-titulo text-2xl text-texto">
         Pedidos de acesso

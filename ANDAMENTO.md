@@ -6,7 +6,7 @@
 
 - [ ] Conteúdo da aula do professor no computador
 - [ ] Alunos do professor no computador
-- [ ] Alunos do professor no celular
+- [x] Alunos do professor no celular
 - [ ] Recados do professor no computador
 - [ ] Recados do professor no celular
 - [ ] Política de privacidade e Termos no computador

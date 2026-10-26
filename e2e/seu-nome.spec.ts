@@ -14,6 +14,12 @@ function secao(pagina: Page, titulo: string) {
     .filter({ has: pagina.getByRole("heading", { name: titulo }) });
 }
 
+// No celular, os pedidos ficam num painel aberto pelo botão com a quantidade.
+async function abrirPedidos(pagina: Page, projeto: string) {
+  if (projeto !== "celular") return;
+  await pagina.getByRole("button", { name: /^Pedidos de acesso/ }).click();
+}
+
 test("sem nome, a tela do nome vem antes de tudo e o pedido só chega ao professor com o nome", async ({
   browser,
 }, testInfo) => {
@@ -63,6 +69,7 @@ test("sem nome, a tela do nome vem antes de tudo e o pedido só chega ao profess
 
   // Agora o pedido aparece, com o nome.
   await professor.reload();
+  await abrirPedidos(professor, projeto);
   const pedido = pedidos.getByRole("listitem").filter({ hasText: email });
   await expect(pedido.getByText(nome)).toBeVisible();
 
@@ -82,6 +89,7 @@ test("sem nome, a tela do nome vem antes de tudo e o pedido só chega ao profess
 
   // Liberado, o aluno vê o nome no perfil.
   await professor.goto("/professor/alunos");
+  await abrirPedidos(professor, projeto);
   const liberar = pedidos.getByRole("listitem").filter({ hasText: email });
   await liberar.getByRole("button", { name: "Liberar" }).click();
   await liberar.getByLabel("Data de nascimento").fill("2000-01-01");

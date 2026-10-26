@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BotaoVoltar } from "@/components/botao-voltar";
 import { TelaDoProfessor } from "@/components/tela-do-professor";
 import { CONTEINER } from "@/components/conteiner";
 import { notFound } from "next/navigation";
@@ -49,7 +50,7 @@ type Aluno = {
 type Curso = { id: string; titulo: string; publicado: boolean };
 type Acesso = { id: number; acao: AcaoAuditada; criado_em: string };
 
-const cartao = "rounded-3xl border border-linha bg-superficie p-6";
+const cartao = "rounded-3xl border border-linha bg-superficie p-5 md:p-6";
 const cartaoComLista =
   "overflow-hidden rounded-3xl border border-linha bg-superficie";
 const tituloDeCartao = "font-titulo text-2xl text-texto";
@@ -138,7 +139,7 @@ async function FichaDoAluno({ params }: { params: Promise<{ id: string }> }) {
                 {iniciais(nome)}
               </span>
               <div className="min-w-0 space-y-2">
-                <h1 className="font-titulo text-3xl break-words text-texto">
+                <h1 className="font-titulo text-3xl break-all text-texto md:break-words">
                   {nome}
                 </h1>
                 <span
@@ -239,7 +240,7 @@ async function FichaDoAluno({ params }: { params: Promise<{ id: string }> }) {
                   return (
                     <li
                       key={curso.id}
-                      className="flex flex-wrap items-center gap-4 px-6 py-4"
+                      className="flex flex-col gap-3 px-5 py-4 md:flex-row md:flex-wrap md:items-center md:gap-4 md:px-6"
                     >
                       <div className="min-w-0 flex-1 space-y-2">
                         <p className="break-words text-texto">
@@ -258,7 +259,7 @@ async function FichaDoAluno({ params }: { params: Promise<{ id: string }> }) {
                             </span>
                             {percentual !== undefined && (
                               <>
-                                <div className="max-w-64 flex-1">
+                                <div className="flex-1 md:max-w-64">
                                   <BarraProgresso
                                     percentual={percentual}
                                     rotulo={`Progresso de ${nome} em ${curso.titulo}`}
@@ -284,8 +285,12 @@ async function FichaDoAluno({ params }: { params: Promise<{ id: string }> }) {
                           aluno.id,
                           curso.id,
                         )}
+                        className="w-full md:w-auto"
                       >
-                        <button type="submit" className={botaoPequeno}>
+                        <button
+                          type="submit"
+                          className={`${botaoPequeno} w-full md:w-auto`}
+                        >
                           {matriculado ? "Desmatricular" : "Matricular"}
                         </button>
                       </form>
@@ -313,7 +318,7 @@ async function FichaDoAluno({ params }: { params: Promise<{ id: string }> }) {
                 {((acessos ?? []) as Acesso[]).map((acesso) => (
                   <li
                     key={acesso.id}
-                    className="flex flex-wrap justify-between gap-2 px-6 py-3"
+                    className="flex flex-col gap-1 px-5 py-3 md:flex-row md:flex-wrap md:justify-between md:gap-2 md:px-6"
                   >
                     <span className="text-texto">
                       {NOMES_DAS_ACOES[acesso.acao] ?? acesso.acao}
@@ -347,7 +352,7 @@ async function FichaDoAluno({ params }: { params: Promise<{ id: string }> }) {
 
       <section
         aria-labelledby="excluir"
-        className="mt-4 space-y-3 rounded-3xl border-2 border-bordo bg-superficie p-6"
+        className="mt-4 space-y-3 rounded-3xl border-2 border-bordo bg-superficie p-5 md:p-6"
       >
         <h2 id="excluir" className="font-titulo text-2xl text-bordo">
           Excluir todos os dados
@@ -364,9 +369,12 @@ export default function Aluno({ params }: { params: Promise<{ id: string }> }) {
       <main
         className={`${CONTEINER} flex max-w-6xl flex-1 flex-col gap-6 py-6 md:py-10`}
       >
+        <div className="md:hidden">
+          <BotaoVoltar href="/professor/alunos" rotulo="Voltar para Alunos" />
+        </div>
         <Link
           href="/professor/alunos"
-          className="inline-flex min-h-12 items-center self-start text-sm font-bold text-bordo underline"
+          className="hidden min-h-12 items-center self-start text-sm font-bold text-bordo underline md:inline-flex"
         >
           ← Alunos
         </Link>
