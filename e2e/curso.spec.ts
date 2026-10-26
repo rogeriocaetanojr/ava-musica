@@ -85,7 +85,9 @@ test("professor cria curso, módulo e aula com texto e YouTube e publica", async
   await page.getByRole("link", { name: new RegExp(NOME_DO_ALUNO) }).click();
   const linhaDoCurso = page.getByRole("listitem").filter({ hasText: curso });
   await linhaDoCurso.getByRole("button", { name: "Matricular" }).click();
-  await expect(linhaDoCurso.getByText("Matriculado")).toBeVisible();
+  await expect(
+    linhaDoCurso.getByRole("button", { name: "Desmatricular" }),
+  ).toBeVisible();
 });
 
 test("aluno conclui a aula e o professor vê o progresso", async ({
