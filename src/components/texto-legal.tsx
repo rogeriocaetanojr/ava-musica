@@ -52,6 +52,21 @@ export function TextoLegal({
   secoes: SecaoDoTexto[];
   fecho: ReactNode;
 }) {
+  const sumario = (
+    <ul>
+      {secoes.map(({ id, titulo }) => (
+        <li key={id}>
+          <a
+            href={`#${id}`}
+            className="flex min-h-12 items-center rounded-xl px-4 text-texto hover:bg-amarelo-claro hover:text-texto-sobre-amarelo"
+          >
+            {titulo}
+          </a>
+        </li>
+      ))}
+    </ul>
+  );
+
   return (
     <div data-tela-cheia className="flex min-h-screen flex-1 flex-col">
       <header className="border-b border-linha bg-superficie">
@@ -74,21 +89,44 @@ export function TextoLegal({
       </header>
 
       <div className="relative overflow-hidden bg-bordo text-superficie">
-        <Cordas className="absolute inset-y-0 right-10 w-28 md:right-24" />
-        <div className={`${CONTEINER} relative py-8 md:py-10`}>
+        <Cordas className="absolute inset-y-0 right-4 w-16 md:right-24 md:w-28" />
+        <div className={`${CONTEINER} relative py-5 md:py-10`}>
           <p className="text-sm font-bold text-amarelo">{NOME_DO_AVA}</p>
-          <h1 className="mt-1 font-titulo text-3xl tracking-tight md:text-4xl">
+          <h1 className="mt-1 pr-20 font-titulo text-2xl tracking-tight md:pr-0 md:text-4xl">
             {titulo}
           </h1>
         </div>
       </div>
 
       <main
-        className={`${CONTEINER} grid flex-1 items-start gap-6 py-8 md:grid-cols-[16rem_minmax(0,1fr)] md:gap-10 md:py-10`}
+        className={`${CONTEINER} grid flex-1 items-start gap-6 py-6 md:grid-cols-[16rem_minmax(0,1fr)] md:gap-10 md:py-10`}
       >
+        {/* No celular o sumário fica recolhido acima do texto; a partir de md,
+            na lateral. Só um dos dois aparece por vez. */}
+        <details className="group rounded-2xl border border-linha bg-superficie md:hidden">
+          <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between rounded-2xl px-5 font-bold text-texto [&::-webkit-details-marker]:hidden">
+            Nesta página
+            <svg
+              aria-hidden="true"
+              viewBox="0 0 24 24"
+              className="size-5 transition-transform group-open:rotate-180"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M6 9l6 6 6-6" />
+            </svg>
+          </summary>
+          <nav aria-label="Nesta página" className="px-1 pb-3">
+            {sumario}
+          </nav>
+        </details>
+
         <nav
           aria-labelledby="titulo-do-sumario"
-          className="rounded-2xl border border-linha bg-superficie p-4 md:sticky md:top-6"
+          className="hidden rounded-2xl border border-linha bg-superficie p-4 md:sticky md:top-6 md:block"
         >
           <h2
             id="titulo-do-sumario"
@@ -96,21 +134,10 @@ export function TextoLegal({
           >
             Nesta página
           </h2>
-          <ul>
-            {secoes.map(({ id, titulo }) => (
-              <li key={id}>
-                <a
-                  href={`#${id}`}
-                  className="flex min-h-12 items-center rounded-xl px-4 text-texto hover:bg-amarelo-claro hover:text-texto-sobre-amarelo"
-                >
-                  {titulo}
-                </a>
-              </li>
-            ))}
-          </ul>
+          {sumario}
         </nav>
 
-        <article className="flex max-w-[70ch] flex-col gap-4 rounded-2xl border border-linha bg-superficie p-6 leading-relaxed md:p-10 [&_a]:font-bold [&_a]:text-bordo [&_a]:underline [&_ul]:list-disc [&_ul]:space-y-1 [&_ul]:pl-5 [&_ul]:marker:text-bordo">
+        <article className="flex max-w-[70ch] flex-col gap-4 rounded-2xl border border-linha bg-superficie p-5 text-[17px] leading-relaxed md:p-10 md:text-base [&_a]:font-bold [&_a]:text-bordo [&_a]:underline [&_ul]:list-disc [&_ul]:space-y-1 [&_ul]:pl-5 [&_ul]:marker:text-bordo">
           <p className="text-sm text-texto-secundario">
             {textoDaVersao(VERSAO_DOS_TERMOS)}
           </p>
@@ -124,7 +151,7 @@ export function TextoLegal({
             >
               <h2
                 id={id}
-                className="scroll-mt-6 font-titulo text-2xl tracking-tight"
+                className="scroll-mt-4 font-titulo md:scroll-mt-6 text-2xl tracking-tight"
               >
                 {titulo}
               </h2>
