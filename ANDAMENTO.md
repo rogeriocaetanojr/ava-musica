@@ -9,7 +9,7 @@
 - [x] Alunos do professor no celular
 - [x] Recados do professor no computador
 - [x] Recados do professor no celular
-- [ ] Política de privacidade e Termos no computador
+- [x] Política de privacidade e Termos no computador
 - [ ] Política de privacidade e Termos no celular
 - [ ] Tema escuro no computador
 - [ ] Tema escuro no celular
