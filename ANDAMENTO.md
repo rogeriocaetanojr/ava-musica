@@ -8,7 +8,7 @@
 - [ ] Alunos do professor no computador
 - [x] Alunos do professor no celular
 - [x] Recados do professor no computador
-- [ ] Recados do professor no celular
+- [x] Recados do professor no celular
 - [ ] Política de privacidade e Termos no computador
 - [ ] Política de privacidade e Termos no celular
 - [ ] Tema escuro no computador
@@ -17,6 +17,7 @@
 ### Revisão
 
 - [ ] Revisão do protótipo e demonstração para o professor
+- [ ] Depois do deploy, conferir num celular de verdade que o teclado não esconde o botão de enviar nos painéis Novo recado, Novo bloco e Pedidos de acesso
 
 ### Publicação do site
 
@@ -202,3 +203,4 @@
 - No computador, o conteúdo da aula do professor mostra a trilha Curso / Módulo / Aula, os dados da aula num cartão e cada bloco num cartão com ícone, prévia curta e botões de ícone de 48 px (editar, subir, descer, excluir); editar abre o formulário dentro do cartão. Para a trilha, a página lê também o título do curso, só para leitura e sob as mesmas regras de acesso. A lateral "Como o aluno vê" lista os materiais e leva à tela do aluno. O botão voltar passou a se chamar "Voltar ao curso", e o teste de ponta a ponta acompanha.
 - No computador, Alunos tem no topo o título, a busca pelo nome e Convidar aluno, e, a partir da tela larga, duas colunas: a turma numa tabela como a do painel (avatar com iniciais, cursos, progresso e situação), que cresce com a página, e, à direita, os pedidos de acesso em cartões compactos, com o link Ver ficha para olhar a ficha antes de liberar, e os recusados recentemente. Quem está pendente aparece só em Pedidos de acesso, fora da turma; o filtro é só na tela, sem mudar a consulta. No celular, os pedidos vêm antes da turma e os recusados depois. A busca filtra no navegador a lista já carregada, sem mudar consulta nem endereço; se a turma crescer, pode virar `?q=`. As etiquetas continuam vindo de `statusDoAluno`, agora em pílulas com as cores do tema. Para o progresso, a lista e a ficha leem também `dadosDoPainel` e usam `resumoParaProfessor`, só para leitura e sob as mesmas regras de acesso. A ficha tem duas colunas (dados, nome e responsável à esquerda; matrículas com barra de progresso, últimos acessos e bloqueio à direita) e, separada no fim, a exclusão com borda bordô.
 - Na tela de Recados do professor, os textos dizem "recado" em vez de "aviso", inclusive as mensagens das actions e da validação; o nome da tabela e do código continua `avisos`. O formulário de novo recado e o de edição abrem no mesmo painel pelo botão "Novo recado" ao lado do título ou pelo Editar de cada cartão: na lateral no computador e de baixo para cima no celular, com fundo escurecido, Fechar, Esc e toque fora, e fecha ao salvar sem erro, com o foco de volta ao botão que o abriu. Os recados enviados ficam numa grade de cartões de mesma altura, com 2 colunas a partir de md, 4 a partir de lg e 5 a partir de 2xl, título em 1 linha, trecho em 2, destino e data e, no rodapé, Editar e Apagar lado a lado; o mais recente vem em amarelo claro.
+- No celular, os cartões de Recados do professor ficam em largura total, com o título em até 2 linhas e o trecho em até 3; a partir de md voltam a 1 e 2. O painel do formulário fica por cima da barra de abas, respeita a área segura e rola por dentro, com o botão de publicar sempre ao alcance.

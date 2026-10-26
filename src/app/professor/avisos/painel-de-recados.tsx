@@ -113,10 +113,12 @@ export function PainelDeRecados({ cabecalho, criar, cursos, recados }: Props) {
                       Mais recente
                     </p>
                   )}
-                  <h3 className="line-clamp-1 text-lg font-bold wrap-anywhere">
+                  <h3 className="line-clamp-2 text-lg font-bold wrap-anywhere md:line-clamp-1">
                     {recado.titulo}
                   </h3>
-                  <p className="line-clamp-2 wrap-anywhere">{recado.texto}</p>
+                  <p className="line-clamp-3 wrap-anywhere md:line-clamp-2">
+                    {recado.texto}
+                  </p>
                   <p
                     className={`text-sm wrap-anywhere ${recente ? "" : "text-texto-secundario"}`}
                   >
@@ -163,7 +165,7 @@ export function PainelDeRecados({ cabecalho, criar, cursos, recados }: Props) {
             role="dialog"
             aria-modal="true"
             aria-labelledby="titulo-do-painel"
-            className="fixed inset-x-0 bottom-0 z-50 max-h-[85dvh] space-y-4 overflow-y-auto rounded-t-3xl border border-linha bg-superficie p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] md:inset-y-0 md:right-0 md:left-auto md:max-h-none md:w-full md:max-w-lg md:rounded-none md:rounded-l-3xl md:p-6"
+            className="fixed inset-x-0 bottom-0 z-50 max-h-[85dvh] scroll-pb-6 space-y-4 overflow-y-auto overscroll-contain rounded-t-3xl border border-linha bg-superficie p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] md:inset-y-0 md:right-0 md:left-auto md:max-h-none md:w-full md:max-w-lg md:rounded-none md:rounded-l-3xl md:p-6"
           >
             <div className="flex items-center justify-between gap-4">
               <h2 id="titulo-do-painel" className={tituloDeSecao}>
