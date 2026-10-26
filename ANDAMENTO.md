@@ -4,7 +4,6 @@
 
 ### Telas
 
-- [ ] Cursos do professor no celular
 - [ ] Alunos do professor no computador
 - [ ] Alunos do professor no celular
 - [ ] Recados do professor no computador
@@ -86,6 +85,7 @@
 - [x] Curso do aluno no computador
 - [x] Curso do aluno no celular, com os módulos recolhíveis e o da próxima aula aberto
 - [x] Cursos do professor no computador
+- [x] Cursos do professor no celular, com os módulos recolhíveis
 
 ## Decisões
 
@@ -195,3 +195,5 @@
 - O nome tem até 120 caracteres, sem espaços sobrando e sem `@`, para ninguém digitar o e-mail no lugar. Uma conta antiga ainda sem nome aparece como "Sem nome" nas telas do professor, nunca com o e-mail.
 - No computador, os cursos do professor aparecem em cartões com capa colorida e cordas, a contagem de módulos e aulas e a etiqueta Publicado ou Rascunho. Para a contagem, a lista lê também os módulos e as aulas de cada curso (só os ids), sob as mesmas regras de acesso. No computador largo, o formulário de novo curso fica fixo à esquerda e os cartões, em três colunas, à direita; na página do curso, os dados do curso ficam fixos à esquerda e os módulos, separados por divisórias, num só cartão à direita.
 - Na página do curso no computador, o título dos módulos e das aulas aparece como texto, com um botão de editar que abre o campo de renomear; no celular o campo continua sempre à vista. Subir, descer e editar são botões de ícone de 48 px com o nome no aria-label, sempre na mesma coluna, editando ou não; as setas desativadas mantêm o tamanho. Nova aula e Novo módulo continuam como campos sempre visíveis. Ainda não há exclusão de módulo nem de aula.
+- No celular, os cursos do professor viram cartões de largura total com uma faixa colorida baixa, e o novo curso fica num cartão abaixo da lista. Na página do curso, "Dados do curso" e cada módulo são recolhíveis pelo próprio cabeçalho; "Dados do curso" e o primeiro módulo vêm abertos, porque o teste de ponta a ponta usa os dois. O recolhível é um botão que esconde o conteúdo só no celular (`src/app/professor/cursos/[id]/recolhivel.tsx`); no computador o conteúdo fica sempre à vista.
+- As ações da aula ficam em linha, com 48 px, e quebram para uma segunda linha quando não cabem. Não há botão Nova aula fixo no rodapé: cada módulo tem o próprio campo, porque a aula precisa de um módulo. O título dos módulos e das aulas aparece como texto também no celular, e o botão de editar abre o campo de renomear.

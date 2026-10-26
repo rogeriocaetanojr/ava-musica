@@ -34,12 +34,12 @@ export function FormularioTitulo({
           required
           maxLength={120}
           defaultValue={estado.valores?.titulo ?? inicial}
-          className="min-w-0 flex-1 rounded-md border border-current bg-transparent px-3 py-2 md:min-h-12 md:rounded-xl md:border-borda-campo md:bg-superficie md:px-4 md:text-texto md:placeholder:text-texto-secundario"
+          className="min-h-12 min-w-0 flex-1 rounded-xl border border-borda-campo bg-superficie px-4 py-2 text-texto placeholder:text-texto-secundario"
         />
         <button
           type="submit"
           disabled={enviando}
-          className={`shrink-0 rounded-md border border-current px-3 py-2 text-sm font-medium disabled:opacity-60 md:min-h-12 md:rounded-xl md:border-0 md:bg-bordo md:px-5 md:font-bold md:text-superficie md:hover:bg-vinho ${classeDoBotao}`}
+          className={`min-h-12 shrink-0 rounded-xl bg-bordo px-5 py-2 text-sm font-bold text-superficie hover:bg-vinho disabled:opacity-60 ${classeDoBotao}`}
         >
           {enviando ? "…" : textoDoBotao}
         </button>
@@ -47,7 +47,7 @@ export function FormularioTitulo({
       {estado.erro && (
         <p
           role="alert"
-          className="rounded-md bg-red-100 p-2 text-sm text-red-800 md:rounded-xl md:bg-amarelo-claro md:p-3 md:text-texto-sobre-amarelo"
+          className="rounded-xl bg-amarelo-claro p-3 text-sm text-texto-sobre-amarelo"
         >
           {estado.erro}
         </p>

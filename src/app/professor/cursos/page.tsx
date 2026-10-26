@@ -42,7 +42,7 @@ async function ListaDeCursos() {
     return (
       <p
         role="alert"
-        className="rounded-md bg-red-100 p-3 text-red-800 md:rounded-xl md:bg-amarelo-claro md:p-4 md:text-texto-sobre-amarelo"
+        className="rounded-xl bg-amarelo-claro p-4 text-texto-sobre-amarelo"
       >
         Não foi possível carregar os cursos.
       </p>
@@ -63,30 +63,26 @@ async function ListaDeCursos() {
           <li key={curso.id}>
             <Link
               href={`/professor/cursos/${curso.id}`}
-              className="block rounded-md border border-current p-4 md:h-full md:overflow-hidden md:rounded-2xl md:border-linha md:bg-superficie md:p-0 md:hover:border-borda-campo lg:flex lg:flex-col"
+              className="block overflow-hidden rounded-2xl border border-linha bg-superficie md:h-full md:overflow-hidden md:rounded-2xl md:border-linha md:bg-superficie md:p-0 md:hover:border-borda-campo lg:flex lg:flex-col"
             >
               <div
                 aria-hidden="true"
-                className={`relative hidden h-36 md:block lg:h-18 ${capa.fundo}`}
+                className={`relative h-14 md:h-36 lg:h-18 ${capa.fundo}`}
               >
                 <Cordas
                   cor={capa.cordas}
-                  className="absolute inset-y-0 left-1/3 w-20 lg:w-14"
+                  className="absolute inset-y-0 left-1/3 w-12 md:w-20 lg:w-14"
                 />
               </div>
-              <div className="md:space-y-3 md:p-5 lg:flex lg:flex-1 lg:flex-col lg:space-y-1 lg:p-4">
-                <span className="block font-medium break-words md:font-titulo md:text-xl md:font-normal md:text-texto lg:line-clamp-2 lg:text-lg">
+              <div className="space-y-1 p-4 md:space-y-3 md:p-5 lg:flex lg:flex-1 lg:flex-col lg:space-y-1 lg:p-4">
+                <span className="line-clamp-2 block font-titulo text-lg break-words text-texto md:line-clamp-none md:text-xl lg:line-clamp-2 lg:text-lg">
                   {curso.titulo}
                 </span>
-                <span className="text-sm md:block md:text-texto-secundario">
+                <span className="block text-sm text-texto-secundario">
                   {curso.instrumento}
                   {curso.nivel && ` · ${curso.nivel}`}
-                  <span className="md:hidden">
-                    {" "}
-                    · {curso.publicado ? "Publicado" : "Rascunho"}
-                  </span>
                 </span>
-                <span className="hidden flex-wrap items-center justify-between gap-2 md:flex lg:mt-auto lg:pt-2">
+                <span className="flex flex-wrap items-center justify-between gap-2 pt-1 md:pt-0 lg:mt-auto lg:pt-2">
                   <span className="text-sm text-texto-secundario">
                     {plural(curso.modulos.length, "módulo", "módulos")} ·{" "}
                     {plural(aulas, "aula", "aulas")}
@@ -114,20 +110,17 @@ export default function CursosDoProfessor() {
   return (
     <TelaDoProfessor atual="cursos">
       <main
-        className={`${CONTEINER} flex max-w-2xl flex-1 flex-col gap-8 py-8 md:py-10`}
+        className={`${CONTEINER} flex max-w-2xl flex-1 flex-col gap-6 py-6 md:gap-8 md:py-10`}
       >
         <div className="space-y-2 md:flex md:flex-wrap md:items-end md:justify-between md:gap-4 md:space-y-0">
           <div className="space-y-2">
-            <Link href="/professor" className="text-sm underline md:hidden">
-              ← Painel
-            </Link>
-            <h1 className="text-2xl font-bold md:font-titulo md:text-5xl md:font-normal md:text-texto">
+            <h1 className="font-titulo text-4xl text-texto md:text-5xl">
               Cursos
             </h1>
           </div>
         </div>
 
-        <div className="flex flex-col gap-8 lg:grid lg:grid-cols-12 lg:items-start lg:gap-6">
+        <div className="flex flex-col gap-6 md:gap-8 lg:grid lg:grid-cols-12 lg:items-start lg:gap-6">
           <section
             aria-label="Lista de cursos"
             className="space-y-3 lg:col-span-7"
@@ -140,11 +133,11 @@ export default function CursosDoProfessor() {
           <section
             id="novo-curso"
             aria-labelledby="titulo-novo-curso"
-            className="scroll-mt-6 space-y-4 md:max-w-3xl md:rounded-3xl md:border md:border-linha md:bg-superficie md:p-6 lg:sticky lg:top-6 lg:order-first lg:col-span-5 lg:max-w-none"
+            className="scroll-mt-6 space-y-4 rounded-3xl border border-linha bg-superficie p-5 md:max-w-3xl md:p-6 lg:sticky lg:top-6 lg:order-first lg:col-span-5 lg:max-w-none"
           >
             <h2
               id="titulo-novo-curso"
-              className="text-xl font-semibold md:font-titulo md:text-2xl md:font-normal md:text-texto"
+              className="font-titulo text-2xl text-texto"
             >
               Novo curso
             </h2>

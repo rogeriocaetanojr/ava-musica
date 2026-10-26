@@ -13,8 +13,8 @@ type Props = {
 };
 
 const campo =
-  "w-full rounded-md border border-current bg-transparent px-3 py-3 md:min-h-14 md:rounded-xl md:border-borda-campo md:bg-superficie md:px-4 md:text-base md:text-texto md:placeholder:text-texto-secundario";
-const rotulo = "block text-sm font-medium md:font-bold md:text-texto";
+  "min-h-14 w-full rounded-xl border border-borda-campo bg-superficie px-4 py-3 text-base text-texto placeholder:text-texto-secundario";
+const rotulo = "block text-sm font-bold text-texto";
 
 export function FormularioCurso({ acao, inicial = {}, textoDoBotao }: Props) {
   const [estado, enviar, enviando] = useActionState(acao, {});
@@ -22,7 +22,7 @@ export function FormularioCurso({ acao, inicial = {}, textoDoBotao }: Props) {
 
   return (
     <form action={enviar} className="space-y-4">
-      <div className="space-y-1 md:space-y-2">
+      <div className="space-y-2">
         <label htmlFor="titulo" className={rotulo}>
           Título
         </label>
@@ -37,7 +37,7 @@ export function FormularioCurso({ acao, inicial = {}, textoDoBotao }: Props) {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <div className="space-y-1 md:space-y-2">
+        <div className="space-y-2">
           <label htmlFor="instrumento" className={rotulo}>
             Instrumento
           </label>
@@ -50,7 +50,7 @@ export function FormularioCurso({ acao, inicial = {}, textoDoBotao }: Props) {
             className={campo}
           />
         </div>
-        <div className="space-y-1 md:space-y-2">
+        <div className="space-y-2">
           <label htmlFor="nivel" className={rotulo}>
             Nível
           </label>
@@ -70,7 +70,7 @@ export function FormularioCurso({ acao, inicial = {}, textoDoBotao }: Props) {
         </div>
       </div>
 
-      <div className="space-y-1 md:space-y-2">
+      <div className="space-y-2">
         <label htmlFor="descricao" className={rotulo}>
           Descrição
         </label>
@@ -84,7 +84,7 @@ export function FormularioCurso({ acao, inicial = {}, textoDoBotao }: Props) {
         />
       </div>
 
-      <div className="space-y-1 md:space-y-2">
+      <div className="space-y-2">
         <label htmlFor="capa_url" className={rotulo}>
           Endereço da imagem de capa (opcional)
         </label>
@@ -99,7 +99,7 @@ export function FormularioCurso({ acao, inicial = {}, textoDoBotao }: Props) {
         />
       </div>
 
-      <label className="flex items-center gap-3 py-2 md:min-h-12">
+      <label className="flex min-h-12 items-center gap-3 py-2">
         <input
           type="checkbox"
           name="publicado"
@@ -112,7 +112,7 @@ export function FormularioCurso({ acao, inicial = {}, textoDoBotao }: Props) {
       <button
         type="submit"
         disabled={enviando}
-        className="w-full rounded-md border border-current px-4 py-3 font-medium disabled:opacity-60 sm:w-auto md:inline-flex md:min-h-14 md:items-center md:justify-center md:rounded-xl md:border-0 md:bg-bordo md:px-5 md:font-bold md:text-superficie md:hover:bg-vinho"
+        className="inline-flex min-h-14 w-full items-center justify-center rounded-xl bg-bordo px-5 py-3 font-bold text-superficie hover:bg-vinho disabled:opacity-60 sm:w-auto"
       >
         {enviando ? "Salvando…" : textoDoBotao}
       </button>
@@ -120,16 +120,13 @@ export function FormularioCurso({ acao, inicial = {}, textoDoBotao }: Props) {
       {estado.erro && (
         <p
           role="alert"
-          className="rounded-md bg-red-100 p-3 text-red-800 md:rounded-xl md:bg-amarelo-claro md:p-4 md:text-texto-sobre-amarelo"
+          className="rounded-xl bg-amarelo-claro p-4 text-texto-sobre-amarelo"
         >
           {estado.erro}
         </p>
       )}
       {estado.sucesso && (
-        <p
-          role="status"
-          className="rounded-md bg-green-100 p-3 text-green-800 md:rounded-xl md:bg-linha md:p-4 md:text-sucesso"
-        >
+        <p role="status" className="rounded-xl bg-linha p-4 text-sucesso">
           {estado.sucesso}
         </p>
       )}

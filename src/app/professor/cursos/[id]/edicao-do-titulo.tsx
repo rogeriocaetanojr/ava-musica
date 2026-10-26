@@ -2,8 +2,8 @@
 
 import { createContext, type ReactNode, useContext, useState } from "react";
 
-// No computador, o título aparece como texto e o botão de editar abre o
-// formulário de renomear; no celular, o formulário fica sempre à vista.
+// O título aparece como texto e o botão de editar abre o formulário de
+// renomear.
 // O botão fica separado do título para ocupar sempre a mesma coluna da linha.
 
 type Edicao = { editando: boolean; alternar: () => void };
@@ -38,22 +38,20 @@ export function TituloEditavel({
   const { editando } = useContext(ContextoDaEdicao);
 
   return (
-    <div className="min-w-0 md:flex-1 lg:flex lg:items-center lg:gap-3">
+    <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 md:block md:flex-1 lg:flex lg:flex-nowrap lg:items-center lg:gap-3">
       {!editando && (
         <p
           title={titulo}
-          className={`hidden break-words md:block lg:min-w-0 lg:truncate ${classeDoTitulo}`}
+          className={`block min-w-0 break-words lg:truncate ${classeDoTitulo}`}
         >
           {titulo}
         </p>
       )}
-      <div className={editando ? "lg:min-w-0 lg:flex-1" : "md:hidden"}>
+      <div className={editando ? "w-full lg:min-w-0 lg:flex-1" : "hidden"}>
         {children}
       </div>
       {extra && !editando && (
-        <div className="hidden md:mt-1 md:block lg:mt-0 lg:shrink-0">
-          {extra}
-        </div>
+        <div className="shrink-0 md:mt-1 lg:mt-0">{extra}</div>
       )}
     </div>
   );
@@ -68,7 +66,7 @@ export function BotaoEditar({ nome }: { nome: string }) {
       aria-label={editando ? `Fechar edição de ${nome}` : `Editar ${nome}`}
       aria-expanded={editando}
       onClick={alternar}
-      className="hidden size-12 shrink-0 place-items-center rounded-xl border border-linha bg-superficie text-texto hover:border-borda-campo md:grid"
+      className="grid size-12 shrink-0 place-items-center rounded-xl border border-linha bg-superficie text-texto hover:border-borda-campo"
     >
       <svg
         aria-hidden="true"
