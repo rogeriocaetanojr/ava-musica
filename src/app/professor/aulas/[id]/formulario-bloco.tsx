@@ -1,7 +1,9 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useId, useState } from "react";
 import { type Bloco, BlocoConteudo } from "@/components/bloco-conteudo";
+import { Botao } from "@/components/botao";
+import { Campo } from "@/components/campo";
 import { ehTipoDeBloco, TIPOS_DE_BLOCO, type TipoDeBloco } from "@/lib/embeds";
 import type { EstadoFormulario } from "../../cursos/validacao";
 import { NOMES_DOS_TIPOS } from "./validacao";
@@ -30,8 +32,11 @@ const DICAS: Record<TipoDeBloco, string> = {
     "No Forms, gere um link pré-preenchido com EMAIL_DO_ALUNO no campo de e-mail. Links forms.gle viram um botão, sem incorporar.",
 };
 
+// Mesmas classes do Campo, que só cobre input: o select e o textarea usam
+// estas.
 const campo =
-  "w-full rounded-md border border-current bg-transparent px-3 py-2";
+  "min-h-14 w-full rounded-xl border border-borda-campo bg-superficie px-4 py-3 text-base text-texto placeholder:text-texto-secundario";
+const rotulo = "block text-sm font-bold text-texto";
 
 export function FormularioBloco({
   acao,
@@ -40,6 +45,7 @@ export function FormularioBloco({
   email,
   limparAoSalvar = false,
 }: Props) {
+  const id = useId();
   const [tipo, setTipo] = useState<TipoDeBloco>(inicial?.tipo ?? "texto");
   const [titulo, setTitulo] = useState(inicial?.titulo ?? "");
   const [texto, setTexto] = useState(inicial?.texto ?? "");
@@ -67,10 +73,13 @@ export function FormularioBloco({
   };
 
   return (
-    <form action={enviar} className="space-y-3">
-      <label className="block space-y-1">
-        <span className="text-sm font-medium">Tipo</span>
+    <form action={enviar} className="space-y-4">
+      <div className="space-y-2">
+        <label htmlFor={`${id}-tipo`} className={rotulo}>
+          Tipo
+        </label>
         <select
+          id={`${id}-tipo`}
           name="tipo"
           value={tipo}
           onChange={(e) => {
@@ -84,25 +93,26 @@ export function FormularioBloco({
             </option>
           ))}
         </select>
-      </label>
+      </div>
 
-      <label className="block space-y-1">
-        <span className="text-sm font-medium">
-          {tipo === "link" ? "Texto do link (opcional)" : "Título (opcional)"}
-        </span>
-        <input
-          name="titulo"
-          maxLength={120}
-          value={titulo}
-          onChange={(e) => setTitulo(e.target.value)}
-          className={campo}
-        />
-      </label>
+      <Campo
+        id={`${id}-titulo`}
+        rotulo={
+          tipo === "link" ? "Texto do link (opcional)" : "Título (opcional)"
+        }
+        name="titulo"
+        maxLength={120}
+        value={titulo}
+        onChange={(e) => setTitulo(e.target.value)}
+      />
 
       {tipo === "texto" ? (
-        <label className="block space-y-1">
-          <span className="text-sm font-medium">Texto</span>
+        <div className="space-y-2">
+          <label htmlFor={`${id}-texto`} className={rotulo}>
+            Texto
+          </label>
           <textarea
+            id={`${id}-texto`}
             name="texto"
             required
             rows={5}
@@ -111,11 +121,12 @@ export function FormularioBloco({
             onChange={(e) => setTexto(e.target.value)}
             className={campo}
           />
-        </label>
+        </div>
       ) : (
-        <label className="block space-y-1">
-          <span className="text-sm font-medium">Link</span>
-          <input
+        <div className="space-y-2">
+          <Campo
+            id={`${id}-url`}
+            rotulo="Link"
             name="url"
             type="url"
             required
@@ -123,32 +134,30 @@ export function FormularioBloco({
             placeholder="https://"
             value={url}
             onChange={(e) => setUrl(e.target.value)}
-            className={campo}
+            aria-describedby={`${id}-dica`}
           />
-          <span className="block text-xs opacity-80">{DICAS[tipo]}</span>
-        </label>
+          <p id={`${id}-dica`} className="text-sm text-texto-secundario">
+            {DICAS[tipo]}
+          </p>
+        </div>
       )}
 
       {preenchido && (
-        <div className="space-y-2 rounded-md border border-dashed border-current/50 p-3">
-          <p className="text-xs font-medium tracking-wide uppercase opacity-70">
+        <div className="space-y-2 rounded-2xl border border-dashed border-borda-campo p-4">
+          <p className="text-xs font-bold tracking-wide text-texto-secundario uppercase">
             Pré-visualização
           </p>
           <BlocoConteudo bloco={previa} email={email} />
         </div>
       )}
 
-      <button
-        type="submit"
-        disabled={enviando}
-        className="rounded-md border border-current px-3 py-2 text-sm font-medium disabled:opacity-60"
-      >
+      <Botao type="submit" disabled={enviando} className="md:w-auto">
         {enviando ? "Salvando…" : textoDoBotao}
-      </button>
+      </Botao>
       {estado.erro && (
         <p
           role="alert"
-          className="rounded-md bg-red-100 p-2 text-sm text-red-800"
+          className="rounded-xl bg-amarelo-claro p-3 text-sm text-texto-sobre-amarelo"
         >
           {estado.erro}
         </p>

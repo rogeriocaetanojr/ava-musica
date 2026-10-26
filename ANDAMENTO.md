@@ -4,6 +4,8 @@
 
 ### Telas
 
+- [ ] Conteúdo da aula do professor no computador
+- [ ] Conteúdo da aula do professor no celular
 - [ ] Alunos do professor no computador
 - [ ] Alunos do professor no celular
 - [ ] Recados do professor no computador
@@ -197,3 +199,4 @@
 - Na página do curso no computador, o título dos módulos e das aulas aparece como texto, com um botão de editar que abre o campo de renomear; no celular o campo continua sempre à vista. Subir, descer e editar são botões de ícone de 48 px com o nome no aria-label, sempre na mesma coluna, editando ou não; as setas desativadas mantêm o tamanho. Nova aula e Novo módulo continuam como campos sempre visíveis. Ainda não há exclusão de módulo nem de aula.
 - No celular, os cursos do professor viram cartões de largura total com uma faixa colorida baixa, e o novo curso fica num cartão abaixo da lista. Na página do curso, "Dados do curso" e cada módulo são recolhíveis pelo próprio cabeçalho; "Dados do curso" e o primeiro módulo vêm abertos, porque o teste de ponta a ponta usa os dois. O recolhível é um botão que esconde o conteúdo só no celular (`src/app/professor/cursos/[id]/recolhivel.tsx`); no computador o conteúdo fica sempre à vista.
 - As ações da aula ficam em linha, com 48 px, e quebram para uma segunda linha quando não cabem. Não há botão Nova aula fixo no rodapé: cada módulo tem o próprio campo, porque a aula precisa de um módulo. O título dos módulos e das aulas aparece como texto também no celular, e o botão de editar abre o campo de renomear.
+- No computador, o conteúdo da aula do professor mostra a trilha Curso / Módulo / Aula, os dados da aula num cartão e cada bloco num cartão com ícone, prévia curta e botões de ícone de 48 px (editar, subir, descer, excluir); editar abre o formulário dentro do cartão. Para a trilha, a página lê também o título do curso, só para leitura e sob as mesmas regras de acesso. A lateral "Como o aluno vê" lista os materiais e leva à tela do aluno. O botão voltar passou a se chamar "Voltar ao curso", e o teste de ponta a ponta acompanha.

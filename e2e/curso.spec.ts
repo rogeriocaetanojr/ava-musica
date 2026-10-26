@@ -64,7 +64,7 @@ test("professor cria curso, módulo e aula com texto e YouTube e publica", async
   await novoBloco.getByRole("button", { name: "Adicionar bloco" }).click();
   await expect(page.getByText("Rascunho · 2 blocos")).toBeVisible();
 
-  await page.getByRole("link", { name: "← Voltar ao curso" }).click();
+  await page.getByRole("link", { name: "Voltar ao curso" }).click();
   await page.getByRole("button", { name: "Publicar", exact: true }).click();
   await expect(page.getByRole("button", { name: "Despublicar" })).toBeVisible();
 

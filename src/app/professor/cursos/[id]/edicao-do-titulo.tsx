@@ -57,6 +57,18 @@ export function TituloEditavel({
   );
 }
 
+// Mostra o conteúdo só durante a edição; fora dela, mostra `fora`.
+export function AoEditar({
+  children,
+  fora,
+}: {
+  children: ReactNode;
+  fora?: ReactNode;
+}) {
+  const { editando } = useContext(ContextoDaEdicao);
+  return <>{editando ? children : fora}</>;
+}
+
 export function BotaoEditar({ nome }: { nome: string }) {
   const { editando, alternar } = useContext(ContextoDaEdicao);
 
