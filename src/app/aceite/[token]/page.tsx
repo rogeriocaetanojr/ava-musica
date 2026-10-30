@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
-import { botaoPrincipal } from "@/app/(aluno)/estilos";
+import { classesDoBotao } from "@/components/botao";
 import { BotaoEnviar } from "@/components/botao-enviar";
 import { NOME_DO_AVA, tituloDaPagina } from "@/lib/site";
 import { criarClienteAdmin } from "@/lib/supabase/admin";
@@ -127,7 +127,9 @@ async function Autorizacao({
             acima e concordo com a política de privacidade e os termos de uso.
           </span>
         </label>
-        <BotaoEnviar className={botaoPrincipal}>Autorizar o acesso</BotaoEnviar>
+        <BotaoEnviar className={classesDoBotao("primario")}>
+          Autorizar o acesso
+        </BotaoEnviar>
       </form>
     </>
   );

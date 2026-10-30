@@ -4,11 +4,13 @@ import { CONTEINER } from "@/components/conteiner";
 import { LogoDoAva } from "@/components/logo-do-ava";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
+import { Aviso } from "@/components/aviso";
 import { BarraProgresso } from "@/components/barra-progresso";
 import { type Bloco } from "@/components/bloco-conteudo";
 import { classesDoBotao } from "@/components/botao";
 import { BotaoEnviar } from "@/components/botao-enviar";
 import { Cordas } from "@/components/cordas";
+import { Seta } from "@/components/seta";
 import {
   MarcadorDaAula,
   type Situacao,
@@ -254,10 +256,10 @@ async function PaginaDaAula({ params }: { params: Promise<{ id: string }> }) {
       >
         <div className="min-w-0 space-y-6 md:space-y-8">
           {!aluno && (
-            <p className="rounded-xl bg-bloco p-3 text-base text-texto-sobre-bloco">
+            <Aviso>
               Pré-visualização do aluno. Os botões de concluir não aparecem para
               você.
-            </p>
+            </Aviso>
           )}
 
           {video && embedDoVideo && (
@@ -396,7 +398,8 @@ async function PaginaDaAula({ params }: { params: Promise<{ id: string }> }) {
                 href={`/aulas/${anterior.id}`}
                 className={classesDoBotao("secundario")}
               >
-                ← Aula anterior
+                <Seta />
+                Aula anterior
               </Link>
             )}
             {seguinte && (
@@ -404,7 +407,8 @@ async function PaginaDaAula({ params }: { params: Promise<{ id: string }> }) {
                 href={`/aulas/${seguinte.id}`}
                 className={classesDoBotao("secundario", "sm:col-start-2")}
               >
-                Próxima aula →
+                Próxima aula
+                <Seta direcao="direita" />
               </Link>
             )}
           </nav>

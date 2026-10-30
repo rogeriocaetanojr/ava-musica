@@ -4,6 +4,7 @@ import { TelaDoAluno } from "@/components/tela-do-aluno";
 import { CONTEINER } from "@/components/conteiner";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
+import { Aviso } from "@/components/aviso";
 import { BarraProgresso } from "@/components/barra-progresso";
 import { classesDoBotao } from "@/components/botao";
 import { BocaDoViolao, Cordas } from "@/components/cordas";
@@ -22,7 +23,6 @@ import {
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 import { ehUuid } from "../../../professor/cursos/validacao";
 import { aulasConcluidas } from "../../dados";
-import { avisoPreVisualizacao } from "../../estilos";
 
 type Aula = {
   id: string;
@@ -83,9 +83,7 @@ async function PaginaDoCurso({ params }: { params: Promise<{ id: string }> }) {
       <BotaoVoltar href="/cursos" rotulo="Voltar para Meus cursos" />
 
       {sessao.papel === "professor" && (
-        <p className={avisoPreVisualizacao}>
-          Pré-visualização do aluno. Rascunhos não aparecem.
-        </p>
+        <Aviso>Pré-visualização do aluno. Rascunhos não aparecem.</Aviso>
       )}
 
       <section

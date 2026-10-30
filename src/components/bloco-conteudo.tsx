@@ -1,4 +1,6 @@
 import type { ReactNode } from "react";
+import { Aviso } from "@/components/aviso";
+import { classesDoBotao } from "@/components/botao";
 import { lerConteudo, type TipoDeBloco } from "@/lib/embeds";
 
 export type Bloco = {
@@ -16,9 +18,6 @@ type Props = {
   children?: ReactNode;
 };
 
-const botao =
-  "inline-block rounded-md border border-current px-3 py-2 text-sm font-medium";
-
 function Moldura({
   src,
   titulo,
@@ -31,7 +30,7 @@ function Moldura({
   permitir?: string;
 }) {
   return (
-    <div className={`w-full overflow-hidden rounded-md ${proporcao}`}>
+    <div className={`w-full overflow-hidden rounded-2xl ${proporcao}`}>
       <iframe
         src={src}
         title={titulo}
@@ -56,12 +55,7 @@ function Conteudo({ bloco, email }: Omit<Props, "children">) {
   const embed = lerConteudo(bloco.tipo, bloco.url ?? "", email);
   if (!embed)
     return (
-      <p
-        role="alert"
-        className="rounded-md bg-red-100 p-2 text-sm text-red-800"
-      >
-        Link inválido para este tipo de conteúdo.
-      </p>
+      <Aviso role="alert">Link inválido para este tipo de conteúdo.</Aviso>
     );
 
   switch (embed.tipo) {
@@ -83,7 +77,11 @@ function Conteudo({ bloco, email }: Omit<Props, "children">) {
             proporcao={bloco.tipo === "audio" ? "h-28" : "aspect-[3/4]"}
             permitir="autoplay"
           />
-          <a href={embed.baixar} rel="noopener noreferrer" className={botao}>
+          <a
+            href={embed.baixar}
+            rel="noopener noreferrer"
+            className={classesDoBotao("secundario")}
+          >
             Baixar arquivo
           </a>
         </div>
@@ -109,7 +107,7 @@ function Conteudo({ bloco, email }: Omit<Props, "children">) {
           href={embed.url}
           target="_blank"
           rel="noopener noreferrer"
-          className={`${botao} break-all`}
+          className={classesDoBotao("secundario", "break-all")}
         >
           {embed.tipo === "forms-botao" ? "Abrir a prova" : titulo || embed.url}{" "}
           <span aria-hidden="true">↗</span>

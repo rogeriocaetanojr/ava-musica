@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { CONTEINER } from "@/components/conteiner";
 import { Suspense } from "react";
+import { Aviso } from "@/components/aviso";
 import { BarraProgresso } from "@/components/barra-progresso";
 import { classesDoBotao } from "@/components/botao";
 import { AbasDoAluno } from "@/components/abas-do-aluno";
@@ -17,7 +18,6 @@ import {
 } from "@/lib/progresso";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 import { aulasConcluidas, ultimaAulaEstudada } from "../dados";
-import { avisoPreVisualizacao } from "../estilos";
 
 type Aula = AulaDoCurso & { titulo: string };
 type Modulo = ModuloDoCurso<Aula> & { titulo: string };
@@ -325,10 +325,10 @@ async function MeusCursosDoAluno() {
         </header>
 
         {professor && (
-          <p className={avisoPreVisualizacao}>
+          <Aviso>
             Pré-visualização: você vê os cursos publicados como um aluno, sem
             registrar progresso.
-          </p>
+          </Aviso>
         )}
 
         {(continuar || avisos.length > 0) && (

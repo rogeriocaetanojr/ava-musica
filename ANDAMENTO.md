@@ -11,6 +11,24 @@
 - [x] Recados do professor no celular
 - [x] Política de privacidade e Termos no computador
 - [x] Política de privacidade e Termos no celular
+- [ ] Aula do aluno sem restos do visual antigo
+- [ ] Telas de espera, bloqueio e nome no visual novo
+- [ ] Autorização do responsável no visual novo
+- [ ] Botões de voltar padronizados e progresso do aluno dentro da ficha
+- [ ] Páginas de erro, página não encontrada e carregamento no visual novo
+- [ ] E-mails com a cara da escola
+- [ ] Botões e campos usando os componentes padrão
+
+### Testes
+
+- [ ] Testes automáticos menos frágeis
+- [ ] Entrada única nos testes e teste de recusa também no celular
+- [ ] Teste do bloqueio de aluno
+- [ ] Teste da exclusão de aluno
+- [ ] Teste dos recados
+- [ ] Teste de ações sem permissão
+- [ ] Teste automático de acessibilidade
+- [ ] Testes de ponta a ponta no CI e CI nos pull requests
 
 ### Revisão
 
