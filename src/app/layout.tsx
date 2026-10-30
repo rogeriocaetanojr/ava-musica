@@ -1,7 +1,11 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque, Manrope } from "next/font/google";
 import { Cabecalho, Rodape } from "@/components/moldura-do-site";
-import { ReaplicarTema, SCRIPT_DO_TEMA } from "@/components/seletor-de-tema";
+import {
+  COR_DA_BARRA,
+  ReaplicarTema,
+  SCRIPT_DO_TEMA,
+} from "@/components/seletor-de-tema";
 import { NOME_CURTO_DO_AVA } from "@/lib/site";
 import "./globals.css";
 
@@ -24,6 +28,14 @@ export const metadata: Metadata = {
     icon: { url: "/icones/favicon-bordo.png", type: "image/png" },
     apple: "/icones/apple-icon.png",
   },
+};
+
+// Cor da barra do navegador e do sistema, uma para cada tema.
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: COR_DA_BARRA.claro },
+    { media: "(prefers-color-scheme: dark)", color: COR_DA_BARRA.escuro },
+  ],
 };
 
 export default function RootLayout({

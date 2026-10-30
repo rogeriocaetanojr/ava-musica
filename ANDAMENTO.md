@@ -11,7 +11,6 @@
 - [x] Recados do professor no celular
 - [x] Política de privacidade e Termos no computador
 - [x] Política de privacidade e Termos no celular
-- [ ] Tema escuro no celular
 
 ### Revisão
 
@@ -88,6 +87,7 @@
 - [x] Cursos do professor no computador
 - [x] Cursos do professor no celular, com os módulos recolhíveis
 - [x] Conteúdo da aula do professor no celular, com o rodapé fixo para adicionar bloco e publicar
+- [x] Tema escuro no celular, com a barra do navegador na cor de cada tema e o botão de tema também no perfil e no cabeçalho do professor no celular
 - [x] Tema escuro no computador, com um botão de lua (no claro) e sol (no escuro) no cabeçalho do aluno e do professor; sem escolha feita, vale o tema do sistema
 
 ## Decisões

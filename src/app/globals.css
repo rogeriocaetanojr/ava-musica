@@ -23,6 +23,7 @@
   --color-sobre-bordo: #fffdf8;
   --color-borda-cartao: #6e1a2d;
   --color-veu: #2e1a1c;
+  --color-aba-atual: #3d0e1a;
 
   --font-titulo: var(--fonte-bricolage), system-ui, sans-serif;
   --font-sans: var(--fonte-manrope), system-ui, sans-serif;
@@ -32,6 +33,10 @@
    escolhe "Escuro" (data-tema no <html>) ou, no "Automático", quando o sistema
    está no escuro. */
 @layer base {
+  :root {
+    color-scheme: light;
+  }
+
   :root[data-tema="escuro"] {
     color-scheme: dark;
     --color-fundo: #170b0e;
@@ -47,6 +52,7 @@
     --color-sobre-bordo: #f7ede0;
     --color-borda-cartao: #8f3a4e;
     --color-veu: #000000;
+    --color-aba-atual: #f2c230;
   }
 
   @media (prefers-color-scheme: dark) {
@@ -65,6 +71,7 @@
       --color-sobre-bordo: #f7ede0;
       --color-borda-cartao: #8f3a4e;
       --color-veu: #000000;
+      --color-aba-atual: #f2c230;
     }
   }
 }

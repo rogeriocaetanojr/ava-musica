@@ -5,6 +5,7 @@ import { AbasDoAluno } from "@/components/abas-do-aluno";
 import { classesDoBotao } from "@/components/botao";
 import { CabecalhoDoAluno } from "@/components/cabecalho-do-aluno";
 import { exigirAlunoOuProfessor } from "@/lib/auth";
+import { BotaoDoTema } from "@/components/seletor-de-tema";
 import { iniciais } from "@/lib/nomes";
 
 const link =
@@ -36,6 +37,8 @@ async function PerfilDoAluno() {
             </p>
           </div>
         </section>
+
+        <BotaoDoTema comTexto />
 
         <form action="/auth/sair" method="post">
           <button type="submit" className={classesDoBotao("secundario")}>

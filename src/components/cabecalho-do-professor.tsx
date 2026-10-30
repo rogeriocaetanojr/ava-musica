@@ -44,6 +44,10 @@ export function CabecalhoDoProfessor({
           </span>
         </Link>
 
+        <div className="md:hidden">
+          <BotaoDoTema />
+        </div>
+
         <nav aria-label="Área do professor" className="hidden md:block">
           <ul className="flex items-center gap-1 lg:gap-2">
             {ITENS.map(({ secao, rotulo, href }) => (
