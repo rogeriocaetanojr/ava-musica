@@ -43,7 +43,7 @@ const CAPAS = [
   { fundo: "bg-vinho", cordas: "amarelo" },
 ] as const;
 
-const rotuloDeSecao = "text-sm font-bold text-bordo";
+const rotuloDeSecao = "text-sm font-bold text-destaque";
 
 // Curso do "Continue de onde parou": o da aula estudada por último ou, sem
 // progresso, o primeiro curso que tem aulas.
@@ -82,7 +82,7 @@ function ContinueDeOndeParou({
   return (
     <section
       aria-labelledby="continuar"
-      className="relative overflow-hidden rounded-3xl bg-bordo p-6 text-superficie md:p-8 md:pr-56"
+      className="relative overflow-hidden rounded-3xl border border-borda-cartao bg-bordo p-6 text-sobre-bordo md:p-8 md:pr-56"
     >
       <Cordas className="absolute inset-y-0 right-4 w-16 md:right-14 md:w-26" />
       <BocaDoViolao className="absolute top-1/2 right-10 hidden size-32 -translate-y-1/2 md:block" />
@@ -150,7 +150,7 @@ function RecadosDoProfessor({ avisos }: { avisos: Aviso[] }) {
   return (
     <section
       aria-labelledby="recados-recentes"
-      className={`hidden flex-col gap-5 rounded-3xl bg-amarelo-claro p-7 text-texto-sobre-amarelo ${
+      className={`hidden flex-col gap-5 rounded-3xl bg-bloco p-7 text-texto-sobre-bloco ${
         vazio ? "lg:flex" : "md:flex"
       }`}
     >
@@ -196,7 +196,7 @@ function RecadoMaisRecente({ aviso }: { aviso: Aviso }) {
   return (
     <Link
       href="#recados"
-      className="flex min-h-12 items-center gap-4 rounded-3xl bg-amarelo-claro p-5 text-texto-sobre-amarelo md:hidden"
+      className="flex min-h-12 items-center gap-4 rounded-3xl bg-bloco p-5 text-texto-sobre-bloco md:hidden"
     >
       <svg
         aria-hidden="true"

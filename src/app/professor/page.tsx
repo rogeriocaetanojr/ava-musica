@@ -32,21 +32,21 @@ const tituloDeCartao = "font-titulo text-2xl text-texto";
 const AVATARES = [
   "bg-bordo text-amarelo",
   "bg-amarelo text-texto-sobre-amarelo",
-  "bg-amarelo-claro text-texto-sobre-amarelo",
+  "bg-bloco text-texto-sobre-bloco",
   "bg-vinho text-amarelo-claro",
 ];
 
 const ETIQUETAS: Record<SituacaoDoAluno, { texto: string; classe: string }> = {
-  ativo: { texto: "Ativo", classe: "bg-linha text-bordo" },
+  ativo: { texto: "Ativo", classe: "bg-linha text-destaque" },
   aguardando: {
     texto: "Aguardando responsável",
-    classe: "bg-amarelo-claro text-texto-sobre-amarelo",
+    classe: "bg-bloco text-texto-sobre-bloco",
   },
-  bloqueado: { texto: "Bloqueado", classe: "bg-vinho text-superficie" },
+  bloqueado: { texto: "Bloqueado", classe: "bg-vinho text-sobre-bordo" },
 };
 
 const faixa =
-  "flex min-h-12 items-center justify-between gap-3 rounded-2xl bg-amarelo-claro px-5 py-3 text-sm font-bold text-texto-sobre-amarelo";
+  "flex min-h-12 items-center justify-between gap-3 rounded-2xl bg-bloco px-5 py-3 text-sm font-bold text-texto-sobre-bloco";
 
 function ErroAoCarregar({ children }: { children: React.ReactNode }) {
   return <Aviso role="alert">{children}</Aviso>;
@@ -102,8 +102,8 @@ function Indicador({
 }) {
   const fundo = {
     claro: "border-linha bg-superficie text-texto",
-    bordo: "border-bordo bg-bordo text-superficie",
-    amarelo: "border-amarelo bg-amarelo-claro text-texto-sobre-amarelo",
+    bordo: "border-borda-cartao bg-bordo text-sobre-bordo",
+    amarelo: "border-amarelo bg-bloco text-texto-sobre-bloco",
   }[estilo];
   return (
     <li
@@ -118,7 +118,7 @@ function Indicador({
             estilo === "bordo"
               ? "text-amarelo"
               : estilo === "claro"
-                ? "text-bordo"
+                ? "text-destaque"
                 : ""
           }`}
         >
@@ -278,7 +278,7 @@ async function Resumo() {
         >
           <h2
             id="progresso-dos-alunos-celular"
-            className="pb-3 text-base font-bold text-bordo"
+            className="pb-3 text-base font-bold text-destaque"
           >
             Progresso dos alunos
           </h2>
@@ -373,7 +373,7 @@ async function Resumo() {
             </h2>
             <Link
               href="/professor/alunos"
-              className="inline-flex min-h-12 items-center text-sm font-bold text-bordo underline"
+              className="inline-flex min-h-12 items-center text-sm font-bold text-destaque underline"
             >
               Ver todos
             </Link>
@@ -524,7 +524,7 @@ async function Painel() {
       >
         <header className="flex flex-wrap items-end justify-between gap-4">
           <div className="min-w-0">
-            <p className="hidden text-sm font-bold text-bordo md:block">
+            <p className="hidden text-sm font-bold text-destaque md:block">
               {dataPorExtenso()}
             </p>
             <h1 className="font-titulo text-4xl break-words text-texto md:text-5xl">

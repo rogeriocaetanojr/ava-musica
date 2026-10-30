@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { CONTEINER } from "@/components/conteiner";
 import { LogoDoAva } from "@/components/logo-do-ava";
+import { BotaoDoTema } from "@/components/seletor-de-tema";
 
 import { iniciais } from "@/lib/nomes";
 
@@ -14,7 +15,7 @@ const ITENS: { secao: SecaoDoProfessor; rotulo: string; href: string }[] = [
 ];
 
 const item =
-  "inline-flex min-h-12 items-center rounded-xl px-4 text-base font-bold md:px-2 lg:px-4";
+  "inline-flex min-h-12 items-center whitespace-nowrap rounded-xl px-4 text-base font-bold md:px-2 lg:px-4";
 
 // Cabeçalho da área do professor: logo, navegação, avatar e Sair. O selo
 // "Professor" só aparece no celular, onde a navegação vai para as abas.
@@ -38,7 +39,7 @@ export function CabecalhoDoProfessor({
             semSubtitulo
             className="[--altura:46px] lg:[--altura:60px]"
           />
-          <span className="ml-auto rounded-full bg-amarelo-claro px-3 py-1 font-sans text-xs font-bold text-texto-sobre-amarelo md:hidden">
+          <span className="ml-auto rounded-full bg-bloco px-3 py-1 font-sans text-xs font-bold text-texto-sobre-bloco md:hidden">
             Professor
           </span>
         </Link>
@@ -52,7 +53,7 @@ export function CabecalhoDoProfessor({
                   aria-current={secao === atual ? "page" : undefined}
                   className={`${item} ${
                     secao === atual
-                      ? "bg-amarelo-claro text-texto-sobre-amarelo"
+                      ? "bg-bloco text-texto-sobre-bloco"
                       : "text-texto-secundario hover:text-texto"
                   }`}
                 >
@@ -70,6 +71,7 @@ export function CabecalhoDoProfessor({
           >
             Ver como aluno
           </Link>
+          <BotaoDoTema />
           {nome && (
             <span
               title={nome}

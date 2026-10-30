@@ -16,8 +16,7 @@ export type Pedido = {
 
 const campo =
   "min-h-14 w-full rounded-xl border border-borda-campo bg-superficie px-4 py-3 text-base text-texto";
-const alerta =
-  "rounded-xl bg-amarelo-claro p-4 text-sm text-texto-sobre-amarelo";
+const alerta = "rounded-xl bg-bloco p-4 text-sm text-texto-sobre-bloco";
 
 // O aviso fica aqui, fora de cada pedido: depois de liberar ou recusar o
 // pedido sai da lista, mas a confirmação continua na tela. Sem pedidos e sem
@@ -83,7 +82,7 @@ function CartaoDoPedido({
       <Link
         href={`/professor/alunos/${pedido.id}`}
         aria-label={`Ver ficha de ${pedido.nome}`}
-        className="inline-flex min-h-12 items-center text-sm font-bold text-bordo underline"
+        className="inline-flex min-h-12 items-center text-sm font-bold text-destaque underline"
       >
         Ver ficha
       </Link>

@@ -14,8 +14,7 @@ export type Recusa = {
 
 const campo =
   "min-h-14 w-full rounded-xl border border-borda-campo bg-superficie px-4 py-3 text-base text-texto";
-const alerta =
-  "rounded-xl bg-amarelo-claro p-4 text-sm text-texto-sobre-amarelo";
+const alerta = "rounded-xl bg-bloco p-4 text-sm text-texto-sobre-bloco";
 
 // Quem foi recusado não consegue pedir de novo por 7 dias. O banco guarda só
 // o hash do e-mail e uma dica mascarada (a***@g***.com); o professor pode

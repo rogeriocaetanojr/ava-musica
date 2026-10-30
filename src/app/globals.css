@@ -16,15 +16,80 @@
   /* Texto e barra de "concluído": contraste de pelo menos 4,5:1 com o fundo. */
   --color-sucesso: #166534;
 
+  /* Papéis que mudam de cor no tema escuro. No claro, repetem a paleta acima. */
+  --color-destaque: #6e1a2d;
+  --color-bloco: #fbefc4;
+  --color-texto-sobre-bloco: #3d0e1a;
+  --color-sobre-bordo: #fffdf8;
+  --color-borda-cartao: #6e1a2d;
+  --color-veu: #2e1a1c;
+
   --font-titulo: var(--fonte-bricolage), system-ui, sans-serif;
   --font-sans: var(--fonte-manrope), system-ui, sans-serif;
+}
+
+/* Tema escuro: as mesmas variáveis com outras cores. Vale quando o perfil
+   escolhe "Escuro" (data-tema no <html>) ou, no "Automático", quando o sistema
+   está no escuro. */
+@layer base {
+  :root[data-tema="escuro"] {
+    color-scheme: dark;
+    --color-fundo: #170b0e;
+    --color-superficie: #231216;
+    --color-linha: #3a2027;
+    --color-texto: #f7ede0;
+    --color-texto-secundario: #cdb8b3;
+    --color-borda-campo: #9c8084;
+    --color-sucesso: #7ccf95;
+    --color-destaque: #f2c230;
+    --color-bloco: #2e161c;
+    --color-texto-sobre-bloco: #f7ede0;
+    --color-sobre-bordo: #f7ede0;
+    --color-borda-cartao: #8f3a4e;
+    --color-veu: #000000;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-tema]) {
+      color-scheme: dark;
+      --color-fundo: #170b0e;
+      --color-superficie: #231216;
+      --color-linha: #3a2027;
+      --color-texto: #f7ede0;
+      --color-texto-secundario: #cdb8b3;
+      --color-borda-campo: #9c8084;
+      --color-sucesso: #7ccf95;
+      --color-destaque: #f2c230;
+      --color-bloco: #2e161c;
+      --color-texto-sobre-bloco: #f7ede0;
+      --color-sobre-bordo: #f7ede0;
+      --color-borda-cartao: #8f3a4e;
+      --color-veu: #000000;
+    }
+  }
+}
+
+/* Ícone do botão de tema: a lua só no claro, o sol só no escuro. */
+:root[data-tema="escuro"] .so-no-claro,
+:root[data-tema="claro"] .so-no-escuro,
+:root:not([data-tema]) .so-no-escuro {
+  display: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-tema]) .so-no-claro {
+    display: none;
+  }
+  :root:not([data-tema]) .so-no-escuro {
+    display: contents;
+  }
 }
 
 body {
   background: var(--color-fundo);
   color: var(--color-texto);
   font-family: var(--font-sans);
-  accent-color: var(--color-bordo);
+  accent-color: var(--color-destaque);
 }
 
 /* Contorno amarelo em tudo que recebe foco pelo teclado. */

@@ -31,7 +31,7 @@ export function textoDaVersao(versao: string): string {
 // Os textos ainda passam por revisão jurídica antes de abrir para os alunos.
 function AvisoRascunho() {
   return (
-    <p className="rounded-xl bg-amarelo-claro p-4 text-sm text-texto-sobre-amarelo">
+    <p className="rounded-xl bg-bloco p-4 text-sm text-texto-sobre-bloco">
       Rascunho em revisão jurídica. O texto pode mudar antes da abertura para os
       alunos.
     </p>
@@ -58,7 +58,7 @@ export function TextoLegal({
         <li key={id}>
           <a
             href={`#${id}`}
-            className="flex min-h-12 items-center rounded-xl px-4 text-texto hover:bg-amarelo-claro hover:text-texto-sobre-amarelo"
+            className="flex min-h-12 items-center rounded-xl px-4 text-texto hover:bg-bloco hover:text-texto-sobre-bloco"
           >
             {titulo}
           </a>
@@ -88,7 +88,7 @@ export function TextoLegal({
         </div>
       </header>
 
-      <div className="relative overflow-hidden bg-bordo text-superficie">
+      <div className="relative overflow-hidden bg-bordo text-sobre-bordo">
         <Cordas className="absolute inset-y-0 right-4 w-16 md:right-24 md:w-28" />
         <div className={`${CONTEINER} relative py-5 md:py-10`}>
           <p className="text-sm font-bold text-amarelo">{NOME_DO_AVA}</p>
@@ -137,7 +137,7 @@ export function TextoLegal({
           {sumario}
         </nav>
 
-        <article className="flex max-w-[70ch] flex-col gap-4 rounded-2xl border border-linha bg-superficie p-5 text-[17px] leading-relaxed md:p-10 md:text-base [&_a]:font-bold [&_a]:text-bordo [&_a]:underline [&_ul]:list-disc [&_ul]:space-y-1 [&_ul]:pl-5 [&_ul]:marker:text-bordo">
+        <article className="flex max-w-[70ch] flex-col gap-4 rounded-2xl border border-linha bg-superficie p-5 text-[17px] leading-relaxed md:p-10 md:text-base [&_a]:font-bold [&_a]:text-destaque [&_a]:underline [&_ul]:list-disc [&_ul]:space-y-1 [&_ul]:pl-5 [&_ul]:marker:text-destaque">
           <p className="text-sm text-texto-secundario">
             {textoDaVersao(VERSAO_DOS_TERMOS)}
           </p>
@@ -162,7 +162,7 @@ export function TextoLegal({
         </article>
       </main>
 
-      <footer className="border-t-4 border-amarelo bg-bordo text-sm text-superficie">
+      <footer className="border-t-4 border-amarelo bg-bordo text-sm text-sobre-bordo">
         <nav
           aria-label="Rodapé"
           className={`${CONTEINER} flex flex-wrap gap-x-2 py-2`}

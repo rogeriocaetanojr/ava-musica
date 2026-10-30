@@ -11,7 +11,6 @@
 - [x] Recados do professor no celular
 - [x] Política de privacidade e Termos no computador
 - [x] Política de privacidade e Termos no celular
-- [ ] Tema escuro no computador
 - [ ] Tema escuro no celular
 
 ### Revisão
@@ -89,6 +88,7 @@
 - [x] Cursos do professor no computador
 - [x] Cursos do professor no celular, com os módulos recolhíveis
 - [x] Conteúdo da aula do professor no celular, com o rodapé fixo para adicionar bloco e publicar
+- [x] Tema escuro no computador, com um botão de lua (no claro) e sol (no escuro) no cabeçalho do aluno e do professor; sem escolha feita, vale o tema do sistema
 
 ## Decisões
 
@@ -204,3 +204,5 @@
 - No computador, Alunos tem no topo o título, a busca pelo nome e Convidar aluno, e, a partir da tela larga, duas colunas: a turma numa tabela como a do painel (avatar com iniciais, cursos, progresso e situação), que cresce com a página, e, à direita, os pedidos de acesso em cartões compactos, com o link Ver ficha para olhar a ficha antes de liberar, e os recusados recentemente. Quem está pendente aparece só em Pedidos de acesso, fora da turma; o filtro é só na tela, sem mudar a consulta. No celular, os pedidos vêm antes da turma e os recusados depois. A busca filtra no navegador a lista já carregada, sem mudar consulta nem endereço; se a turma crescer, pode virar `?q=`. As etiquetas continuam vindo de `statusDoAluno`, agora em pílulas com as cores do tema. Para o progresso, a lista e a ficha leem também `dadosDoPainel` e usam `resumoParaProfessor`, só para leitura e sob as mesmas regras de acesso. A ficha tem duas colunas (dados, nome e responsável à esquerda; matrículas com barra de progresso, últimos acessos e bloqueio à direita) e, separada no fim, a exclusão com borda bordô.
 - Na tela de Recados do professor, os textos dizem "recado" em vez de "aviso", inclusive as mensagens das actions e da validação; o nome da tabela e do código continua `avisos`. O formulário de novo recado e o de edição abrem no mesmo painel pelo botão "Novo recado" ao lado do título ou pelo Editar de cada cartão: na lateral no computador e de baixo para cima no celular, com fundo escurecido, Fechar, Esc e toque fora, e fecha ao salvar sem erro, com o foco de volta ao botão que o abriu. Os recados enviados ficam numa grade de cartões de mesma altura, com 2 colunas a partir de md, 4 a partir de lg e 5 a partir de 2xl, título em 1 linha, trecho em 2, destino e data e, no rodapé, Editar e Apagar lado a lado; o mais recente vem em amarelo claro.
 - No celular, os cartões de Recados do professor ficam em largura total, com o título em até 2 linhas e o trecho em até 3; a partir de md voltam a 1 e 2. O painel do formulário fica por cima da barra de abas, respeita a área segura e rola por dentro, com o botão de publicar sempre ao alcance.
+- O tema escolhido fica no cookie `tema` e é aplicado por um pequeno script no layout raiz, antes da primeira pintura. Ler o cookie no servidor obrigaria todas as páginas a esperar a requisição, por causa do modo de cache ligado no Next.js; o script evita a tela piscar clara sem perder as partes geradas de antemão.
+- O tema escuro troca as mesmas variáveis de cor. Para isso, as telas usam variáveis de papel (destaque, bloco, texto sobre bloco, texto sobre bordô, borda do cartão e véu), que no tema claro repetem a paleta original.

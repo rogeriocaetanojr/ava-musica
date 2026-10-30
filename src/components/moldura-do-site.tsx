@@ -8,7 +8,7 @@ export function Cabecalho() {
   return (
     <header
       data-moldura
-      className="border-b-4 border-amarelo bg-bordo text-superficie"
+      className="border-b-4 border-amarelo bg-bordo text-sobre-bordo"
     >
       <div className="mx-auto flex w-full max-w-4xl items-center px-4 py-3">
         <Link href="/" className="flex min-h-12 items-center gap-3 font-bold">
@@ -26,7 +26,7 @@ export function Rodape() {
   return (
     <footer
       data-moldura
-      className="border-t-4 border-amarelo bg-bordo text-sm text-superficie"
+      className="border-t-4 border-amarelo bg-bordo text-sm text-sobre-bordo"
     >
       <nav
         aria-label="Rodapé"

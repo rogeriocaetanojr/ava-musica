@@ -42,7 +42,7 @@ async function ListaDeCursos() {
     return (
       <p
         role="alert"
-        className="rounded-xl bg-amarelo-claro p-4 text-texto-sobre-amarelo"
+        className="rounded-xl bg-bloco p-4 text-texto-sobre-bloco"
       >
         Não foi possível carregar os cursos.
       </p>
@@ -90,8 +90,8 @@ async function ListaDeCursos() {
                   <span
                     className={`rounded-full px-3 py-1 text-xs font-bold ${
                       curso.publicado
-                        ? "bg-linha text-bordo"
-                        : "bg-amarelo-claro text-texto-sobre-amarelo"
+                        ? "bg-linha text-destaque"
+                        : "bg-bloco text-texto-sobre-bloco"
                     }`}
                   >
                     {curso.publicado ? "Publicado" : "Rascunho"}

@@ -3,7 +3,7 @@ import type { ButtonHTMLAttributes } from "react";
 export type VarianteDoBotao = "primario" | "destaque" | "secundario";
 
 const VARIANTES: Record<VarianteDoBotao, string> = {
-  primario: "bg-bordo text-superficie hover:bg-vinho",
+  primario: "bg-bordo text-sobre-bordo hover:bg-vinho",
   destaque: "bg-amarelo text-texto-sobre-amarelo hover:bg-amarelo-claro",
   secundario:
     "border border-linha bg-superficie text-texto hover:border-borda-campo",

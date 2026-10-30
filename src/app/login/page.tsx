@@ -59,7 +59,7 @@ export default function PaginaLogin({
       data-tela-cheia
       className="flex flex-1 flex-col md:grid md:min-h-screen md:grid-cols-[13fr_11fr]"
     >
-      <section className="relative flex h-56 shrink-0 flex-col justify-end overflow-hidden bg-bordo px-6 py-6 text-superficie md:h-auto md:justify-start md:px-15 md:py-12">
+      <section className="relative flex h-56 shrink-0 flex-col justify-end overflow-hidden bg-bordo px-6 py-6 text-sobre-bordo md:h-auto md:justify-start md:px-15 md:py-12">
         {/* No celular, os enfeites ficam no canto direito do topo. */}
         <Cordas className="absolute inset-y-0 right-10 flex w-28 md:hidden" />
         <BocaDoViolao className="absolute top-10 right-5 size-30 md:hidden" />
@@ -107,7 +107,7 @@ export default function PaginaLogin({
             </p>
             <Link
               href="/privacidade"
-              className="inline-flex min-h-12 items-center text-sm font-bold text-bordo underline"
+              className="inline-flex min-h-12 items-center text-sm font-bold text-destaque underline"
             >
               Política de privacidade
             </Link>

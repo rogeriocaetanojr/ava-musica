@@ -54,7 +54,7 @@ export function NovoBloco({
         <div
           aria-hidden="true"
           onClick={fechar}
-          className="fixed inset-0 z-20 bg-texto/40 md:hidden"
+          className="fixed inset-0 z-20 bg-veu/40 md:hidden"
         />
       )}
       <section

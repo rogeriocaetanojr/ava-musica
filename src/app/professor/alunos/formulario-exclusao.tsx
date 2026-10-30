@@ -41,7 +41,7 @@ export function FormularioExclusao({
       {estado.erro && (
         <p
           role="alert"
-          className="rounded-xl bg-amarelo-claro p-4 text-sm text-texto-sobre-amarelo"
+          className="rounded-xl bg-bloco p-4 text-sm text-texto-sobre-bloco"
         >
           {estado.erro}
         </p>
@@ -49,7 +49,7 @@ export function FormularioExclusao({
       <button
         type="submit"
         disabled={!confere || enviando}
-        className="inline-flex min-h-12 items-center justify-center rounded-xl bg-bordo px-5 py-3 font-bold text-superficie hover:bg-vinho disabled:opacity-60"
+        className="inline-flex min-h-12 items-center justify-center rounded-xl bg-bordo px-5 py-3 font-bold text-sobre-bordo hover:bg-vinho disabled:opacity-60"
       >
         {enviando ? "Excluindo…" : "Excluir todos os dados"}
       </button>

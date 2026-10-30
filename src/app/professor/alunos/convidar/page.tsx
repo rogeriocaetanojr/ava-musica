@@ -38,19 +38,19 @@ export default function ConvidarAluno() {
             fino
           />
           <div className="min-w-0">
-            <p className="font-bold text-bordo md:hidden">Alunos</p>
+            <p className="font-bold text-destaque md:hidden">Alunos</p>
             <h1 className="font-titulo text-3xl break-words text-texto md:text-5xl">
               Convidar aluno
             </h1>
           </div>
         </div>
 
-        <details className="group rounded-2xl bg-amarelo-claro text-texto-sobre-amarelo md:hidden">
+        <details className="group rounded-2xl bg-bloco text-texto-sobre-bloco md:hidden">
           <summary className="flex min-h-14 cursor-pointer list-none items-center gap-3 rounded-2xl px-4 py-3 font-bold [&::-webkit-details-marker]:hidden">
             <svg
               aria-hidden="true"
               viewBox="0 0 24 24"
-              className="size-6 shrink-0 text-bordo"
+              className="size-6 shrink-0 text-destaque"
               fill="none"
               stroke="currentColor"
               strokeWidth="1.8"
@@ -79,7 +79,7 @@ export default function ConvidarAluno() {
                 <li key={passo} className="flex gap-3">
                   <span
                     aria-hidden="true"
-                    className="flex size-7 shrink-0 items-center justify-center rounded-full bg-bordo text-sm font-bold text-superficie"
+                    className="flex size-7 shrink-0 items-center justify-center rounded-full bg-bordo text-sm font-bold text-sobre-bordo"
                   >
                     {i + 1}
                   </span>
@@ -103,7 +103,7 @@ export default function ConvidarAluno() {
 
           <aside
             aria-labelledby="como-funciona"
-            className="hidden space-y-5 rounded-3xl bg-bordo p-6 text-superficie md:block"
+            className="hidden space-y-5 rounded-3xl border border-borda-cartao bg-bordo p-6 text-sobre-bordo md:block"
           >
             <h2
               id="como-funciona"

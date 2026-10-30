@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BotaoDoTema } from "@/components/seletor-de-tema";
 import { CONTEINER } from "@/components/conteiner";
 import { LogoDoAva } from "@/components/logo-do-ava";
 
@@ -60,7 +61,7 @@ export function CabecalhoDoAluno({
                   aria-current={secao === atual ? "page" : undefined}
                   className={`${item} ${
                     secao === atual
-                      ? "bg-amarelo-claro text-texto-sobre-amarelo"
+                      ? "bg-bloco text-texto-sobre-bloco"
                       : "text-texto-secundario hover:text-texto"
                   }`}
                 >
@@ -72,6 +73,7 @@ export function CabecalhoDoAluno({
         </nav>
 
         <div className="ml-auto flex items-center gap-3 md:justify-self-end md:gap-2">
+          <BotaoDoTema />
           <Link
             href="/cursos#recados"
             aria-label={textoDoSino(naoLidos)}
@@ -101,7 +103,7 @@ export function CabecalhoDoAluno({
           {nome && (
             <span
               title={nome}
-              className="hidden size-12 items-center justify-center rounded-full bg-bordo md:inline-flex text-base font-bold text-superficie"
+              className="hidden size-12 items-center justify-center rounded-full bg-bordo md:inline-flex text-base font-bold text-sobre-bordo"
             >
               <span aria-hidden="true">{iniciais(nome)}</span>
               <span className="sr-only">Conectado como {nome}</span>

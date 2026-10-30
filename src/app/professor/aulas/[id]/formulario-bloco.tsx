@@ -161,7 +161,7 @@ export function FormularioBloco({
       {estado.erro && (
         <p
           role="alert"
-          className="rounded-xl bg-amarelo-claro p-3 text-sm text-texto-sobre-amarelo"
+          className="rounded-xl bg-bloco p-3 text-sm text-texto-sobre-bloco"
         >
           {estado.erro}
         </p>

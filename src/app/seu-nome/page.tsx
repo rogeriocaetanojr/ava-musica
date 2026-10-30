@@ -27,7 +27,7 @@ export default function SeuNome() {
       data-tela-cheia
       className="flex flex-1 flex-col md:grid md:min-h-screen md:grid-cols-[13fr_11fr]"
     >
-      <section className="relative flex h-56 shrink-0 flex-col justify-end overflow-hidden bg-bordo px-6 py-6 text-superficie md:h-auto md:justify-start md:px-15 md:py-12">
+      <section className="relative flex h-56 shrink-0 flex-col justify-end overflow-hidden bg-bordo px-6 py-6 text-sobre-bordo md:h-auto md:justify-start md:px-15 md:py-12">
         <Cordas className="absolute inset-y-0 right-10 flex w-28 md:hidden" />
         <BocaDoViolao className="absolute top-10 right-5 size-30 md:hidden" />
         <Cordas className="absolute inset-y-0 left-[78%] hidden w-28 -translate-x-1/2 md:flex lg:left-[70%]" />
@@ -73,7 +73,7 @@ export default function SeuNome() {
             </form>
             <Link
               href="/privacidade"
-              className="inline-flex min-h-12 items-center text-sm font-bold text-bordo underline"
+              className="inline-flex min-h-12 items-center text-sm font-bold text-destaque underline"
             >
               Política de privacidade
             </Link>

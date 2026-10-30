@@ -100,7 +100,7 @@ export function PainelDeRecados({ cabecalho, criar, cursos, recados }: Props) {
                   key={recado.id}
                   className={`flex min-w-0 flex-col gap-3 rounded-3xl border p-5 md:p-6 ${
                     recente
-                      ? "border-amarelo bg-amarelo-claro text-texto-sobre-amarelo"
+                      ? "border-amarelo bg-bloco text-texto-sobre-bloco"
                       : "border-linha bg-superficie text-texto"
                   }`}
                 >
@@ -158,7 +158,7 @@ export function PainelDeRecados({ cabecalho, criar, cursos, recados }: Props) {
           <div
             aria-hidden="true"
             onClick={fechar}
-            className="fixed inset-0 z-40 bg-texto/40"
+            className="fixed inset-0 z-40 bg-veu/40"
           />
           <section
             ref={painel}

@@ -25,7 +25,7 @@ async function PerfilDoAluno() {
         <section className="flex items-center gap-4 rounded-3xl border border-linha bg-superficie p-5">
           <span
             aria-hidden="true"
-            className="inline-flex size-14 shrink-0 items-center justify-center rounded-full bg-bordo text-lg font-bold text-superficie"
+            className="inline-flex size-14 shrink-0 items-center justify-center rounded-full bg-bordo text-lg font-bold text-sobre-bordo"
           >
             {iniciais(sessao.nome)}
           </span>

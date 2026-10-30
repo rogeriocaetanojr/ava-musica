@@ -205,7 +205,7 @@ export function FormularioLogin() {
               {ocupado ? "Confirmando…" : "Confirmar"}
             </Botao>
           </form>
-          <div className="flex justify-between gap-3 text-sm font-bold text-bordo">
+          <div className="flex justify-between gap-3 text-sm font-bold text-destaque">
             <button
               type="button"
               disabled={ocupado}

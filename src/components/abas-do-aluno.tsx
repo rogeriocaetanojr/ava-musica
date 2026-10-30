@@ -72,7 +72,7 @@ export function AbasDoAluno({ atual }: { atual: SecaoDoAluno }) {
                 aria-current={secao === atual ? "page" : undefined}
                 className={`flex min-h-16 flex-col items-center justify-center gap-1 rounded-2xl text-sm font-bold ${
                   secao === atual
-                    ? "bg-amarelo-claro text-texto-sobre-amarelo"
+                    ? "bg-bloco text-texto-sobre-bloco"
                     : "text-texto-secundario"
                 }`}
               >

@@ -72,7 +72,7 @@ function CampoComErro({
         {...resto}
       />
       {erro && (
-        <p id={idDoErro} className="text-sm font-bold text-bordo">
+        <p id={idDoErro} className="text-sm font-bold text-destaque">
           {erro}
         </p>
       )}
@@ -150,7 +150,7 @@ export function FormularioAluno({ cursos }: { cursos: Curso[] }) {
   // No computador o bloco fica depois dos cursos; no celular, logo abaixo da
   // data de nascimento, que é o que o faz aparecer.
   const blocoDoResponsavel = menor && (
-    <fieldset className="space-y-4 rounded-2xl bg-amarelo-claro p-5 text-texto-sobre-amarelo">
+    <fieldset className="space-y-4 rounded-2xl bg-bloco p-5 text-texto-sobre-bloco">
       <legend className="sr-only">Responsável</legend>
       <div className="flex gap-3">
         <Icone caminho="M12 3l7 3v5c0 4.5-3 8.5-7 10-4-1.5-7-5.5-7-10V6z" />
@@ -193,7 +193,7 @@ export function FormularioAluno({ cursos }: { cursos: Curso[] }) {
   return (
     <form action={enviar} onSubmit={conferir} noValidate className="space-y-6">
       <fieldset className="space-y-4">
-        <legend className="mb-4 text-sm font-bold text-bordo">
+        <legend className="mb-4 text-sm font-bold text-destaque">
           Dados do aluno
         </legend>
         <div className="grid gap-4 md:grid-cols-3">
@@ -249,7 +249,7 @@ export function FormularioAluno({ cursos }: { cursos: Curso[] }) {
             {cursos.map((curso) => (
               <label
                 key={curso.id}
-                className="flex min-h-14 cursor-pointer items-center gap-3 rounded-xl border border-linha bg-superficie px-4 py-3 font-bold text-texto hover:border-borda-campo has-checked:border-bordo has-checked:bg-bordo/10"
+                className="flex min-h-14 cursor-pointer items-center gap-3 rounded-xl border border-linha bg-superficie px-4 py-3 font-bold text-texto hover:border-borda-campo has-checked:border-destaque has-checked:bg-destaque/10"
               >
                 <input
                   type="checkbox"
@@ -263,7 +263,7 @@ export function FormularioAluno({ cursos }: { cursos: Curso[] }) {
                         : atual.filter((id) => id !== curso.id),
                     )
                   }
-                  className="size-5 shrink-0 accent-bordo"
+                  className="size-5 shrink-0 accent-destaque"
                 />
                 <span className="break-words">
                   {curso.titulo}
@@ -309,7 +309,7 @@ export function FormularioAluno({ cursos }: { cursos: Curso[] }) {
           href="/professor/alunos"
           className={classesDoBotao(
             "secundario",
-            "md:w-auto max-md:min-h-12 max-md:border-0 max-md:bg-transparent max-md:text-bordo max-md:underline",
+            "md:w-auto max-md:min-h-12 max-md:border-0 max-md:bg-transparent max-md:text-destaque max-md:underline",
           )}
         >
           Cancelar

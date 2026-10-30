@@ -179,7 +179,7 @@ async function PaginaDaAula({ params }: { params: Promise<{ id: string }> }) {
                 aria-current={atual ? "page" : undefined}
                 className={`flex min-h-12 items-center gap-3 rounded-xl px-3 py-2 text-base ${
                   atual
-                    ? "bg-amarelo-claro font-bold text-texto-sobre-amarelo"
+                    ? "bg-bloco font-bold text-texto-sobre-bloco"
                     : "text-texto hover:bg-fundo"
                 }`}
               >
@@ -207,7 +207,7 @@ async function PaginaDaAula({ params }: { params: Promise<{ id: string }> }) {
         >
           <BotaoVoltar href={linkDoCurso} rotulo={`Voltar para ${curso}`} />
           <div className="min-w-0 flex-1 md:hidden">
-            <p className="text-base font-bold text-bordo">
+            <p className="text-base font-bold text-destaque">
               {numeroDoModulo > 0 && `Módulo ${numeroDoModulo}`}
               {numeroDoModulo > 0 && posicao >= 0 && " · "}
               {posicao >= 0 && `Aula ${posicao + 1}`}
@@ -227,7 +227,7 @@ async function PaginaDaAula({ params }: { params: Promise<{ id: string }> }) {
               <li>
                 <Link
                   href={linkDoCurso}
-                  className="inline-flex min-h-12 items-center font-semibold break-words text-bordo underline"
+                  className="inline-flex min-h-12 items-center font-semibold break-words text-destaque underline"
                 >
                   {curso}
                 </Link>
@@ -254,7 +254,7 @@ async function PaginaDaAula({ params }: { params: Promise<{ id: string }> }) {
       >
         <div className="min-w-0 space-y-6 md:space-y-8">
           {!aluno && (
-            <p className="rounded-xl bg-amarelo-claro p-3 text-base text-texto-sobre-amarelo">
+            <p className="rounded-xl bg-bloco p-3 text-base text-texto-sobre-bloco">
               Pré-visualização do aluno. Os botões de concluir não aparecem para
               você.
             </p>
@@ -278,7 +278,7 @@ async function PaginaDaAula({ params }: { params: Promise<{ id: string }> }) {
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div className="min-w-0 space-y-1">
               {posicao >= 0 && (
-                <p className="hidden text-sm font-bold text-bordo md:block">
+                <p className="hidden text-sm font-bold text-destaque md:block">
                   Aula {posicao + 1} de {sequencia.length}
                 </p>
               )}
@@ -341,7 +341,7 @@ async function PaginaDaAula({ params }: { params: Promise<{ id: string }> }) {
 
           {materiais.length > 0 && (
             <section aria-labelledby="materiais" className="space-y-4">
-              <h2 id="materiais" className="text-sm font-bold text-bordo">
+              <h2 id="materiais" className="text-sm font-bold text-destaque">
                 Materiais da aula
               </h2>
               <ul className="grid gap-4 md:grid-cols-2">
@@ -414,7 +414,7 @@ async function PaginaDaAula({ params }: { params: Promise<{ id: string }> }) {
           aria-label={`Aulas de ${curso}`}
           className="hidden h-fit space-y-5 rounded-3xl border border-linha bg-superficie p-5 md:block"
         >
-          <p className="text-sm font-bold break-words text-bordo">{curso}</p>
+          <p className="text-sm font-bold break-words text-destaque">{curso}</p>
           <div className="flex items-center gap-3">
             <div className="flex-1">
               <BarraProgresso
@@ -439,7 +439,7 @@ async function PaginaDaAula({ params }: { params: Promise<{ id: string }> }) {
 
           <Link
             href={linkDoCurso}
-            className="inline-flex min-h-12 items-center font-semibold text-bordo underline"
+            className="inline-flex min-h-12 items-center font-semibold text-destaque underline"
           >
             Ver todos os módulos
           </Link>

@@ -42,7 +42,7 @@ export function BotaoBloqueio({
       {estado.erro && (
         <p
           role="alert"
-          className="rounded-xl bg-amarelo-claro p-4 text-sm text-texto-sobre-amarelo"
+          className="rounded-xl bg-bloco p-4 text-sm text-texto-sobre-bloco"
         >
           {estado.erro}
         </p>
@@ -63,7 +63,7 @@ export function BotaoBloqueio({
             className={
               bloqueado
                 ? "inline-flex min-h-12 items-center justify-center rounded-xl border border-linha bg-superficie px-5 py-3 font-bold text-texto hover:border-borda-campo disabled:opacity-60"
-                : "inline-flex min-h-12 items-center justify-center rounded-xl bg-bordo px-5 py-3 font-bold text-superficie hover:bg-vinho disabled:opacity-60"
+                : "inline-flex min-h-12 items-center justify-center rounded-xl bg-bordo px-5 py-3 font-bold text-sobre-bordo hover:bg-vinho disabled:opacity-60"
             }
           >
             {enviando ? "Salvando…" : `Confirmar: ${acao.toLowerCase()}`}

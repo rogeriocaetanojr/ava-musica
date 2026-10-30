@@ -26,7 +26,7 @@ const FORMULARIO = "M4 4h16v16H4zM8 12l3 3 5-6";
 const LINK = "M14 4h6v6M20 4l-9 9M18 14v6H4V6h6";
 
 const acao =
-  "grid size-12 shrink-0 place-items-center rounded-xl text-texto hover:bg-amarelo-claro";
+  "grid size-12 shrink-0 place-items-center rounded-xl text-texto hover:bg-bloco";
 
 function Cabecalho({
   icone,
@@ -41,7 +41,7 @@ function Cabecalho({
 }) {
   return (
     <div className="flex items-center gap-4">
-      <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-amarelo-claro text-bordo md:size-12">
+      <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-bloco text-destaque md:size-12">
         <Icone d={icone} />
       </span>
       <div className="min-w-0 flex-1">
@@ -81,7 +81,7 @@ function Conteudo({ bloco, email }: { bloco: Bloco; email?: string }) {
   const embed = lerConteudo(bloco.tipo, bloco.url ?? "", email);
   if (!embed)
     return (
-      <p role="alert" className="text-sm font-semibold text-bordo">
+      <p role="alert" className="text-sm font-semibold text-destaque">
         Link inválido para este tipo de conteúdo.
       </p>
     );

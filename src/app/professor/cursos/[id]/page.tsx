@@ -57,9 +57,7 @@ function Etiqueta({ publicado, texto }: { publicado: boolean; texto: string }) {
   return (
     <span
       className={`inline-block rounded-full px-3 py-1 text-xs font-bold ${
-        publicado
-          ? "bg-linha text-bordo"
-          : "bg-amarelo-claro text-texto-sobre-amarelo"
+        publicado ? "bg-linha text-destaque" : "bg-bloco text-texto-sobre-bloco"
       }`}
     >
       {texto}
@@ -205,7 +203,7 @@ function ItemModulo({
         classeDoConteudo="space-y-4 pb-2 md:pb-0"
         cabecalho={
           <>
-            <span className="block text-sm font-bold text-bordo">
+            <span className="block text-sm font-bold text-destaque">
               Módulo {posicao} · {aulas.length}{" "}
               {aulas.length === 1 ? "aula" : "aulas"}
             </span>
@@ -218,7 +216,7 @@ function ItemModulo({
         <EdicaoDoTitulo>
           <div className="space-y-2 md:flex md:items-center md:gap-2 md:space-y-0">
             <div className="flex items-center justify-end gap-2 md:contents">
-              <h3 className="order-first mr-2 shrink-0 text-sm font-bold text-bordo max-md:hidden">
+              <h3 className="order-first mr-2 shrink-0 text-sm font-bold text-destaque max-md:hidden">
                 Módulo {posicao}
               </h3>
               <div className="flex gap-2 md:order-last">

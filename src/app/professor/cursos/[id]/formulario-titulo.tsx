@@ -39,7 +39,7 @@ export function FormularioTitulo({
         <button
           type="submit"
           disabled={enviando}
-          className={`min-h-12 shrink-0 rounded-xl bg-bordo px-5 py-2 text-sm font-bold text-superficie hover:bg-vinho disabled:opacity-60 ${classeDoBotao}`}
+          className={`min-h-12 shrink-0 rounded-xl bg-bordo px-5 py-2 text-sm font-bold text-sobre-bordo hover:bg-vinho disabled:opacity-60 ${classeDoBotao}`}
         >
           {enviando ? "…" : textoDoBotao}
         </button>
@@ -47,7 +47,7 @@ export function FormularioTitulo({
       {estado.erro && (
         <p
           role="alert"
-          className="rounded-xl bg-amarelo-claro p-3 text-sm text-texto-sobre-amarelo"
+          className="rounded-xl bg-bloco p-3 text-sm text-texto-sobre-bloco"
         >
           {estado.erro}
         </p>

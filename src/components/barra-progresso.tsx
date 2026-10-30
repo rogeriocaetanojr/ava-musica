@@ -2,7 +2,7 @@
 // usa a barra mostra o número ao lado.
 const CORES = {
   sucesso: { trilho: "bg-current/15", barra: "bg-sucesso" },
-  bordo: { trilho: "bg-linha", barra: "bg-bordo" },
+  bordo: { trilho: "bg-linha", barra: "bg-destaque" },
   amarelo: { trilho: "bg-superficie/30", barra: "bg-amarelo" },
 };
 

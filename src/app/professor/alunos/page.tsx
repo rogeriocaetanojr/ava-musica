@@ -43,7 +43,7 @@ async function ultimosAcessos(): Promise<Map<string, string | null>> {
 const AVATARES = [
   "bg-bordo text-amarelo",
   "bg-amarelo text-texto-sobre-amarelo",
-  "bg-amarelo-claro text-texto-sobre-amarelo",
+  "bg-bloco text-texto-sobre-bloco",
   "bg-vinho text-amarelo-claro",
 ];
 
@@ -171,7 +171,7 @@ export default function Alunos() {
         </div>
         <Link
           href="/professor"
-          className="hidden min-h-12 items-center self-start text-sm font-bold text-bordo underline md:inline-flex"
+          className="hidden min-h-12 items-center self-start text-sm font-bold text-destaque underline md:inline-flex"
         >
           ← Painel
         </Link>

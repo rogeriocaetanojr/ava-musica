@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Bricolage_Grotesque, Manrope } from "next/font/google";
 import { Cabecalho, Rodape } from "@/components/moldura-do-site";
+import { ReaplicarTema, SCRIPT_DO_TEMA } from "@/components/seletor-de-tema";
 import { NOME_CURTO_DO_AVA } from "@/lib/site";
 import "./globals.css";
 
@@ -32,8 +33,14 @@ export default function RootLayout({
     <html
       lang="pt-BR"
       className={`${bricolage.variable} ${manrope.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
+      <head>
+        {/* Aplica o tema do cookie antes da primeira pintura, sem piscar claro. */}
+        <script dangerouslySetInnerHTML={{ __html: SCRIPT_DO_TEMA }} />
+      </head>
       <body className="min-h-full flex flex-col">
+        <ReaplicarTema />
         <Cabecalho />
         {children}
         <Rodape />

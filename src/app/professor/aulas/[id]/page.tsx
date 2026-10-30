@@ -71,7 +71,7 @@ function Icone({ d, classe = "size-5" }: { d: string; classe?: string }) {
 
 function IconeDoTipo({ tipo }: { tipo: TipoDeBloco }) {
   return (
-    <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-amarelo-claro text-bordo">
+    <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-bloco text-destaque">
       <Icone d={ICONES[tipo]} classe="size-6" />
     </span>
   );
@@ -81,9 +81,7 @@ function Etiqueta({ publicada }: { publicada: boolean }) {
   return (
     <span
       className={`inline-block rounded-full px-3 py-1 text-xs font-bold ${
-        publicada
-          ? "bg-linha text-bordo"
-          : "bg-amarelo-claro text-texto-sobre-amarelo"
+        publicada ? "bg-linha text-destaque" : "bg-bloco text-texto-sobre-bloco"
       }`}
     >
       {publicada ? "Publicada" : "Rascunho"}
@@ -171,7 +169,7 @@ function ItemBloco({
         <div className="flex flex-wrap items-start gap-4">
           <IconeDoTipo tipo={bloco.tipo} />
           <div className="min-w-0 flex-1 basis-48">
-            <p className="text-sm font-bold text-bordo">
+            <p className="text-sm font-bold text-destaque">
               {posicao}. {NOMES_DOS_TIPOS[bloco.tipo]}
             </p>
             <p className="font-bold break-words text-texto">
@@ -233,7 +231,7 @@ async function EditorDaAula({ params }: { params: Promise<{ id: string }> }) {
       <div className="flex flex-wrap items-center gap-4">
         <BotaoVoltar href={linkDoCurso} rotulo="Voltar ao curso" />
         <div className="min-w-0 flex-1 md:hidden">
-          <p className="text-base font-bold break-words text-bordo">
+          <p className="text-base font-bold break-words text-destaque">
             {aula.modulos.cursos.titulo}
           </p>
           <p className="text-sm break-words text-texto-secundario">
@@ -248,7 +246,7 @@ async function EditorDaAula({ params }: { params: Promise<{ id: string }> }) {
             <li>
               <Link
                 href={linkDoCurso}
-                className="inline-flex min-h-12 items-center font-semibold break-words text-bordo underline"
+                className="inline-flex min-h-12 items-center font-semibold break-words text-destaque underline"
               >
                 {aula.modulos.cursos.titulo}
               </Link>
@@ -365,7 +363,7 @@ async function EditorDaAula({ params }: { params: Promise<{ id: string }> }) {
             <ol className="space-y-3">
               {blocos.map((bloco) => (
                 <li key={bloco.id} className="flex items-center gap-3">
-                  <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-amarelo-claro text-bordo">
+                  <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-bloco text-destaque">
                     <Icone d={ICONES[bloco.tipo]} />
                   </span>
                   <span className="min-w-0 break-words text-texto">

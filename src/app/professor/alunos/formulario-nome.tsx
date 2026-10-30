@@ -46,7 +46,7 @@ export function FormularioNome({
       {estado.erro && (
         <p
           role="alert"
-          className="rounded-xl bg-amarelo-claro p-4 text-sm text-texto-sobre-amarelo"
+          className="rounded-xl bg-bloco p-4 text-sm text-texto-sobre-bloco"
         >
           {estado.erro}
         </p>

@@ -112,7 +112,7 @@ export function FormularioCurso({ acao, inicial = {}, textoDoBotao }: Props) {
       <button
         type="submit"
         disabled={enviando}
-        className="inline-flex min-h-14 w-full items-center justify-center rounded-xl bg-bordo px-5 py-3 font-bold text-superficie hover:bg-vinho disabled:opacity-60 sm:w-auto"
+        className="inline-flex min-h-14 w-full items-center justify-center rounded-xl bg-bordo px-5 py-3 font-bold text-sobre-bordo hover:bg-vinho disabled:opacity-60 sm:w-auto"
       >
         {enviando ? "Salvando…" : textoDoBotao}
       </button>
@@ -120,7 +120,7 @@ export function FormularioCurso({ acao, inicial = {}, textoDoBotao }: Props) {
       {estado.erro && (
         <p
           role="alert"
-          className="rounded-xl bg-amarelo-claro p-4 text-texto-sobre-amarelo"
+          className="rounded-xl bg-bloco p-4 text-texto-sobre-bloco"
         >
           {estado.erro}
         </p>

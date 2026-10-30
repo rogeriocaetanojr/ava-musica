@@ -8,7 +8,7 @@ export function Aviso({
 }: HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={`flex gap-3 rounded-xl bg-amarelo-claro p-4 text-sm leading-relaxed text-texto-sobre-amarelo ${className ?? ""}`}
+      className={`flex gap-3 rounded-xl bg-bloco p-4 text-sm leading-relaxed text-texto-sobre-bloco ${className ?? ""}`}
       {...resto}
     >
       <svg

@@ -41,7 +41,7 @@ type Curso = {
   modulos: Modulo[];
 };
 
-const rotuloDeSecao = "text-sm font-bold text-bordo";
+const rotuloDeSecao = "text-sm font-bold text-destaque";
 
 function temProva(aula: Aula): boolean {
   return aula.conteudos.some((conteudo) => conteudo.tipo === "prova");
@@ -90,7 +90,7 @@ async function PaginaDoCurso({ params }: { params: Promise<{ id: string }> }) {
 
       <section
         aria-labelledby="titulo-do-curso"
-        className="relative overflow-hidden rounded-3xl bg-bordo p-6 text-superficie md:p-8 md:pr-56"
+        className="relative overflow-hidden rounded-3xl border border-borda-cartao bg-bordo p-6 text-sobre-bordo md:p-8 md:pr-56"
       >
         <Cordas className="absolute inset-y-0 right-4 w-16 md:right-14 md:w-26" />
         <BocaDoViolao className="absolute top-1/2 right-10 hidden size-32 -translate-y-1/2 md:block" />
@@ -179,7 +179,7 @@ async function PaginaDoCurso({ params }: { params: Promise<{ id: string }> }) {
                           href={`/aulas/${aula.id}`}
                           className={`flex min-h-12 items-center gap-3 rounded-xl px-3 py-2 text-base ${
                             atual
-                              ? "bg-amarelo-claro font-bold text-texto-sobre-amarelo"
+                              ? "bg-bloco font-bold text-texto-sobre-bloco"
                               : "text-texto hover:bg-fundo"
                           }`}
                         >

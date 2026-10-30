@@ -174,7 +174,7 @@ async function FichaDoAluno({ params }: { params: Promise<{ id: string }> }) {
                 Pediu acesso pelo login.{" "}
                 <Link
                   href="/professor"
-                  className="font-bold text-bordo underline"
+                  className="font-bold text-destaque underline"
                 >
                   Libere ou recuse no painel
                 </Link>
@@ -352,9 +352,9 @@ async function FichaDoAluno({ params }: { params: Promise<{ id: string }> }) {
 
       <section
         aria-labelledby="excluir"
-        className="mt-4 space-y-3 rounded-3xl border-2 border-bordo bg-superficie p-5 md:p-6"
+        className="mt-4 space-y-3 rounded-3xl border-2 border-destaque bg-superficie p-5 md:p-6"
       >
-        <h2 id="excluir" className="font-titulo text-2xl text-bordo">
+        <h2 id="excluir" className="font-titulo text-2xl text-destaque">
           Excluir todos os dados
         </h2>
         <FormularioExclusao alunoId={aluno.id} nome={nome} />
@@ -374,7 +374,7 @@ export default function Aluno({ params }: { params: Promise<{ id: string }> }) {
         </div>
         <Link
           href="/professor/alunos"
-          className="hidden min-h-12 items-center self-start text-sm font-bold text-bordo underline md:inline-flex"
+          className="hidden min-h-12 items-center self-start text-sm font-bold text-destaque underline md:inline-flex"
         >
           ← Alunos
         </Link>
