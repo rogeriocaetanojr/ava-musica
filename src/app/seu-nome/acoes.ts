@@ -38,5 +38,6 @@ export async function salvarMeuNome(
   if (!error && sessao.pendente)
     await confirmarPedido({ ...sessao, nome: resultado.nome });
 
-  redirect(destinoDoPapel(sessao.papel));
+  // O aluno pendente vai direto para a espera, sem passar pelos cursos.
+  redirect(sessao.pendente ? "/aguardando" : destinoDoPapel(sessao.papel));
 }

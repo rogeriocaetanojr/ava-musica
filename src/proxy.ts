@@ -7,6 +7,7 @@ const ROTAS_PUBLICAS = [
   "/login",
   "/auth",
   "/aceite",
+  "/bloqueado",
   "/privacidade",
   "/termos",
   "/robots.txt",

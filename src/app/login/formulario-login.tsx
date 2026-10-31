@@ -123,7 +123,8 @@ export function FormularioLogin() {
     if (ehLimiteDeTentativas(error)) {
       setErro(MENSAGEM_MUITAS_TENTATIVAS);
     } else if (ehBloqueado(error)) {
-      setErro(MENSAGEM_BLOQUEADO);
+      // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+      window.location.assign("/bloqueado");
     } else if (ehCodigoInvalido(error)) {
       setErro(MENSAGEM_CODIGO_INVALIDO);
     } else {

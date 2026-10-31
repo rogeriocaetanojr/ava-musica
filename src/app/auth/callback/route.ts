@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
   // de 7 dias, com a mensagem do hook; qualquer outro erro do Google (como
   // cancelar a escolha da conta) mostra o aviso de falha do Google.
   if (searchParams.get("error_code") === "user_banned") {
-    return NextResponse.redirect(`${origin}/login?erro=bloqueado`);
+    return NextResponse.redirect(`${origin}/bloqueado`);
   }
   if (
     ehPedidoBarrado({
@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
   const supabase = await criarClienteServidor();
   const { error: erro } = await supabase.auth.exchangeCodeForSession(codigo);
   if (ehBloqueado(erro)) {
-    return NextResponse.redirect(`${origin}/login?erro=bloqueado`);
+    return NextResponse.redirect(`${origin}/bloqueado`);
   }
   if (ehLimiteDeTentativas(erro)) {
     return NextResponse.redirect(`${origin}/login?erro=muitas-tentativas`);

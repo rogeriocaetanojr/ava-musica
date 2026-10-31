@@ -16,7 +16,7 @@ export async function concluirLogin(origin: string): Promise<NextResponse> {
   if (sessao.bloqueado) {
     const supabase = await criarClienteServidor();
     await supabase.auth.signOut();
-    return NextResponse.redirect(`${origin}/login?erro=bloqueado`);
+    return NextResponse.redirect(`${origin}/bloqueado`);
   }
   // Sem nome (código por e-mail, ou Google sem nome), a pessoa informa o nome
   // antes de qualquer outra tela; o pedido é confirmado depois, na tela do

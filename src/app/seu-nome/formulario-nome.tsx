@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { Aviso } from "@/components/aviso";
 import { Botao } from "@/components/botao";
 import { Campo } from "@/components/campo";
 import { TAMANHO_MAXIMO_DO_NOME } from "@/lib/nomes";
@@ -27,13 +28,9 @@ export function FormularioNome() {
         aria-describedby={estado.erro ? "erro-do-nome" : undefined}
       />
       {estado.erro && (
-        <p
-          id="erro-do-nome"
-          role="alert"
-          className="rounded-xl bg-red-100 p-4 text-sm text-red-800"
-        >
+        <Aviso id="erro-do-nome" role="alert">
           {estado.erro}
-        </p>
+        </Aviso>
       )}
       <Botao type="submit" disabled={enviando} aria-busy={enviando}>
         {enviando ? "Salvando…" : "Continuar"}
