@@ -1,5 +1,6 @@
 // Leitura dos links colados pelo professor: descobre o serviço e monta o
-// endereço seguro para incorporar na aula. Funções puras, usadas no servidor
+// endereço seguro. Só o YouTube é incorporado na aula; o resto abre em nova
+// guia. Funções puras, usadas no servidor
 // (validação) e no navegador (pré-visualização).
 
 export const TIPOS_DE_BLOCO = [
@@ -22,9 +23,8 @@ export const MARCADOR_EMAIL = "EMAIL_DO_ALUNO";
 
 export type Embed =
   | { tipo: "youtube"; id: string; src: string }
-  | { tipo: "drive"; id: string; src: string; baixar: string }
-  | { tipo: "forms"; src: string }
-  | { tipo: "forms-botao"; url: string }
+  | { tipo: "drive"; id: string; abrir: string; baixar: string }
+  | { tipo: "forms"; url: string }
   | { tipo: "audio"; src: string }
   | { tipo: "link"; url: string };
 
@@ -100,7 +100,7 @@ export function lerDrive(link: string): Embed | null {
   return {
     tipo: "drive",
     id,
-    src: `https://drive.google.com/file/d/${id}/preview`,
+    abrir: `https://drive.google.com/file/d/${id}/view`,
     baixar: `https://drive.google.com/uc?export=download&id=${id}`,
   };
 }
@@ -110,14 +110,15 @@ const CAMINHO_FORMS =
 const CAMINHO_FORMS_GLE = /^\/[A-Za-z0-9_-]+\/?$/;
 
 // Troca o marcador pelo e-mail do aluno (quando informado), normaliza para
-// /viewform e liga embedded=true. Links forms.gle não incorporam: viram botão.
+// /viewform e tira o embedded. Links forms.gle abrem como estão, sem
+// preenchimento.
 export function lerForms(link: string, email?: string): Embed | null {
   const url = lerUrlHttps(link);
   if (!url) return null;
 
   if (url.hostname === "forms.gle") {
     if (!CAMINHO_FORMS_GLE.test(url.pathname)) return null;
-    return { tipo: "forms-botao", url: url.href };
+    return { tipo: "forms", url: url.href };
   }
 
   if (url.hostname !== "docs.google.com") return null;
@@ -134,12 +135,10 @@ export function lerForms(link: string, email?: string): Embed | null {
       email === undefined ? valor : valor.replaceAll(MARCADOR_EMAIL, email),
     );
   }
-  destino.searchParams.set("embedded", "true");
-  return { tipo: "forms", src: destino.href };
+  return { tipo: "forms", url: destino.href };
 }
 
-// Áudio do Drive usa o visualizador do Drive; outro link https vai direto
-// para o player do navegador.
+// Áudio do Drive abre em nova guia; outro link https toca no tocador da aula.
 export function lerAudio(link: string): Embed | null {
   const drive = lerDrive(link);
   if (drive) return drive;

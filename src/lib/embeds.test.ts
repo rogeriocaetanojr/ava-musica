@@ -74,7 +74,7 @@ describe("lerDrive", () => {
   const esperado = {
     tipo: "drive",
     id,
-    src: `https://drive.google.com/file/d/${id}/preview`,
+    abrir: `https://drive.google.com/file/d/${id}/view`,
     baixar: `https://drive.google.com/uc?export=download&id=${id}`,
   };
 
@@ -105,14 +105,14 @@ describe("lerDrive", () => {
 describe("lerForms", () => {
   const base = "https://docs.google.com/forms/d/e/1FAIpQLSabc_123";
 
-  it("troca o marcador pelo e-mail e liga embedded", () => {
+  it("troca o marcador pelo e-mail", () => {
     const resultado = lerForms(
       `${base}/viewform?usp=pp_url&entry.123=EMAIL_DO_ALUNO`,
       "ana@exemplo.com",
     );
     expect(resultado).toEqual({
       tipo: "forms",
-      src: `${base}/viewform?usp=pp_url&entry.123=ana%40exemplo.com&embedded=true`,
+      url: `${base}/viewform?usp=pp_url&entry.123=ana%40exemplo.com`,
     });
   });
 
@@ -120,7 +120,7 @@ describe("lerForms", () => {
     const resultado = lerForms(`${base}/viewform?entry.1=EMAIL_DO_ALUNO`);
     expect(resultado).toEqual({
       tipo: "forms",
-      src: `${base}/viewform?entry.1=EMAIL_DO_ALUNO&embedded=true`,
+      url: `${base}/viewform?entry.1=EMAIL_DO_ALUNO`,
     });
   });
 
@@ -131,27 +131,27 @@ describe("lerForms", () => {
     );
     expect(resultado).toEqual({
       tipo: "forms",
-      src: `${base}/viewform?entry.1=a%26entry.2%3Dx%40exemplo.com&embedded=true`,
+      url: `${base}/viewform?entry.1=a%26entry.2%3Dx%40exemplo.com`,
     });
   });
 
   it.each([
-    [`${base}/edit`, `${base}/viewform?embedded=true`],
-    [`${base}`, `${base}/viewform?embedded=true`],
-    [`${base}/`, `${base}/viewform?embedded=true`],
-    [`${base}/viewform?embedded=false`, `${base}/viewform?embedded=true`],
-    [`${base}/viewform#topo`, `${base}/viewform?embedded=true`],
+    [`${base}/edit`, `${base}/viewform`],
+    [`${base}`, `${base}/viewform`],
+    [`${base}/`, `${base}/viewform`],
+    [`${base}/viewform?embedded=false`, `${base}/viewform`],
+    [`${base}/viewform#topo`, `${base}/viewform`],
     [
       "https://docs.google.com/forms/d/1AbCdEf/edit",
-      "https://docs.google.com/forms/d/1AbCdEf/viewform?embedded=true",
+      "https://docs.google.com/forms/d/1AbCdEf/viewform",
     ],
-  ])("normaliza %s", (link, src) => {
-    expect(lerForms(link)).toEqual({ tipo: "forms", src });
+  ])("normaliza %s", (link, url) => {
+    expect(lerForms(link)).toEqual({ tipo: "forms", url });
   });
 
-  it("transforma forms.gle em botão", () => {
+  it("abre forms.gle sem preenchimento", () => {
     expect(lerForms("https://forms.gle/AbC123xyz", "ana@exemplo.com")).toEqual({
-      tipo: "forms-botao",
+      tipo: "forms",
       url: "https://forms.gle/AbC123xyz",
     });
   });
@@ -171,7 +171,7 @@ describe("lerForms", () => {
 });
 
 describe("lerAudio", () => {
-  it("usa o visualizador do Drive para arquivos do Drive", () => {
+  it("abre o áudio do Drive em nova guia", () => {
     expect(
       lerAudio("https://drive.google.com/file/d/1AbCdEfGhIjK/view")?.tipo,
     ).toBe("drive");
@@ -222,7 +222,7 @@ describe("lerConteudo", () => {
       ),
     ).toEqual({
       tipo: "forms",
-      src: "https://docs.google.com/forms/d/e/x/viewform?entry.1=b%40c.com&embedded=true",
+      url: "https://docs.google.com/forms/d/e/x/viewform?entry.1=b%40c.com",
     });
     expect(lerConteudo("texto", "https://exemplo.com")).toBeNull();
   });

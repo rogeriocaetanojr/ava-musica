@@ -2,7 +2,7 @@
 
 ## 1. Projeto
 
-Ambiente virtual de aprendizagem (AVA) de um professor de música. O professor organiza cursos por instrumento em módulos e aulas, com vídeos do YouTube, arquivos do Google Drive e provas do Google Forms exibidos dentro da página. O aluno estuda e acompanha o próprio progresso num só lugar.
+Ambiente virtual de aprendizagem (AVA) de um professor de música. O professor organiza cursos por instrumento em módulos e aulas, com vídeos do YouTube incorporados à aula e arquivos do Google Drive, provas do Google Forms e links que abrem em nova guia. O aluno estuda e acompanha o próprio progresso num só lugar.
 
 - **Professor (administrador):** conta única; cria cursos, módulos, aulas e provas, convida e matricula alunos, libera ou recusa pedidos de acesso, publica avisos e acompanha o progresso de todos.
 - **Aluno:** vê apenas os cursos publicados em que está matriculado, conclui aulas, registra o envio de provas e lê avisos.

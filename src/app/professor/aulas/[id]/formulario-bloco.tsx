@@ -31,7 +31,7 @@ const DICAS: Record<TipoDeBloco, string> = {
   audio: "Link do Google Drive ou de um arquivo de áudio (por exemplo, .mp3).",
   link: "Qualquer página que comece com https://.",
   prova:
-    "No Forms, gere um link pré-preenchido com EMAIL_DO_ALUNO no campo de e-mail. Links forms.gle viram um botão, sem incorporar.",
+    "No Forms, gere um link pré-preenchido com EMAIL_DO_ALUNO no campo de e-mail. Links forms.gle abrem sem o e-mail preenchido.",
 };
 
 // Mesmas classes do Campo, que só cobre input: o select e o textarea usam

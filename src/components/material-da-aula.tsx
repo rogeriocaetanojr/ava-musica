@@ -1,9 +1,10 @@
 import type { ReactNode } from "react";
 import type { Bloco } from "@/components/bloco-conteudo";
+import { classesDoBotao } from "@/components/botao";
 import { TocadorDePlayback } from "@/components/tocador-de-playback";
 import { lerConteudo } from "@/lib/embeds";
 
-function Icone({ d }: { d: string }) {
+function Icone({ d, tamanho = "size-6" }: { d: string; tamanho?: string }) {
   return (
     <svg
       aria-hidden="true"
@@ -13,7 +14,7 @@ function Icone({ d }: { d: string }) {
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
-      className="size-6"
+      className={`${tamanho} shrink-0`}
     >
       <path d={d} />
     </svg>
@@ -25,19 +26,14 @@ const BAIXAR = "M12 4v11M7 10l5 5 5-5M5 20h14";
 const FORMULARIO = "M4 4h16v16H4zM8 12l3 3 5-6";
 const LINK = "M14 4h6v6M20 4l-9 9M18 14v6H4V6h6";
 
-const acao =
-  "grid size-12 shrink-0 place-items-center rounded-xl text-texto hover:bg-bloco";
-
 function Cabecalho({
   icone,
   titulo,
   detalhe,
-  children,
 }: {
   icone: string;
   titulo: string;
   detalhe: string;
-  children?: ReactNode;
 }) {
   return (
     <div className="flex items-center gap-4">
@@ -48,36 +44,65 @@ function Cabecalho({
         <p className="font-bold break-words text-texto">{titulo}</p>
         <p className="text-sm text-texto-secundario">{detalhe}</p>
       </div>
-      {children}
     </div>
   );
 }
 
-function Moldura({
-  src,
+// Cartão de material que abre fora do site: ícone, título e os botões.
+function Cartao({
+  icone,
   titulo,
-  altura,
-  permitir = "autoplay",
+  detalhe,
+  abrir,
+  textoAbrir,
+  baixar,
 }: {
-  src: string;
+  icone: string;
   titulo: string;
-  altura: string;
-  permitir?: string;
+  detalhe: string;
+  abrir: string;
+  textoAbrir: string;
+  baixar?: string;
 }) {
   return (
-    <iframe
-      src={src}
-      title={titulo}
-      loading="lazy"
-      allow={permitir}
-      allowFullScreen
-      referrerPolicy="strict-origin-when-cross-origin"
-      className={`w-full rounded-xl border-0 ${altura}`}
-    />
+    <div className="space-y-4">
+      <Cabecalho icone={icone} titulo={titulo} detalhe={detalhe} />
+      <div className="flex flex-col gap-3 md:flex-row">
+        <a
+          href={abrir}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={classesDoBotao("secundario", "md:w-auto")}
+        >
+          <Icone d={LINK} tamanho="size-5" />
+          {textoAbrir}
+          <span className="sr-only"> (abre em nova aba)</span>
+        </a>
+        {baixar && (
+          <a
+            href={baixar}
+            rel="noopener noreferrer"
+            className={classesDoBotao("secundario", "md:w-auto")}
+          >
+            <Icone d={BAIXAR} tamanho="size-5" />
+            Baixar
+            <span className="sr-only"> {titulo}</span>
+          </a>
+        )}
+      </div>
+    </div>
   );
 }
 
-function Conteudo({ bloco, email }: { bloco: Bloco; email?: string }) {
+// Conteúdo de um bloco que não é texto. Só o YouTube fica incorporado; Drive,
+// Forms e links abrem em nova guia. Usado também na pré-visualização.
+export function ConteudoDoMaterial({
+  bloco,
+  email,
+}: {
+  bloco: Bloco;
+  email?: string;
+}) {
   const embed = lerConteudo(bloco.tipo, bloco.url ?? "", email);
   if (!embed)
     return (
@@ -88,30 +113,18 @@ function Conteudo({ bloco, email }: { bloco: Bloco; email?: string }) {
 
   switch (embed.tipo) {
     case "drive": {
-      const titulo = bloco.titulo || "Arquivo do Google Drive";
       const audio = bloco.tipo === "audio";
       return (
-        <div className="space-y-3">
-          <Cabecalho
-            icone={ARQUIVO}
-            titulo={titulo}
-            detalhe={audio ? "Playback · Google Drive" : "Google Drive"}
-          >
-            <a
-              href={embed.baixar}
-              rel="noopener noreferrer"
-              aria-label={`Baixar ${titulo}`}
-              className={acao}
-            >
-              <Icone d={BAIXAR} />
-            </a>
-          </Cabecalho>
-          <Moldura
-            src={embed.src}
-            titulo={titulo}
-            altura={audio ? "h-28" : "aspect-[3/4]"}
-          />
-        </div>
+        <Cartao
+          icone={ARQUIVO}
+          titulo={
+            bloco.titulo || (audio ? "Playback" : "Arquivo do Google Drive")
+          }
+          detalhe={audio ? "Playback · Google Drive" : "Google Drive"}
+          abrir={embed.abrir}
+          textoAbrir="Abrir arquivo"
+          baixar={embed.baixar}
+        />
       );
     }
     case "audio":
@@ -123,55 +136,40 @@ function Conteudo({ bloco, email }: { bloco: Bloco; email?: string }) {
       );
     case "forms":
       return (
-        <div className="space-y-3">
-          <Cabecalho
-            icone={FORMULARIO}
-            titulo={bloco.titulo || "Prova"}
-            detalhe="Google Forms · abre aqui mesmo"
-          />
-          <Moldura
-            src={embed.src}
-            titulo={bloco.titulo || "Prova"}
-            altura="h-[36rem]"
-          />
-        </div>
+        <Cartao
+          icone={FORMULARIO}
+          titulo={bloco.titulo || "Prova"}
+          detalhe="Google Forms"
+          abrir={embed.url}
+          textoAbrir="Abrir a prova"
+        />
       );
-    case "forms-botao":
-    case "link": {
-      const prova = embed.tipo === "forms-botao";
-      const titulo = bloco.titulo || (prova ? "Prova" : embed.url);
+    case "link":
       return (
-        <Cabecalho
-          icone={prova ? FORMULARIO : LINK}
-          titulo={titulo}
-          detalhe={prova ? "Google Forms · abre em nova aba" : "Link externo"}
-        >
-          <a
-            href={embed.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label={`${prova ? "Abrir a prova" : `Abrir ${titulo}`} (abre em nova aba)`}
-            className={acao}
-          >
-            <Icone d={LINK} />
-          </a>
-        </Cabecalho>
+        <Cartao
+          icone={LINK}
+          titulo={bloco.titulo || embed.url}
+          detalhe="Link externo"
+          abrir={embed.url}
+          textoAbrir="Abrir link"
+        />
       );
-    }
     case "youtube":
       return (
-        <Moldura
+        <iframe
           src={embed.src}
-          titulo={bloco.titulo || "Vídeo do YouTube"}
-          altura="aspect-video"
-          permitir="encrypted-media; picture-in-picture; fullscreen"
+          title={bloco.titulo || "Vídeo do YouTube"}
+          loading="lazy"
+          allow="encrypted-media; picture-in-picture; fullscreen"
+          allowFullScreen
+          referrerPolicy="strict-origin-when-cross-origin"
+          className="aspect-video w-full rounded-xl border-0"
         />
       );
   }
 }
 
-// Cartão de um material da aula (Drive, playback, link ou prova), com as
-// mesmas regras de incorporação do BlocoConteudo.
+// Cartão de um material da aula (Drive, playback, link ou prova).
 export function MaterialDaAula({
   bloco,
   email,
@@ -181,15 +179,11 @@ export function MaterialDaAula({
   email?: string;
   children?: ReactNode;
 }) {
-  const largo =
-    bloco.tipo === "prova" ||
-    bloco.tipo === "youtube" ||
-    bloco.tipo === "drive";
   return (
     <li
-      className={`space-y-3 rounded-2xl border border-linha bg-superficie p-4 ${largo ? "md:col-span-2" : ""}`}
+      className={`space-y-3 rounded-2xl border border-linha bg-superficie p-4 ${bloco.tipo === "youtube" ? "md:col-span-2" : ""}`}
     >
-      <Conteudo bloco={bloco} email={email} />
+      <ConteudoDoMaterial bloco={bloco} email={email} />
       {children}
     </li>
   );

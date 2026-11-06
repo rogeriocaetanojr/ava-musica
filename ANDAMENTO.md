@@ -18,6 +18,7 @@
 - [ ] Páginas de erro, página não encontrada e carregamento no visual novo
 - [ ] E-mails com a cara da escola
 - [ ] Botões e campos usando os componentes padrão
+- [ ] Arquivos e provas abrindo em nova guia
 
 ### Testes
 
@@ -128,8 +129,7 @@
 - Os links de conteúdo só aceitam https://. Qualquer outro começo, como `http://` ou `javascript:`, é recusado ao salvar e também ao exibir.
 - Os vídeos do YouTube são exibidos pelo endereço youtube-nocookie.com, que não grava cookies de propaganda nos alunos.
 - O link da prova é guardado do jeito que o professor colou, com o texto EMAIL_DO_ALUNO. A troca pelo e-mail de quem está logado acontece só na hora de exibir; na pré-visualização do professor entra o e-mail dele.
-- Links curtos do Forms (forms.gle) não podem ser exibidos dentro da página, então aparecem como um botão que abre a prova em outra aba, e nesse caso o e-mail não é preenchido sozinho.
-- Áudio pode vir do Google Drive (exibido pelo visualizador do Drive) ou de um link direto para o arquivo (tocado pelo próprio navegador).
+- Só o vídeo do YouTube fica incorporado à aula. Arquivos do Drive (inclusive áudio), provas do Forms e links abrem em nova guia; o Drive também tem o botão de baixar. O link da prova abre já com o e-mail do aluno; o link curto (forms.gle) abre sem preenchimento. Áudio por link direto continua tocando no tocador da aula.
 - O bloco de texto mostra o texto puro, com as quebras de linha, sem formatação, para não abrir brecha para código malicioso.
 - A idade é calculada pela data de hoje no horário de Brasília. O aluno faz aniversário no próprio dia; quem nasceu em 29 de fevereiro faz aniversário em 1º de março nos anos que não são bissextos.
 - O e-mail de convite foi personalizado (`supabase/templates/convite.html`) para levar um código que o site confere no servidor. O convite padrão do Supabase não funciona com o jeito de login do site.
@@ -196,7 +196,7 @@
 - O "Continue de onde parou" usa o curso da aula com o registro de progresso mais recente; sem progresso, o primeiro curso (em ordem alfabética) que tem aulas. Com tudo concluído, o cartão diz isso e leva ao curso.
 - A saudação (Bom dia até 11h59, Boa tarde até 17h59, Boa noite a partir das 18h e até 4h59) segue o horário de Brasília.
 - Os cartões de curso inteiros são o link para a página do curso; o botão Começar fica na página do curso. O título da tela passou a ser só o nome do aluno, e os testes de ponta a ponta acompanham essas duas mudanças.
-- A tela da aula tem cabeçalho próprio: o botão voltar ("Voltar para {curso}"), o logo e a trilha Curso / Módulo / Aula. O primeiro vídeo do YouTube abre a aula, os blocos de texto formam a descrição e os demais blocos viram os cartões de "Materiais da aula", na ordem do professor. O playback por link direto ganhou um botão grande de tocar; o do Drive continua no visualizador do Drive.
+- A tela da aula tem cabeçalho próprio: o botão voltar ("Voltar para {curso}"), o logo e a trilha Curso / Módulo / Aula. O primeiro vídeo do YouTube abre a aula, os blocos de texto formam a descrição e os demais blocos viram os cartões de "Materiais da aula", na ordem do professor. O playback por link direto ganhou um botão grande de tocar; o do Drive abre em nova guia.
 - A lateral mostra o progresso no curso e as aulas do módulo atual. Para isso, a página lê também as aulas concluídas no curso, o título dos módulos e o tipo dos blocos de cada aula (para marcar as aulas com prova). São só leituras, sob as mesmas regras de acesso: o aluno pendente, bloqueado ou sem aceite do responsável não vê nada.
 - Concluída, o botão passa a "✓ Aula concluída" e continua desmarcando com um toque. O teste de ponta a ponta volta ao curso pelo botão "Voltar para {curso}".
 - No celular, a aula mostra no topo o botão voltar, "Módulo N · Aula N" (a numeração da aula é a do curso, a mesma da lista lateral) e o nome do curso; o logo e a trilha ficam só no computador. O botão "Marcar como concluída" fica fixo no rodapé, sem a barra de abas, e as aulas do módulo vêm depois dos materiais numa lista recolhível, fechada por padrão. O ícone dos materiais tem 44 px no celular.
