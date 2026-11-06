@@ -19,6 +19,7 @@
 - [ ] E-mails com a cara da escola
 - [ ] Botões e campos usando os componentes padrão
 - [ ] Arquivos e provas abrindo em nova guia
+- [ ] Login com e-mail e senha, criar conta e convite por link
 
 ### Testes
 
@@ -53,7 +54,7 @@
   - Na política de segurança do navegador (CSP), limitar de onde o bloco de áudio pode tocar: hoje ele aceita qualquer endereço https (`lerAudio` em `src/lib/embeds.ts`), e o navegador do aluno acessa servidores de terceiros.
 - [ ] Cópias de segurança do banco de dados
 - [ ] Rotinas automáticas do banco
-  - Apagar as contas criadas pelo pedido de código e nunca confirmadas (ninguém digitou o código) depois de 48 horas. Hoje elas só ficam fora da lista do professor e dão lugar ao cadastro feito por ele.
+  - Apagar as contas criadas em Criar conta e nunca confirmadas (ninguém abriu o link de confirmação) depois de 48 horas. Hoje elas só ficam fora da lista do professor e dão lugar ao cadastro feito por ele.
 - [ ] Alertas quando o site cair ou apresentar erros
 - [ ] Cuidados com os dados pessoais no dia a dia, conforme a LGPD
 - [ ] Manual do professor e documentação do projeto
@@ -132,7 +133,6 @@
 - Só o vídeo do YouTube fica incorporado à aula. Arquivos do Drive (inclusive áudio), provas do Forms e links abrem em nova guia; o Drive também tem o botão de baixar. O link da prova abre já com o e-mail do aluno; o link curto (forms.gle) abre sem preenchimento. Áudio por link direto continua tocando no tocador da aula.
 - O bloco de texto mostra o texto puro, com as quebras de linha, sem formatação, para não abrir brecha para código malicioso.
 - A idade é calculada pela data de hoje no horário de Brasília. O aluno faz aniversário no próprio dia; quem nasceu em 29 de fevereiro faz aniversário em 1º de março nos anos que não são bissextos.
-- O e-mail de convite foi personalizado (`supabase/templates/convite.html`) para levar um código que o site confere no servidor. O convite padrão do Supabase não funciona com o jeito de login do site.
 - O cadastro confere antes se o e-mail já existe. Se gravar o responsável de um menor de 12 falhar, a conta recém-criada é apagada, para não sobrar aluno sem responsável.
 - O status do aluno é "aguardando responsável" (menor de 12 sem autorização), "convidado" (ainda não entrou nenhuma vez) ou "ativo" (já entrou).
 - O progresso do curso conta só as aulas publicadas marcadas como concluídas; o "Enviei a prova" fica registrado à parte e não muda a porcentagem. A porcentagem é arredondada para baixo, então 100% só aparece com todas as aulas concluídas.
@@ -144,14 +144,14 @@
 - A última atividade do aluno é o registro de progresso mais recente (aula concluída ou prova enviada), não o último login.
 - O detalhe do progresso de cada aluno fica em `/professor/progresso/...`, separado da ficha de cadastro e matrículas em `/professor/alunos/...`.
 - O "autorizo" do responsável é recebido por uma rota (`/aceite/.../autorizar`), não por server action, porque quem envia não tem login: a proteção é o token. A gravação só acontece onde o aceite ainda está vazio, então o mesmo link não vale duas vezes.
-- Depois do aceite, o servidor envia ao aluno um código de acesso (modelo `supabase/templates/codigo.html`). Se o código vencer, o aluno pede outro na tela de login. Depois de mudar o `config.toml`, é preciso reiniciar o Supabase local.
+- O aceite do responsável não envia mais nada ao aluno: ele já recebeu o convite e criou a senha, e com o aceite a mesma senha passa a abrir as aulas. Depois de mudar o `config.toml`, é preciso reiniciar o Supabase local.
 - A versão dos termos gravada no aceite fica em `src/lib/site.ts` (`VERSAO_DOS_TERMOS`). Mudou o texto da política ou dos termos, muda a versão.
 - A política de privacidade e os termos de uso são rascunhos para revisão jurídica e avisam isso no topo.
 - A exclusão de um aluno pede o nome digitado (sem contar maiúsculas e espaços nas pontas), conferido de novo no servidor. Ela apaga a conta de login, e o banco apaga em cascata perfil, responsável, matrículas e progresso.
 - Nome, logo e cores ainda são provisórios. As cores ficam como variáveis do tema em `src/app/globals.css` (`primaria` e `secundaria`), o nome e o logo em `src/lib/site.ts`, e o logo em `public/logo.svg`. As cores de aviso (vermelho, verde, amarelo) não mudam com a identidade.
 - Os limites do login ficam no `supabase/config.toml` e, na nuvem, são configurados à mão no painel do Supabase com os mesmos valores (`guias/deploy.md`). O Supabase só conta verificações de código em janelas de 5 minutos por endereço, não por hora.
 - O professor envia no máximo 20 convites por hora, contando os reenvios. Quem garante é o banco (tabela `envios_convite`); a vaga é gasta antes do envio, mesmo que o e-mail falhe. Cadastrar um menor de 12 não conta, porque não envia e-mail.
-- O reenvio de convite aparece só para quem ainda não entrou. O menor de 12 só recebe depois da autorização do responsável, e recebe um código de acesso em vez do convite.
+- O reenvio de convite aparece só para quem ainda não entrou (ainda não criou a senha), inclusive o menor de 12 que espera a autorização. Depois que o aluno entrou, um link novo serviria para trocar a senha de quem já usa a conta, então o reenvio some.
 - A auditoria registra quando o professor abre a ficha, matricula, desmatricula ou exclui um aluno menor de 18 anos (sem data de nascimento, registra por precaução). Quem decide a idade e grava é o banco, pela função `registrar_acesso`; a aplicação não grava direto na tabela.
 - Ainda não existe tela para editar os dados do aluno; a ação "editar" já é aceita pela auditoria para quando ela existir.
 - Se o registro falhar, a ação não acontece e a ficha não abre.
@@ -186,7 +186,6 @@
 - O teste da recusa roda só no perfil de computador, para a execução não passar do limite de 15 logins a cada 5 minutos por endereço.
 - Revisto: o link mágico foi trocado por um código de 6 dígitos no e-mail. A tela "Entrar" pede o e-mail (`signInWithOtp`) e passa para "Digite o código", com Confirmar (`verifyOtp`, tipo `email`), Reenviar código e Usar outro e-mail. A mensagem de envio é a mesma para quem tem e quem não tem conta. O código vale 10 minutos (`otp_expiry = 600`). Assim o login funciona em qualquer navegador ou aparelho, sem depender de abrir o link no mesmo navegador.
 - Depois do código confirmado, a tela abre `/auth/concluir`, que faz o mesmo que a volta do Google (`src/app/auth/concluir-login.ts`): confirma o pedido de quem não tem cadastro, barra o bloqueado e leva cada papel à sua área. O pedido continua contando só depois do código confirmado. `/auth/callback` ficou só para o Google.
-- O convite do professor não traz link nem código: explica que o aluno deve abrir a página de login e pedir o código. O convidado ainda não confirmado recebe o código pelo modelo de confirmação (`confirmacao.html`, mesmo texto de `codigo.html`).
 - A sessão não fica salva, para alunos, professor e quem entra com o Google: os cookies do login são gravados sem `maxAge`/`expires` (cookies de sessão) nos três clientes do Supabase, e o proxy encerra a sessão (`signOut` com `scope: "local"`) depois de 2 horas sem uso, guardando a hora do último uso no cookie `ultimo-uso`. A regra fica no site porque o `inactivity_timeout` do Supabase só existe nos planos pagos. A versão dos termos passou a `4-rascunho` com a mudança na política de privacidade.
 - Revisto: as cores aprovadas ficam no bloco `@theme` de `src/app/globals.css` (fundo creme, bordô, vinho e amarelo; `primaria` e `secundaria` não existem mais), as fontes são Bricolage Grotesque nos títulos e Manrope no texto, e as telas novas usam os componentes de `src/components/` (botão, campo, aviso, cordas e moldura); o tema escuro automático saiu e volta na sua própria etapa.
 - O layout de celular vale até 767 px; a partir de 768 px a tela de entrada usa o layout do computador. Entre 768 e 1023 px, o título e a boca do violão ficam menores para não se sobreporem.
@@ -224,3 +223,9 @@
 - No celular, os cartões de Recados do professor ficam em largura total, com o título em até 2 linhas e o trecho em até 3; a partir de md voltam a 1 e 2. O painel do formulário fica por cima da barra de abas, respeita a área segura e rola por dentro, com o botão de publicar sempre ao alcance.
 - O tema escolhido fica no cookie `tema` e é aplicado por um pequeno script no layout raiz, antes da primeira pintura. Ler o cookie no servidor obrigaria todas as páginas a esperar a requisição, por causa do modo de cache ligado no Next.js; o script evita a tela piscar clara sem perder as partes geradas de antemão.
 - O tema escuro troca as mesmas variáveis de cor. Para isso, as telas usam variáveis de papel (destaque, bloco, texto sobre bloco, texto sobre bordô, borda do cartão e véu), que no tema claro repetem a paleta original.
+- Revisto: o login passou a ser por e-mail e senha (mínimo de 8 caracteres, no máximo 72 bytes, o limite do bcrypt), com Entrar com Google mantido, e o código de 6 dígitos saiu. Senha errada, e-mail sem conta e conta ainda não confirmada mostram a mesma mensagem. O link Esqueci minha senha aponta para `/esqueci-senha`, que a T35 cria.
+- Criar conta é aberto (`/criar-conta`: nome completo, e-mail, senha e captcha), com `signUp` e a confirmação de e-mail ligada. O link do e-mail (`supabase/templates/confirmacao.html`, com `{{ .TokenHash }}`) abre `/auth/confirmar`, que confirma e segue pelo mesmo caminho de antes (`concluirLogin` e `confirmarPedido`): a conta vira pedido de acesso, o professor é avisado e a pessoa vai para `/aguardando`. O hook dos recusados, a liberação com data de nascimento e responsável, o bloqueio e a tela do nome continuam iguais.
+- O convite é por e-mail, com link: o professor cadastra o aluno com o e-mail dele, a conta nasce liberada e matriculada, sem senha, e o site manda pelo próprio SMTP o link `/convite/<código>`. O banco guarda só o hash (sha256) do código, na tabela `convites` (migração `20261106000000_convite_por_link.sql`, só o professor lê e grava), com validade de 7 dias e uso único. O aluno abre o link, vê o nome, cria a senha e já entra; o menor de 12 cai na espera do responsável, com o link de aceite mostrado ao professor como antes. Reenviar convite gera outro código, o que invalida o anterior. Se o e-mail não sair, a tela mostra o link com o botão Copiar. O modelo `convite.html` e o `codigo.html` saíram, e o limite de 20 convites por hora conta cada convite e reenvio.
+- A senha do convite é gravada por uma rota (`/convite/<código>/definir`), e não por uma server action, porque quem chega pelo link ainda não tem sessão para `exigirAluno()`; quem protege é o código, como no aceite do responsável. O convite é marcado como usado antes de gravar a senha, e volta a valer se a gravação falhar. Como o captcha vale para todo login por senha, a página do convite também tem o captcha.
+- O login por senha e Criar conta dividem o limite `sign_in_sign_ups` (15 a cada 5 minutos por IP), porque o Auth não separa os dois. O link de confirmação vale 24 horas (`otp_expiry`). Os valores da nuvem estão em `guias/deploy.md`.
+- O professor e o aluno do `seed:dev` têm a senha `senha-local-123`, que só existe no Supabase local. O teste da tela do nome cria a conta sem nome direto no Auth local, porque Criar conta exige o nome.

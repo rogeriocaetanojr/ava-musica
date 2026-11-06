@@ -168,7 +168,11 @@ async function FichaDoAluno({ params }: { params: Promise<{ id: string }> }) {
                 <dd className="break-all text-texto">{aluno.email}</dd>
               </div>
             </dl>
-            {status === "convidado" && <BotaoReenviar alunoId={aluno.id} />}
+            {/* O menor de 12 também define a senha antes do aceite. */}
+            {(status === "convidado" ||
+              (status === "aguardando" && !usuario?.user?.last_sign_in_at)) && (
+              <BotaoReenviar alunoId={aluno.id} />
+            )}
             {status === "pendente" && (
               <p className="text-sm text-texto-secundario">
                 Pediu acesso pelo login.{" "}

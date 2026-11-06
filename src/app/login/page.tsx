@@ -10,6 +10,7 @@ import { tituloDaPagina } from "@/lib/site";
 import { FormularioLogin } from "./formulario-login";
 import {
   MENSAGEM_BLOQUEADO,
+  MENSAGEM_LINK_VENCIDO,
   MENSAGEM_MUITAS_TENTATIVAS,
   MENSAGEM_NAO_CONVIDADO,
   MENSAGEM_PEDIDO_BARRADO,
@@ -24,8 +25,11 @@ const MENSAGENS_DE_ERRO: Record<string, string> = {
   bloqueado: MENSAGEM_BLOQUEADO,
   "pedido-barrado": MENSAGEM_PEDIDO_BARRADO,
   "sessao-expirada": MENSAGEM_SESSAO_EXPIRADA,
+  "link-vencido": MENSAGEM_LINK_VENCIDO,
+  "senha-definida":
+    "Sua senha foi salva. Entre com o seu e-mail e a senha que você criou.",
   google:
-    "Não foi possível entrar com o Google. Tente de novo ou entre pelo e-mail.",
+    "Não foi possível entrar com o Google. Tente de novo ou entre com e-mail e senha.",
 };
 
 type Parametros = Promise<{ erro?: string }>;
@@ -91,8 +95,7 @@ export default function PaginaLogin({
           <div className="space-y-4">
             <h1 className="font-titulo text-4xl text-texto">Entrar</h1>
             <p className="hidden leading-relaxed text-texto-secundario md:block">
-              Use sua conta Google ou receba um código de acesso no e-mail. Sem
-              senha para lembrar.
+              Entre com o seu e-mail e a sua senha, ou com a sua conta Google.
             </p>
           </div>
           <Suspense>
@@ -102,8 +105,8 @@ export default function PaginaLogin({
           <FormularioLogin />
           <footer className="mt-auto space-y-1 pt-6 md:mt-0 md:pt-0">
             <p className="text-sm leading-relaxed text-texto-secundario md:hidden">
-              Acesso só por convite. Para menores de 12 anos, o responsável
-              aceita primeiro.
+              O professor libera cada conta nova. Para menores de 12 anos, o
+              responsável autoriza primeiro.
             </p>
             <Link
               href="/privacidade"

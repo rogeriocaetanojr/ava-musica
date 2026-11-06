@@ -4,7 +4,7 @@ Guia de publicação do site. As seções serão completadas à medida que as et
 
 ## Endereço do site (`NEXT_PUBLIC_SITE_URL`)
 
-Os endereços enviados por e-mail (a página de login no convite e no código, e o link de autorização do responsável) são montados com essa variável. Configure-a na Netlify, em **Site configuration → Environment variables**, com o endereço de cada ambiente, sem barra no final:
+Os endereços enviados por e-mail ou copiados pelo professor (o link do convite, o link de confirmação de Criar conta e o link de autorização do responsável) são montados com essa variável. Configure-a na Netlify, em **Site configuration → Environment variables**, com o endereço de cada ambiente, sem barra no final:
 
 | Ambiente    | Valor                                  |
 | ----------- | -------------------------------------- |
@@ -12,6 +12,20 @@ Os endereços enviados por e-mail (a página de login no convite e no código, e
 | Produção    | endereço oficial do site               |
 
 Sem ela, o `npm run build` para com o erro "NEXT_PUBLIC_SITE_URL não está definida", para evitar e-mails com links apontando para `localhost`. No computador, ela fica no `.env.local` (`http://localhost:3000`).
+
+## Senha e confirmação do e-mail
+
+O Supabase local lê estes valores do `supabase/config.toml`. Na nuvem, configure os mesmos à mão **nos dois projetos (homologação e produção)**:
+
+| Onde no painel                                                            | Chave no `config.toml`              | Valor                                                                    |
+| ------------------------------------------------------------------------- | ----------------------------------- | ------------------------------------------------------------------------ |
+| **Authentication → Sign In / Providers → Email**, Minimum password length | `[auth] minimum_password_length`    | 8                                                                        |
+| **Authentication → Sign In / Providers → Email**, Password requirements   | `[auth] password_requirements`      | sem exigência                                                            |
+| **Authentication → Sign In / Providers → Email**, Confirm email           | `[auth.email] enable_confirmations` | ligado                                                                   |
+| **Authentication → Sign In / Providers → Email**, Email OTP Expiration    | `[auth.email] otp_expiry`           | 86400 (24 horas)                                                         |
+| **Authentication → URL Configuration**, Redirect URLs                     | `[auth] additional_redirect_urls`   | `<endereço do site>/auth/callback` e `<endereço do site>/auth/confirmar` |
+
+A validade do link de confirmação é a mesma "Email OTP Expiration". Em **Authentication → URL Configuration → Site URL**, use o mesmo endereço de `NEXT_PUBLIC_SITE_URL`: o link do e-mail de confirmação é montado com ele.
 
 ## Limites de tentativas do login (D2)
 
@@ -26,8 +40,9 @@ O Supabase local lê esses limites do `supabase/config.toml` (`[auth.rate_limit]
 Observações:
 
 - O envio de e-mails na nuvem só aceita o valor acima depois que um SMTP próprio estiver configurado; com o SMTP padrão do Supabase o limite é fixo e bem menor.
-- O limite de e-mails vale para o projeto inteiro e conta convites, reenvios e códigos de acesso. O limite de convites do próprio site (20 por hora para o professor) fica abaixo dele, para sobrar espaço para os códigos de acesso dos alunos.
-- O Supabase não oferece janela de uma hora para as verificações de código: a janela é de 5 minutos por IP, o que dá no máximo 180 por hora para cada endereço.
+- O limite de e-mails do Supabase conta os e-mails de confirmação de Criar conta. Os convites saem pelo SMTP do próprio site, fora desse limite, e têm o limite do site: 20 por hora para o professor, contando os reenvios.
+- O login por senha e Criar conta dividem o mesmo limite (`sign_in_sign_ups`): o Supabase não separa os dois. Com 15 a cada 5 minutos por IP, dá no máximo 180 tentativas por hora para cada endereço.
+- O limite de verificações conta a abertura dos links de confirmação.
 - Quando um limite é atingido, a tela `/login` mostra a mensagem "Muitas tentativas de entrar em pouco tempo…".
 - Mudou um valor aqui, mude também no `config.toml` (e vice-versa) e reinicie o Supabase local.
 
@@ -35,39 +50,33 @@ Observações:
 
 Nos dois projetos do Supabase (homologação e produção):
 
-1. **Cadastro aberto:** em **Authentication → Sign In / Providers**, deixe **Allow new users to sign up** ligado. É o que permite o pedido pelo Google e pelo e-mail; quem garante que o pendente não vê nada é a regra de acesso do banco (migração `20261022030000_pedidos_de_acesso.sql`), não o painel.
-2. **Google obrigatório:** ative o provedor Google com o cliente OAuth do ambiente (passo a passo em `guias/login-google.md`). Sem ele, ninguém consegue pedir acesso, só os cadastrados pelo professor entram.
-3. **Pedido pelo e-mail (código de 6 dígitos):** o site pede o código com `shouldCreateUser: true` e o confirma na própria tela (`verifyOtp`). Em **Authentication → Emails → Templates**, cole:
-   - em **Magic Link**, o conteúdo de `supabase/templates/codigo.html`, com o assunto "Seu código para entrar na Escola de Música John Meyer";
-   - em **Confirm signup**, o de `supabase/templates/confirmacao.html` (o mesmo texto; é o modelo usado no primeiro código de quem ainda não confirmou a conta), com o mesmo assunto;
-   - em **Invite user**, o de `supabase/templates/convite.html`, com o assunto "Seu convite para a Escola de Música John Meyer".
-
-   Os modelos mostram `{{ .Token }}`; se algum ainda tiver `{{ .ConfirmationURL }}` ou `{{ .TokenHash }}`, o e-mail sai com link e o login não funciona. Em **Authentication → Sign In / Providers → Email**, deixe **Email OTP Length** em 6 e **Email OTP Expiration** em 600 segundos (10 minutos), como no `config.toml`.
-
-4. **Login por senha:** o Supabase não tem botão para desligar só a senha com o e-mail ligado. Alguém que crie conta por senha direto na API também vira pedido pendente e pode ser recusado. Com o captcha ligado (abaixo), esse cadastro também passa pelo captcha.
+1. **Cadastro aberto:** em **Authentication → Sign In / Providers**, deixe **Allow new users to sign up** ligado. É o que permite Criar conta e o pedido pelo Google; quem garante que o pendente não vê nada é a regra de acesso do banco (migração `20261022030000_pedidos_de_acesso.sql`), não o painel.
+2. **Google:** ative o provedor Google com o cliente OAuth do ambiente (passo a passo em `guias/login-google.md`). Sem ele, o botão Entrar com Google não funciona; Criar conta e o login por senha continuam.
+3. **Criar conta (e-mail e senha):** o site cria a conta com `signUp`, e a conta só vira pedido de acesso depois que a pessoa abre o link de confirmação (`/auth/confirmar`). Em **Authentication → Emails → Templates**, em **Confirm signup**, cole o conteúdo de `supabase/templates/confirmacao.html`, com o assunto "Confirme o seu e-mail na Escola de Música John Meyer". O modelo usa `{{ .SiteURL }}/auth/confirmar?token_hash={{ .TokenHash }}&type=email`; com `{{ .ConfirmationURL }}`, a confirmação não passa pelo site e o pedido não chega ao professor.
+4. **Modelos que não são usados:** o convite do aluno sai pelo SMTP do próprio site (Resend), com o link `/convite/<código>`, e o login não usa código por e-mail. Os modelos **Invite user** e **Magic Link** do painel não são usados; se tiverem o texto antigo da escola, volte ao padrão para não confundir.
 5. **Hook dos recusados:** em **Authentication → Hooks**, adicione o hook **Before User Created** do tipo **Postgres**, com o schema `public` e a função `antes_de_criar_usuario`. Ele barra por 7 dias o cadastro de quem foi recusado. A função vem da migração `20261023000000_pedido_por_email_e_recusas.sql`; o painel não liga o hook sozinho.
 
 ## Captcha do login (Cloudflare Turnstile)
 
-O pedido do código por e-mail passa por um captcha, para ninguém disparar e-mails em massa nem criar contas com e-mails de terceiros. No computador e nos testes são usadas as chaves de teste da Cloudflare, que aprovam sozinhas (a secreta está no `supabase/config.toml` e a do site vai no `.env.local`).
+O login por senha, Criar conta e a página do convite passam por um captcha, para ninguém testar senhas em massa, disparar e-mails de confirmação nem criar contas com e-mails de terceiros. O Supabase exige o captcha em todo login por senha, inclusive no que o servidor faz depois de o aluno definir a senha pelo convite. No computador e nos testes são usadas as chaves de teste da Cloudflare, que aprovam sozinhas (a secreta está no `supabase/config.toml` e a do site vai no `.env.local`).
 
 1. Na Cloudflare (conta gratuita), abra **Turnstile → Add widget**. Um widget por ambiente, com o domínio do site (homologação ou produção), no modo **Managed**.
 2. Copie a **chave do site** para a Netlify, na variável `NEXT_PUBLIC_TURNSTILE_SITE_KEY` do ambiente. Ela vai para o navegador, então não é secreta. Depois de mudar, publique de novo (a variável entra no build).
 3. Copie a **chave secreta** para o Supabase, em **Authentication → Attack Protection → Enable Captcha protection**, com o provedor **Turnstile**. Ela fica só no painel, nunca no repositório nem na Netlify.
-4. Ligue as duas coisas juntas: com o captcha ligado no Supabase e sem a chave do site na Netlify, ninguém consegue pedir o código (a tela avisa que não foi possível confirmar que não é um robô).
-5. O captcha não vale para o Google, que tem a própria proteção, nem para os envios do servidor com a chave de serviço (convites, reenvios e o código enviado depois do aceite).
+4. Ligue as duas coisas juntas: com o captcha ligado no Supabase e sem a chave do site na Netlify, ninguém consegue entrar com senha nem criar conta (a tela avisa que não foi possível confirmar que não é um robô).
+5. O captcha não vale para o Google, que tem a própria proteção, nem para o que o servidor faz com a chave de serviço (cadastro do aluno pelo professor e gravação da senha do convite).
 6. Quando a política de segurança do navegador (CSP) for criada, ela precisa liberar `https://challenges.cloudflare.com` em `script-src` e `frame-src`.
 
 ## Sessão sem validade e fim por falta de uso
 
 O login não fica salvo no aparelho, para alunos, professor e quem entra com o Google:
 
-- os cookies do login são de sessão (sem data de validade) e somem ao fechar o navegador; ao abrir de novo, é preciso pedir um código novo ou entrar com o Google;
+- os cookies do login são de sessão (sem data de validade) e somem ao fechar o navegador; ao abrir de novo, é preciso entrar de novo com a senha ou com o Google;
 - a sessão termina depois de 2 horas sem uso. Isso é feito pelo próprio site (`src/proxy.ts` e `src/lib/sessao.ts`, com o cookie `ultimo-uso`), porque a opção de tempo de inatividade do Supabase (**Authentication → Sessions → Inactivity timeout**) só existe nos planos pagos. Não é preciso mudar nada no painel; se o projeto passar a um plano pago, dá para ligar a opção também, com 2 horas.
 
 ## E-mail de aviso ao professor (Resend)
 
-O site manda um e-mail ao professor a cada pedido novo, pelo SMTP do Resend.
+O site manda um e-mail ao professor a cada pedido novo e o convite ao aluno cadastrado pelo professor, pelo SMTP do Resend.
 
 1. Crie a conta no Resend e verifique o domínio do site (registros DNS que o Resend mostra). Sem domínio verificado, o Resend só entrega para o e-mail do dono da conta.
 2. Crie uma chave de API com permissão **Sending access**, uma por ambiente.
@@ -82,11 +91,11 @@ O site manda um e-mail ao professor a cada pedido novo, pelo SMTP do Resend.
    | `SMTP_REMETENTE`  | `Escola de Música John Meyer <avisos@<domínio verificado>>` |
    | `EMAIL_PROFESSOR` | o e-mail do professor (em homologação, o de quem testa)     |
 
-4. Sem essas variáveis, o site funciona e os pedidos aparecem no painel, mas o aviso não sai.
-5. **Mesmo SMTP no Supabase:** use o Resend também como SMTP próprio do Supabase, em **Authentication → Emails → SMTP Settings** (host, porta, usuário e senha iguais). É o que libera o limite de 30 e-mails por hora da tabela acima.
+4. Sem essas variáveis, o site funciona e os pedidos aparecem no painel, mas o aviso não sai, e o convite também não: a tela Convidar mostra o link com o botão Copiar, para o professor mandar ao aluno de outro jeito.
+5. **Mesmo SMTP no Supabase:** use o Resend também como SMTP próprio do Supabase, em **Authentication → Emails → SMTP Settings** (host, porta, usuário e senha iguais). É por ele que saem os e-mails de confirmação de Criar conta, e é o que libera o limite de 30 e-mails por hora da tabela acima.
 
-**Cota do Resend:** o plano gratuito permite 100 e-mails por dia e 3.000 por mês, **somando** os do site e os do Supabase (convites, códigos de acesso e avisos de pedido). Com 20 a 30 alunos isso sobra, mas:
+**Cota do Resend:** o plano gratuito permite 100 e-mails por dia e 3.000 por mês, **somando** os do site e os do Supabase (convites, confirmações de Criar conta e avisos de pedido). Com 20 a 30 alunos isso sobra, mas:
 
-- o limite de 30 e-mails por hora do Supabase continua valendo para os e-mails dele, e os avisos de pedido saem pelo site, fora desse limite;
-- com o cadastro aberto, alguém pode criar muitas contas pelo Google ou pelo e-mail para gastar a cota com avisos. Cada conta gera só um aviso, e só depois de a pessoa digitar o código; o captcha, o limite de 30 e-mails por hora (que agora conta também os pedidos pelo e-mail) e o limite do Supabase de 15 cadastros a cada 5 minutos por IP seguram o ritmo. Se isso acontecer, recuse os pedidos e considere desligar o cadastro por um tempo;
-- acompanhe o uso no painel do Resend. Se passar de 100 por dia, os e-mails do dia param, inclusive os códigos de acesso dos alunos.
+- o limite de 30 e-mails por hora do Supabase vale para as confirmações de Criar conta; os avisos de pedido e os convites saem pelo site, fora desse limite (os convites têm o limite de 20 por hora do site);
+- com o cadastro aberto, alguém pode criar muitas contas pelo Google ou em Criar conta para gastar a cota. Cada conta gera um e-mail de confirmação e só um aviso, e o aviso só sai depois de a pessoa abrir o link; o captcha, o limite de 30 e-mails por hora e o limite do Supabase de 15 cadastros a cada 5 minutos por IP seguram o ritmo. Se isso acontecer, recuse os pedidos e considere desligar o cadastro por um tempo;
+- acompanhe o uso no painel do Resend. Se passar de 100 por dia, os e-mails do dia param, inclusive as confirmações de conta e os convites.

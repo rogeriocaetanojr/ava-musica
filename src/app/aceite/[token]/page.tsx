@@ -58,7 +58,7 @@ async function Autorizacao({
     return (
       <Aviso
         titulo="Link já usado"
-        texto="A autorização deste aluno já foi registrada e não é preciso fazer mais nada. Se o aluno não recebeu o e-mail de acesso, ele pode pedir o link na página de entrada."
+        texto="A autorização deste aluno já foi registrada e não é preciso fazer mais nada. O aluno entra com o e-mail e a senha escolhida pelo link do convite."
       />
     );
 

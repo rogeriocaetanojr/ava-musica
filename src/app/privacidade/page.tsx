@@ -29,6 +29,18 @@ export default function Privacidade() {
                   <strong>Do aluno:</strong> nome, e-mail e data de nascimento.
                 </li>
                 <li>
+                  <strong>Da senha:</strong> o serviço de login guarda só uma
+                  versão cifrada, da qual não dá para recuperar a senha.
+                  Ninguém, nem o professor, consegue ver a sua senha.
+                </li>
+                <li>
+                  <strong>Do convite:</strong> quando o professor cadastra um
+                  aluno, guardamos por 7 dias um código calculado a partir do
+                  link enviado por e-mail, do qual não dá para recuperar o link.
+                  O link vale uma vez só e deixa de valer quando o professor
+                  envia outro.
+                </li>
+                <li>
                   <strong>De quem entra com o Google:</strong> o Google nos
                   informa só o nome e o e-mail da conta. Não recebemos foto,
                   contatos nem outros dados da conta Google. A data de
@@ -36,9 +48,9 @@ export default function Privacidade() {
                   liberar o acesso.
                 </li>
                 <li>
-                  <strong>De quem pede acesso pelo e-mail:</strong> só o e-mail
-                  digitado. O nome que aparece para o professor é o próprio
-                  e-mail, até ele liberar o acesso.
+                  <strong>De quem cria a conta:</strong> o nome completo, o
+                  e-mail e a senha digitados. A data de nascimento é informada
+                  pelo professor, ao liberar o acesso.
                 </li>
                 <li>
                   <strong>De quem teve o pedido recusado:</strong> por 7 dias,
@@ -112,12 +124,13 @@ export default function Privacidade() {
           conteudo: (
             <>
               <p>
-                Para entrar, você recebe por e-mail um código de 6 dígitos, que
-                vale por 10 minutos e só pode ser usado uma vez, ou entra com o
-                Google. O site usa só os cookies necessários para manter você
-                logado. Eles são cookies de sessão: não ficam salvos no aparelho
-                e são apagados quando o navegador é fechado. Por isso, ao abrir
-                o navegador de novo, é preciso entrar outra vez.
+                Para entrar, você usa o seu e-mail e a sua senha, ou a sua conta
+                Google. Quem foi cadastrado pelo professor cria a senha no
+                primeiro acesso, pelo link do convite enviado por e-mail. O site
+                usa só os cookies necessários para manter você logado. Eles são
+                cookies de sessão: não ficam salvos no aparelho e são apagados
+                quando o navegador é fechado. Por isso, ao abrir o navegador de
+                novo, é preciso entrar outra vez.
               </p>
               <p>
                 Por segurança, a sessão também termina depois de 2 horas sem
@@ -134,12 +147,13 @@ export default function Privacidade() {
           conteudo: (
             <>
               <p>
-                Quem entra com o Google ou pelo código enviado por e-mail sem
-                ter sido cadastrado pelo professor fica com um pedido de acesso
-                guardado até o professor decidir. O pedido só chega ao professor
-                depois que a pessoa digita o código recebido ou volta do Google,
-                para ninguém pedir acesso com o e-mail de outra pessoa. Enquanto
-                espera, a pessoa não vê nenhum curso, aula ou aviso.
+                Quem cria a conta no site ou entra com o Google sem ter sido
+                cadastrado pelo professor fica com um pedido de acesso guardado
+                até o professor decidir. O pedido só chega ao professor depois
+                que a pessoa abre o link de confirmação enviado por e-mail ou
+                volta do Google, para ninguém pedir acesso com o e-mail de outra
+                pessoa. Enquanto espera, a pessoa não vê nenhum curso, aula ou
+                aviso.
               </p>
               <p>
                 Se o professor recusar, a conta e os dados dela são apagados.
@@ -150,9 +164,9 @@ export default function Privacidade() {
                 bloquear o acesso a qualquer momento, sem apagar o progresso.
               </p>
               <p>
-                Uma conta criada pelo pedido do código mas nunca confirmada
-                (ninguém digitou o código) guarda só o e-mail e não aparece para
-                o professor.
+                Uma conta criada mas nunca confirmada (ninguém abriu o link de
+                confirmação) guarda só o nome, o e-mail e a senha cifrada, e não
+                aparece para o professor.
               </p>
             </>
           ),
@@ -179,13 +193,14 @@ export default function Privacidade() {
                 </li>
                 <li>
                   <strong>Cloudflare (Turnstile):</strong> a verificação que
-                  impede robôs de pedir códigos de acesso em massa. Ela analisa
-                  sinais do navegador, como o endereço IP, sem cookies de
-                  propaganda.
+                  impede robôs de testar senhas e de criar contas em massa. Ela
+                  analisa sinais do navegador, como o endereço IP, sem cookies
+                  de propaganda.
                 </li>
                 <li>
-                  <strong>Resend:</strong> envio dos e-mails do site, como os
-                  códigos de acesso e o aviso de pedido novo ao professor.
+                  <strong>Resend:</strong> envio dos e-mails do site, como o
+                  convite do aluno, a confirmação de Criar conta e o aviso de
+                  pedido novo ao professor.
                 </li>
                 <li>
                   <strong>Netlify:</strong> hospedagem do site.
@@ -220,14 +235,14 @@ export default function Privacidade() {
                 Alunos com menos de 12 anos só acessam o site depois que um dos
                 pais ou responsável autoriza, por um link enviado pelo
                 professor. Isso vale também para quem pediu acesso pelo Google
-                ou pelo e-mail: o professor só libera depois de informar a data
-                de nascimento e, se for o caso, o responsável.
+                ou criando a conta no site: o professor só libera depois de
+                informar a data de nascimento e, se for o caso, o responsável.
               </p>
               <p>
                 O Google só permite que crianças com menos de 13 anos usem uma
                 conta Google com o acompanhamento dos pais (Family Link). Para
                 esses alunos, o caminho mais simples é o professor fazer o
-                cadastro e o aluno entrar com o código enviado por e-mail.
+                cadastro e o aluno criar a senha pelo link do convite.
               </p>
             </>
           ),

@@ -1,15 +1,9 @@
 import { expect, test } from "@playwright/test";
-import {
-  ALUNO,
-  apagarEmailsDe,
-  AVISO_DE_ENVIO,
-  digitarCodigo,
-  entrar,
-  NOME_DO_ALUNO,
-  pedirCodigo,
-} from "./apoio";
+import { ALUNO, entrar, NOME_DO_ALUNO, tentarEntrar } from "./apoio";
 
-test("aluno convidado entra com o código do e-mail", async ({ page }) => {
+const CREDENCIAIS_INVALIDAS = "E-mail ou senha incorretos.";
+
+test("aluno convidado entra com e-mail e senha", async ({ page }) => {
   await entrar(page, ALUNO);
 
   await expect(page).toHaveURL(/\/cursos$/);
@@ -18,43 +12,56 @@ test("aluno convidado entra com o código do e-mail", async ({ page }) => {
   ).toBeVisible();
 });
 
-test("a tela de login oferece o e-mail e o Google", async ({ page }) => {
+test("a tela de login oferece senha, Google, Criar conta e Esqueci minha senha", async ({
+  page,
+}) => {
   await page.goto("/login");
 
   await expect(page.getByRole("heading", { name: "Entrar" })).toBeVisible();
   await expect(page.getByLabel("E-mail")).toBeVisible();
+  const senha = page.getByLabel("Senha", { exact: true });
+  await expect(senha).toHaveAttribute("type", "password");
+  await expect(senha).toHaveAttribute("autocomplete", "current-password");
   await expect(
-    page.getByRole("button", { name: "Receber código de acesso" }),
+    page.getByRole("button", { name: "Entrar", exact: true }),
   ).toBeVisible();
   await expect(
     page.getByRole("button", { name: "Entrar com Google" }),
   ).toBeVisible();
+  await expect(page.getByRole("link", { name: "Criar conta" })).toHaveAttribute(
+    "href",
+    "/criar-conta",
+  );
+  await expect(
+    page.getByRole("link", { name: "Esqueci minha senha" }),
+  ).toHaveAttribute("href", "/esqueci-senha");
+
+  // O botão de mostrar a senha troca o tipo do campo e avisa o estado.
+  await senha.fill("segredo123");
+  const mostrar = page.getByRole("button", { name: "Mostrar senha" });
+  await expect(mostrar).toHaveAttribute("aria-pressed", "false");
+  await mostrar.click();
+  await expect(senha).toHaveAttribute("type", "text");
+  await expect(
+    page.getByRole("button", { name: "Esconder senha" }),
+  ).toHaveAttribute("aria-pressed", "true");
 });
 
-test("código errado mostra o erro e dá para usar outro e-mail", async ({
+test("senha errada mostra a mesma mensagem para e-mail com ou sem conta", async ({
   page,
 }) => {
-  await apagarEmailsDe(ALUNO);
-  await pedirCodigo(page, ALUNO);
+  await tentarEntrar(page, ALUNO, "senha-errada-123");
   await expect(
-    page.getByRole("heading", { name: "Digite o código" }),
+    page.getByRole("alert").filter({ hasText: CREDENCIAIS_INVALIDAS }),
   ).toBeVisible();
-  await expect(page.getByRole("status")).toContainText(AVISO_DE_ENVIO);
-  await expect(
-    page.getByRole("button", { name: "Reenviar código" }),
-  ).toBeVisible();
-
-  await digitarCodigo(page, "000000");
-  await expect(
-    page
-      .getByRole("alert")
-      .filter({ hasText: "O código está errado ou expirou" }),
-  ).toBeVisible();
+  const comConta = await page.getByRole("alert").textContent();
   await expect(page).toHaveURL(/\/login$/);
 
-  await page.getByRole("button", { name: "Usar outro e-mail" }).click();
-  await expect(page.getByLabel("E-mail")).toBeVisible();
-  await expect(page.getByLabel("Código")).toHaveCount(0);
+  await tentarEntrar(page, "ninguem-tem@teste.local", "senha-errada-123");
+  await expect(
+    page.getByRole("alert").filter({ hasText: CREDENCIAIS_INVALIDAS }),
+  ).toBeVisible();
+  expect(await page.getByRole("alert").textContent()).toBe(comConta);
 });
 
 test("a sessão não fica salva e termina depois de 2 horas sem uso", async ({

@@ -161,7 +161,7 @@ site_url = "http://localhost:3000"
 # The public URL that Auth serves on. Defaults to the API external URL with `/auth/v1` appended.
 # external_url = ""
 # A list of *exact* URLs that auth providers are permitted to redirect to post authentication.
-additional_redirect_urls = ["http://localhost:3000/auth/callback", "http://127.0.0.1:3000/auth/callback"]
+additional_redirect_urls = ["http://localhost:3000/auth/callback", "http://127.0.0.1:3000/auth/callback", "http://localhost:3000/auth/confirmar", "http://127.0.0.1:3000/auth/confirmar"]
 # How long tokens are valid for, in seconds. Defaults to 3600 (1 hour), maximum 604,800 (1 week).
 jwt_expiry = 3600
 # JWT issuer URL. If not set, defaults to auth.external_url.
@@ -181,7 +181,7 @@ enable_anonymous_sign_ins = false
 # Allow/disallow testing manual linking of accounts
 enable_manual_linking = false
 # Passwords shorter than this value will be rejected as weak. Minimum 6, recommended 8 or more.
-minimum_password_length = 6
+minimum_password_length = 8
 # Passwords that do not meet the following requirements will be rejected as weak. Supported values
 # are: `letters_digits`, `lower_upper_letters_digits`, `lower_upper_letters_digits_symbols`
 password_requirements = ""
@@ -207,6 +207,7 @@ anonymous_users = 30
 # Number of sessions that can be refreshed in a 5 minute interval per IP address.
 token_refresh = 150
 # Number of sign up and sign-in requests that can be made in a 5 minute interval per IP address (excludes anonymous users).
+# Um limite só para o login por senha e para Criar conta: o Auth não separa os dois.
 sign_in_sign_ups = 15
 # Number of OTP / Magic link verifications that can be made in a 5 minute interval per IP address.
 token_verifications = 15
@@ -214,7 +215,7 @@ token_verifications = 15
 web3 = 30
 
 # Configure one of the supported captcha providers: `hcaptcha`, `turnstile`.
-# Cloudflare Turnstile no pedido do código por e-mail. Aqui fica a chave secreta pública de teste da
+# Cloudflare Turnstile no login por senha e em Criar conta. Aqui fica a chave secreta pública de teste da
 # Cloudflare, que sempre aprova (computador e testes); a real fica só no painel da nuvem
 # (guias/deploy.md).
 [auth.captcha]
@@ -224,14 +225,15 @@ secret = "1x0000000000000000000000000000000AA"
 
 [auth.email]
 # Allow/disallow new user signups via email to your project.
-# No CLI, false aqui desliga o login por e-mail inteiro (código por e-mail incluso). Quem não tem
-# conta pede acesso pelo próprio código; o hook abaixo barra quem foi recusado.
+# Criar conta fica aberto: a conta nova vira pedido de acesso depois de confirmar o e-mail, e o
+# professor libera ou recusa. O hook abaixo barra por 7 dias quem foi recusado.
 enable_signup = true
 # If enabled, a user will be required to confirm any email change on both the old, and new email
 # addresses. If disabled, only the new email is required to confirm.
 double_confirm_changes = true
 # If enabled, users need to confirm their email address before signing in.
-enable_confirmations = false
+# Criar conta só vale depois do link de confirmação (supabase/templates/confirmacao.html).
+enable_confirmations = true
 # If enabled, users will need to reauthenticate or have logged in recently to change their password.
 secure_password_change = false
 # Controls the minimum amount of time that must pass before sending another signup confirmation or password reset email.
@@ -239,8 +241,8 @@ max_frequency = "1s"
 # Number of characters used in the email OTP.
 otp_length = 6
 # Number of seconds before the email OTP expires (defaults to 1 hour).
-# O código do login vale 10 minutos.
-otp_expiry = 600
+# O link de confirmação de Criar conta vale 24 horas.
+otp_expiry = 86400
 
 # Use a production-ready SMTP server
 # [auth.email.smtp]
@@ -252,20 +254,10 @@ otp_expiry = 600
 # admin_email = "admin@email.com"
 # sender_name = "Admin"
 
-# O convite só explica como entrar: o aluno pede o código na tela de login.
-[auth.email.template.invite]
-subject = "Seu convite para a Escola de Música John Meyer"
-content_path = "./supabase/templates/convite.html"
-
-# Código de 6 dígitos ({{ .Token }}), confirmado na tela com verifyOtp.
-[auth.email.template.magic_link]
-subject = "Seu código para entrar na Escola de Música John Meyer"
-content_path = "./supabase/templates/codigo.html"
-
-# Primeiro código de quem ainda não confirmou a conta (pedido de acesso pelo
-# e-mail ou aluno convidado que ainda não entrou).
+# Link de confirmação de Criar conta ({{ .TokenHash }}), aberto em /auth/confirmar. O convite do
+# aluno sai pelo SMTP do próprio site, com o link /convite/<código>.
 [auth.email.template.confirmation]
-subject = "Seu código para entrar na Escola de Música John Meyer"
+subject = "Confirme o seu e-mail na Escola de Música John Meyer"
 content_path = "./supabase/templates/confirmacao.html"
 
 # Uncomment to customize notification email template

@@ -4,8 +4,8 @@ import { enviarAoProfessor } from "@/lib/enviar-email";
 import { urlDoSite } from "@/lib/site";
 import { criarClienteAdmin } from "@/lib/supabase/admin";
 
-// Confirma o pedido do aluno pendente que acabou de entrar (confirmou o
-// código ou voltou do Google): marca pedido_em na primeira vez, o que põe o pedido
+// Confirma o pedido do aluno pendente que acabou de entrar (abriu o link de
+// confirmação de Criar conta ou voltou do Google): marca pedido_em na primeira vez, o que põe o pedido
 // na lista do professor, e avisa o professor. Só vale para quem já informou o
 // nome: o professor nunca vê o e-mail no lugar do nome.
 //

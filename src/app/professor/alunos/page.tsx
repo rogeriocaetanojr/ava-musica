@@ -58,7 +58,7 @@ async function ListaDeAlunos({ pedidos }: { pedidos: React.ReactNode }) {
         "id, nome, email, menor_de_12, bloqueado_em, liberado_em, responsaveis (aceito_em), matriculas (curso_id)",
       )
       .eq("papel", "aluno")
-      // A conta criada pelo pedido de código e nunca confirmada não é de ninguém.
+      // A conta criada em Criar conta e nunca confirmada não é de ninguém.
       .or("liberado_em.not.is.null,pedido_em.not.is.null")
       .order("nome"),
     ultimosAcessos(),

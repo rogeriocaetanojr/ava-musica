@@ -1,3 +1,4 @@
+import { execSync } from "node:child_process";
 import { expect, type Page } from "@playwright/test";
 
 // Caixa de e-mail de teste do Supabase local (Mailpit).
@@ -39,8 +40,13 @@ export async function contarEmails(
   return messages.length;
 }
 
-// Espera o e-mail chegar e devolve o código de 6 dígitos que ele traz.
-export async function codigoDoEmail(email: string): Promise<string> {
+// Espera o e-mail chegar e devolve o primeiro link do site que ele traz
+// (confirmação de Criar conta ou convite), já apontando para o site dos
+// testes.
+export async function linkDoEmail(
+  email: string,
+  caminho: "/auth/confirmar" | "/convite/",
+): Promise<string> {
   let id: string | undefined;
   await expect
     .poll(
@@ -57,34 +63,97 @@ export async function codigoDoEmail(email: string): Promise<string> {
     .toBeTruthy();
 
   const resposta = await chamarCaixa(`/message/${id}`);
-  const { Text } = (await resposta.json()) as { Text: string };
-  const codigo = Text.match(/\b\d{6}\b/)?.[0];
-  if (!codigo) throw new Error(`Código de acesso não encontrado no e-mail`);
-  return codigo;
+  const { Text, HTML } = (await resposta.json()) as {
+    Text: string;
+    HTML: string;
+  };
+  const texto = `${Text}\n${HTML}`.replaceAll("&amp;", "&");
+  const achado = texto.match(
+    new RegExp(`https?://[^\\s"'<>]*${caminho}[^\\s"'<>]*`),
+  )?.[0];
+  if (!achado) throw new Error(`Link ${caminho} não encontrado no e-mail`);
+  const url = new URL(achado);
+  return `${url.pathname}${url.search}`;
 }
 
 export async function apagarEmailsDe(email: string): Promise<void> {
   await chamarCaixa(buscaPorDestinatario(email), "DELETE");
 }
 
-// Pede o código na tela de login. O captcha usa a chave de teste da
-// Cloudflare, que aprova sozinha; o botão só é clicado depois que o token
-// chega.
-export async function pedirCodigo(page: Page, email: string): Promise<void> {
-  await page.goto("/login");
-  await page.getByLabel("E-mail").fill(email);
+// Senha do professor e do aluno de teste (scripts/seed-dev.ts).
+export const SENHA_DE_TESTE = "senha-local-123";
+
+// O captcha usa a chave de teste da Cloudflare, que aprova sozinha; o botão
+// só é clicado depois que o token chega.
+export async function esperarCaptcha(page: Page): Promise<void> {
   await expect(page.locator('input[name="cf-turnstile-response"]')).toHaveValue(
     /.+/,
   );
-  await page.getByRole("button", { name: "Receber código de acesso" }).click();
 }
 
-export const AVISO_DE_ENVIO = "Enviamos um código";
+// Preenche e envia a tela de login, sem esperar o resultado.
+export async function tentarEntrar(
+  page: Page,
+  email: string,
+  senha: string,
+): Promise<void> {
+  await page.goto("/login");
+  await page.getByLabel("E-mail").fill(email);
+  await page.getByLabel("Senha", { exact: true }).fill(senha);
+  await esperarCaptcha(page);
+  await page.getByRole("button", { name: "Entrar", exact: true }).click();
+}
 
-// Digita o código na etapa "Digite o código" e confirma.
-export async function digitarCodigo(page: Page, codigo: string): Promise<void> {
-  await page.getByLabel("Código").fill(codigo);
-  await page.getByRole("button", { name: "Confirmar" }).click();
+// Preenche e envia Criar conta, sem esperar o resultado.
+export async function criarConta(
+  page: Page,
+  dados: { nome: string; email: string; senha: string },
+): Promise<void> {
+  await page.goto("/criar-conta");
+  await page.getByLabel("Nome completo").fill(dados.nome);
+  await page.getByLabel("E-mail").fill(dados.email);
+  await page.getByLabel("Senha", { exact: true }).fill(dados.senha);
+  await esperarCaptcha(page);
+  await page.getByRole("button", { name: "Criar conta", exact: true }).click();
+}
+
+export const AVISO_DE_CONFIRMACAO = "Enviamos um link de confirmação";
+
+// Cria a conta e abre o link de confirmação que chegou por e-mail.
+export async function criarEConfirmarConta(
+  page: Page,
+  dados: { nome: string; email: string; senha: string },
+): Promise<void> {
+  await apagarEmailsDe(dados.email);
+  await criarConta(page, dados);
+  await expect(page.getByRole("status")).toContainText(AVISO_DE_CONFIRMACAO);
+  await page.goto(await linkDoEmail(dados.email, "/auth/confirmar"));
+}
+
+// Conta pendente sem nome, como a de quem entra pelo Google sem nome: criada
+// direto no Auth local com a chave de serviço, que o Supabase local informa.
+export async function criarContaSemNome(
+  email: string,
+  senha: string,
+): Promise<void> {
+  const ambiente = Object.fromEntries(
+    execSync("npx supabase status -o env", { encoding: "utf8" })
+      .split(/\r?\n/)
+      .map((linha) => linha.match(/^(\w+)="?(.*?)"?$/))
+      .filter((achado) => achado !== null)
+      .map((achado) => [achado[1], achado[2]]),
+  );
+  const resposta = await fetch(`${ambiente.API_URL}/auth/v1/admin/users`, {
+    method: "POST",
+    headers: {
+      apikey: ambiente.SERVICE_ROLE_KEY,
+      Authorization: `Bearer ${ambiente.SERVICE_ROLE_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ email, password: senha, email_confirm: true }),
+  });
+  if (!resposta.ok)
+    throw new Error(`Auth local respondeu ${resposta.status} ao criar conta`);
 }
 
 // Quem entra sem nome cai na tela "Como você se chama?" e informa o nome.
@@ -94,13 +163,12 @@ export async function informarNome(page: Page, nome: string): Promise<void> {
   await page.getByRole("button", { name: "Continuar" }).click();
 }
 
-// Entra com o código enviado por e-mail, como o aluno e o professor fazem.
-export async function entrar(page: Page, email: string): Promise<void> {
-  // Apaga e-mails antigos para não usar um código já vencido.
-  await apagarEmailsDe(email);
-
-  await pedirCodigo(page, email);
-  await expect(page.getByRole("status")).toContainText(AVISO_DE_ENVIO);
-
-  await digitarCodigo(page, await codigoDoEmail(email));
+// Entra com e-mail e senha, como o aluno e o professor fazem.
+export async function entrar(
+  page: Page,
+  email: string,
+  senha = SENHA_DE_TESTE,
+): Promise<void> {
+  await tentarEntrar(page, email, senha);
+  await expect(page).not.toHaveURL(/\/login/);
 }

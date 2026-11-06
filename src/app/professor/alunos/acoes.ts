@@ -6,6 +6,13 @@ import { exigirProfessor } from "@/lib/auth";
 import { registrarAcesso } from "@/lib/auditoria";
 import { hojeNoBrasil } from "@/lib/idade";
 import { nomeParaExibir, validarNome } from "@/lib/nomes";
+import {
+  gerarCodigoDeConvite,
+  hashDoConvite,
+  VALIDADE_DO_CONVITE_EM_DIAS,
+} from "@/lib/convites";
+import { mensagemDeConvite } from "@/lib/email";
+import { enviarAoAluno } from "@/lib/enviar-email";
 import { reservarEnvioDeConvite } from "@/lib/limite-convites";
 import { urlDoSite } from "@/lib/site";
 import { criarClienteAdmin } from "@/lib/supabase/admin";
@@ -25,7 +32,11 @@ import {
 export type EstadoCadastro = EstadoFormulario & {
   // Link /aceite/<token> que o professor envia ao responsável do menor de 12.
   linkAceite?: string;
+  // Link /convite/<código>, mostrado só quando o e-mail do convite não saiu.
+  linkConvite?: string;
 };
+
+export type EstadoConvite = EstadoFormulario & { linkConvite?: string };
 
 const ERRO_EMAIL_EXISTE = "Já existe uma conta com este e-mail.";
 const ERRO_EMAIL_PENDENTE =
@@ -39,17 +50,50 @@ const BLOQUEIO_SEM_PRAZO = "876000h";
 const ERRO_AUDITORIA =
   "Não foi possível registrar o acesso, então nada foi feito. Tente de novo.";
 
+// Gera o código do convite (o banco guarda só o hash; um código novo troca o
+// anterior, que deixa de valer) e manda o link por e-mail ao aluno. Devolve o
+// link quando o e-mail não saiu, para o professor copiar; null se nem o
+// convite foi gravado.
+async function gerarConvite(
+  supabase: Awaited<ReturnType<typeof criarClienteServidor>>,
+  aluno: { id: string; nome: string; email: string },
+): Promise<{ enviado: true } | { enviado: false; link: string } | null> {
+  const codigo = gerarCodigoDeConvite();
+  const agora = Date.now();
+  const { error } = await supabase.from("convites").upsert(
+    {
+      aluno_id: aluno.id,
+      codigo_hash: hashDoConvite(codigo),
+      expira_em: new Date(
+        agora + VALIDADE_DO_CONVITE_EM_DIAS * 24 * 60 * 60 * 1000,
+      ).toISOString(),
+      usado_em: null,
+      criado_em: new Date(agora).toISOString(),
+    },
+    { onConflict: "aluno_id" },
+  );
+  if (error) return null;
+
+  const link = urlDoSite(`/convite/${codigo}`);
+  const enviado = await enviarAoAluno(
+    aluno.email,
+    mensagemDeConvite(aluno, link, VALIDADE_DO_CONVITE_EM_DIAS),
+  );
+  return enviado ? { enviado: true } : { enviado: false, link };
+}
+
 function atualizarTelas() {
   revalidatePath("/professor/alunos");
   revalidatePath("/professor/alunos/[id]", "page");
 }
 
-// Fluxo "Cadastro do aluno": 12 anos ou mais recebe convite por e-mail na hora;
-// menor de 12 tem a conta criada sem convite e fica aguardando o aceite do
-// responsável. O papel nunca é informado: o gatilho do banco sempre cria aluno.
-// A conta é criada antes do convite para levar a marca ORIGEM_PROFESSOR, que
-// o convite não aceita. O cadastro passa por cima de uma recusa recente do
-// e-mail e de uma conta criada pelo pedido de código e nunca confirmada.
+// Fluxo "Cadastro do aluno": a conta é criada já liberada (marca
+// ORIGEM_PROFESSOR) e matriculada, e o aluno recebe por e-mail o link
+// /convite/<código> para definir a senha. O menor de 12 recebe o convite do
+// mesmo jeito, mas fica aguardando o aceite do responsável, que recebe pelo
+// professor o link de autorização. O papel nunca é informado: o gatilho do
+// banco sempre cria aluno. O cadastro passa por cima de uma recusa recente do
+// e-mail e de uma conta criada em Criar conta e nunca confirmada.
 export async function cadastrarAluno(
   _estado: EstadoCadastro,
   formData: FormData,
@@ -74,7 +118,7 @@ export async function cadastrarAluno(
 
   const admin = criarClienteAdmin();
   if (existente) {
-    // Alguém digitou o e-mail no login e nunca clicou no link: a conta não
+    // Alguém criou a conta com este e-mail e nunca confirmou: a conta não
     // tem dados de ninguém e dá lugar ao cadastro do professor.
     const { error } = await admin.auth.admin.deleteUser(existente.id);
     if (error) return { erro: ERRO_BANCO, valores };
@@ -91,50 +135,26 @@ export async function cadastrarAluno(
     menor_de_12: aluno.responsavel !== null,
   };
 
-  let alunoId: string;
+  const reserva = await reservarEnvioDeConvite(supabase);
+  if (!reserva.ok) return { erro: reserva.erro, valores };
+
+  // Sem senha e sem e-mail do Supabase: quem define a senha é o aluno, pelo
+  // link do convite.
+  const { data, error } = await admin.auth.admin.createUser({
+    email: aluno.email,
+    email_confirm: true,
+    user_metadata: metadados,
+    app_metadata: ORIGEM_PROFESSOR,
+  });
+  if (error || !data.user)
+    return {
+      erro: error?.code === "email_exists" ? ERRO_EMAIL_EXISTE : ERRO_BANCO,
+      valores,
+    };
+  const alunoId = data.user.id;
+
   let linkAceite: string | undefined;
-
-  if (!aluno.responsavel) {
-    const reserva = await reservarEnvioDeConvite(supabase);
-    if (!reserva.ok) return { erro: reserva.erro, valores };
-    const { data, error } = await admin.auth.admin.createUser({
-      email: aluno.email,
-      user_metadata: metadados,
-      app_metadata: ORIGEM_PROFESSOR,
-    });
-    if (error || !data.user)
-      return {
-        erro: error?.code === "email_exists" ? ERRO_EMAIL_EXISTE : ERRO_BANCO,
-        valores,
-      };
-    alunoId = data.user.id;
-    const { error: erroConvite } = await admin.auth.admin.inviteUserByEmail(
-      aluno.email,
-      { data: metadados },
-    );
-    if (erroConvite) {
-      // Sem o convite o aluno não teria como entrar; desfaz o cadastro.
-      await admin.auth.admin.deleteUser(alunoId);
-      return {
-        erro: "Não foi possível enviar o convite. Tente de novo.",
-        valores,
-      };
-    }
-  } else {
-    // Conta confirmada e sem convite: o acesso só é enviado depois do aceite.
-    const { data, error } = await admin.auth.admin.createUser({
-      email: aluno.email,
-      email_confirm: true,
-      user_metadata: metadados,
-      app_metadata: ORIGEM_PROFESSOR,
-    });
-    if (error || !data.user)
-      return {
-        erro: error?.code === "email_exists" ? ERRO_EMAIL_EXISTE : ERRO_BANCO,
-        valores,
-      };
-    alunoId = data.user.id;
-
+  if (aluno.responsavel) {
     const { data: responsavel, error: erroResponsavel } = await supabase
       .from("responsaveis")
       .insert({
@@ -167,12 +187,25 @@ export async function cadastrarAluno(
       aviso = " As matrículas não foram gravadas; faça-as na página do aluno.";
   }
 
+  const convite = await gerarConvite(supabase, {
+    id: alunoId,
+    nome: aluno.nome,
+    email: aluno.email,
+  });
+  const textoDoConvite = !convite
+    ? "Não foi possível gerar o convite; use Reenviar convite na página do aluno."
+    : convite.enviado
+      ? `Convite enviado para ${aluno.email}.`
+      : "Não foi possível enviar o e-mail do convite. Copie o link abaixo e mande ao aluno.";
+  const textoDoResponsavel = aluno.responsavel
+    ? ` Envie o link de autorização para ${aluno.responsavel.nome}: o acesso só abre depois do aceite.`
+    : "";
+
   atualizarTelas();
   return {
-    sucesso: aluno.responsavel
-      ? `Conta de ${aluno.nome} criada. Envie o link abaixo para ${aluno.responsavel.nome} autorizar o acesso.${aviso}`
-      : `Convite enviado para ${aluno.email}.${aviso}`,
+    sucesso: `Conta de ${aluno.nome} criada. ${textoDoConvite}${textoDoResponsavel}${aviso}`,
     linkAceite,
+    linkConvite: convite && !convite.enviado ? convite.link : undefined,
   };
 }
 
@@ -273,22 +306,18 @@ export async function renomearAluno(
   return { sucesso: "Nome salvo." };
 }
 
-// Reenvia o acesso a quem ainda não entrou. Quem tem 12 anos ou mais recebe o
-// convite de novo; o menor de 12 já autorizado recebe um código de acesso,
-// como no aceite. Conta no mesmo limite por hora dos convites.
-// O estado anterior do formulário não é usado, por isso fica fora da assinatura.
-export async function reenviarConvite(
-  alunoId: string,
-): Promise<EstadoFormulario> {
+// Gera um código novo, o que invalida o link anterior, e manda outro e-mail.
+// Só para quem ainda não definiu a senha (nunca entrou): depois disso, um link
+// novo serviria para trocar a senha de quem já usa a conta. Conta no mesmo
+// limite por hora dos convites.
+export async function reenviarConvite(alunoId: string): Promise<EstadoConvite> {
   await exigirProfessor();
   if (!ehUuid(alunoId)) return { erro: ERRO_BANCO };
 
   const supabase = await criarClienteServidor();
   const { data: aluno, error } = await supabase
     .from("perfis")
-    .select(
-      "email, nome, data_nascimento, menor_de_12, bloqueado_em, responsaveis (aceito_em)",
-    )
+    .select("email, nome, bloqueado_em")
     .eq("id", alunoId)
     .eq("papel", "aluno")
     .maybeSingle();
@@ -296,11 +325,6 @@ export async function reenviarConvite(
   if (!aluno) return { erro: "Aluno não encontrado." };
   if (aluno.bloqueado_em)
     return { erro: "O acesso deste aluno está bloqueado; desbloqueie antes." };
-  const responsavel = aluno.responsaveis as unknown as {
-    aceito_em: string | null;
-  } | null;
-  if (aluno.menor_de_12 && !responsavel?.aceito_em)
-    return { erro: "O responsável ainda não autorizou o acesso." };
 
   const admin = criarClienteAdmin();
   const { data: usuario } = await admin.auth.admin.getUserById(alunoId);
@@ -312,22 +336,22 @@ export async function reenviarConvite(
   const reserva = await reservarEnvioDeConvite(supabase);
   if (!reserva.ok) return { erro: reserva.erro };
 
-  const { error: erroEnvio } = aluno.menor_de_12
-    ? await admin.auth.signInWithOtp({
-        email: aluno.email,
-        options: { shouldCreateUser: false },
-      })
-    : await admin.auth.admin.inviteUserByEmail(aluno.email, {
-        data: {
-          nome: aluno.nome,
-          data_nascimento: aluno.data_nascimento,
-          menor_de_12: false,
-        },
-      });
-  if (erroEnvio)
-    return { erro: "Não foi possível reenviar o convite. Tente de novo." };
-
-  return { sucesso: `Convite reenviado para ${aluno.email}.` };
+  const convite = await gerarConvite(supabase, {
+    id: alunoId,
+    nome: nomeParaExibir(aluno.nome),
+    email: aluno.email,
+  });
+  if (!convite)
+    return { erro: "Não foi possível gerar o convite. Tente de novo." };
+  if (!convite.enviado)
+    return {
+      sucesso:
+        "Novo link gerado, mas o e-mail não saiu. Copie o link abaixo e mande ao aluno. O link anterior deixou de valer.",
+      linkConvite: convite.link,
+    };
+  return {
+    sucesso: `Convite reenviado para ${aluno.email}. O link anterior deixou de valer.`,
+  };
 }
 
 // Bloqueia o acesso do aluno sem apagar nada. O banco corta o acesso na hora

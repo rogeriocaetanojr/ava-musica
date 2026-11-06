@@ -34,4 +34,4 @@ export function urlDoSite(caminho: string): string {
 
 // Versão do texto da política e dos termos gravada junto com o aceite do
 // responsável. Mudou o texto, mude a versão.
-export const VERSAO_DOS_TERMOS = "4-rascunho";
+export const VERSAO_DOS_TERMOS = "5-rascunho";

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   ehBloqueado,
-  ehCodigoInvalido,
+  ehCredenciaisInvalidas,
   ehFalhaDoCaptcha,
   ehLimiteDeTentativas,
   ehPedidoBarrado,
@@ -39,7 +39,7 @@ describe("ehBloqueado", () => {
 });
 
 describe("ehPedidoBarrado", () => {
-  it("reconhece a recusa do hook no envio do código e na volta do Google", () => {
+  it("reconhece a recusa do hook ao criar a conta e na volta do Google", () => {
     expect(
       ehPedidoBarrado({ message: "Não foi possível pedir acesso agora." }),
     ).toBe(true);
@@ -64,15 +64,18 @@ describe("ehFalhaDoCaptcha", () => {
   });
 });
 
-describe("ehCodigoInvalido", () => {
-  it("reconhece o código errado ou vencido", () => {
-    expect(ehCodigoInvalido({ code: "otp_expired" })).toBe(true);
-    expect(ehCodigoInvalido({ code: "invalid_credentials" })).toBe(true);
+describe("ehCredenciaisInvalidas", () => {
+  it("junta senha errada, e-mail sem conta e conta não confirmada", () => {
+    expect(ehCredenciaisInvalidas({ code: "invalid_credentials" })).toBe(true);
+    expect(ehCredenciaisInvalidas({ code: "email_not_confirmed" })).toBe(true);
   });
 
-  it("não confunde outros erros com o código inválido", () => {
-    expect(ehCodigoInvalido(null)).toBe(false);
-    expect(ehCodigoInvalido({ code: "user_banned" })).toBe(false);
-    expect(ehCodigoInvalido({ code: "over_request_rate_limit" })).toBe(false);
+  it("não confunde outros erros com as credenciais", () => {
+    expect(ehCredenciaisInvalidas(null)).toBe(false);
+    expect(ehCredenciaisInvalidas({ code: "user_banned" })).toBe(false);
+    expect(ehCredenciaisInvalidas({ code: "over_request_rate_limit" })).toBe(
+      false,
+    );
+    expect(ehCredenciaisInvalidas({ code: "captcha_failed" })).toBe(false);
   });
 });

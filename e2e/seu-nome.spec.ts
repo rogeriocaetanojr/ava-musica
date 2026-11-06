@@ -1,11 +1,10 @@
 import { expect, type Page, test } from "@playwright/test";
 import {
-  codigoDoEmail,
-  digitarCodigo,
+  criarContaSemNome,
   entrar,
   informarNome,
-  pedirCodigo,
   PROFESSOR,
+  tentarEntrar,
 } from "./apoio";
 
 function secao(pagina: Page, titulo: string) {
@@ -28,10 +27,12 @@ test("sem nome, a tela do nome vem antes de tudo e o pedido só chega ao profess
   const nome = `Carla Dias ${projeto}`;
   const nomeCorrigido = `Carla Dias Lima ${projeto}`;
 
-  // Depois do código, quem não tem nome cai na tela do nome.
+  // Conta sem nome, como a de quem entra pelo Google sem nome: depois de
+  // entrar, cai na tela do nome.
+  const senha = "senha-sem-nome-1";
+  await criarContaSemNome(email, senha);
   const aluno = await browser.newPage();
-  await pedirCodigo(aluno, email);
-  await digitarCodigo(aluno, await codigoDoEmail(email));
+  await tentarEntrar(aluno, email, senha);
   await expect(aluno).toHaveURL(/\/seu-nome$/);
   await expect(
     aluno.getByRole("heading", { name: "Como você se chama?" }),

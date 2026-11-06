@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { configuracaoSmtp, mensagemDePedidoNovo } from "./email";
+import {
+  configuracaoSmtp,
+  mensagemDeConvite,
+  mensagemDePedidoNovo,
+} from "./email";
 
 const resend = {
   SMTP_HOST: "smtp.resend.com",
@@ -52,5 +56,20 @@ describe("mensagemDePedidoNovo", () => {
     expect(assunto).toContain("Novo pedido de acesso");
     expect(texto).toContain("Ana Souza (ana@exemplo.com)");
     expect(texto).toContain("https://ava.exemplo.com/professor");
+  });
+});
+
+describe("mensagemDeConvite", () => {
+  it("traz o primeiro nome, o link e a validade, sem o e-mail", () => {
+    const { assunto, texto } = mensagemDeConvite(
+      { nome: "Ana Souza" },
+      "https://ava.exemplo.com/convite/abc",
+      7,
+    );
+    expect(assunto).toContain("convite");
+    expect(texto).toContain("Olá, Ana!");
+    expect(texto).not.toContain("Souza");
+    expect(texto).toContain("https://ava.exemplo.com/convite/abc");
+    expect(texto).toContain("7 dias");
   });
 });

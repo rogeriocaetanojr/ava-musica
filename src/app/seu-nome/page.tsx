@@ -18,7 +18,7 @@ async function ExigirSemNome() {
   return null;
 }
 
-// Tela de quem entrou sem nome (pelo código no e-mail, ou pelo Google sem
+// Tela de quem entrou sem nome (pelo Google sem nome, ou conta antiga sem
 // nome): o nome vem antes de qualquer outra tela e antes de o pedido de acesso
 // ir ao professor. Mesmo visual da tela de entrada.
 export default function SeuNome() {

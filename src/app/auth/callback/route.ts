@@ -7,8 +7,8 @@ import {
 } from "../../login/mensagens";
 import { concluirLogin } from "../concluir-login";
 
-// Recebe o retorno do Google e cria a sessão. O e-mail entra por código,
-// confirmado na própria tela de login (ver /auth/concluir).
+// Recebe o retorno do Google e cria a sessão. O login por senha vai direto
+// para /auth/concluir, e a confirmação de Criar conta, para /auth/confirmar.
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = request.nextUrl;
   const codigo = searchParams.get("code");

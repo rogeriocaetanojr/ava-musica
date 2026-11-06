@@ -19,6 +19,9 @@ function dataHaAnos(anos: number): string {
 const supabase = criarClienteAdmin();
 
 const NOME_DO_ALUNO = "Ana Souza";
+// Senha do professor e do aluno de teste. Só existe no Supabase local (o
+// script recusa rodar fora dele); os testes de ponta a ponta usam a mesma.
+const SENHA_DE_TESTE = "senha-local-123";
 const TITULO_DO_CURSO = "Violão para iniciantes";
 
 type AulaDeExemplo = {
@@ -181,13 +184,23 @@ async function garantirUsuario(
   email: string,
   metadados: Record<string, unknown>,
   doProfessor = true,
+  senha?: string,
 ): Promise<string> {
   const { data: existente } = await supabase
     .from("perfis")
     .select("id")
     .eq("email", email)
     .maybeSingle();
-  if (existente) return existente.id;
+  if (existente) {
+    // Conta de antes do login por senha: recebe a senha de teste.
+    if (senha) {
+      const { error } = await supabase.auth.admin.updateUserById(existente.id, {
+        password: senha,
+      });
+      if (error) throw error;
+    }
+    return existente.id;
+  }
 
   // Toda conta do seed tem nome: o banco nunca usa o e-mail no lugar dele.
   if (!String(metadados.nome ?? metadados.full_name ?? "").trim())
@@ -195,6 +208,7 @@ async function garantirUsuario(
 
   const { data, error } = await supabase.auth.admin.createUser({
     email,
+    password: senha,
     email_confirm: true,
     user_metadata: metadados,
     // Como no cadastro feito pelo professor: o gatilho já cria o perfil liberado.
@@ -206,9 +220,12 @@ async function garantirUsuario(
 }
 
 async function main() {
-  const idProfessor = await garantirUsuario("professor@teste.local", {
-    nome: "Professor de Teste",
-  });
+  const idProfessor = await garantirUsuario(
+    "professor@teste.local",
+    { nome: "Professor de Teste" },
+    true,
+    SENHA_DE_TESTE,
+  );
   // O gatilho sempre cria aluno; a promoção é feita aqui, como no deploy.
   const { error: erroPromocao } = await supabase
     .from("perfis")
@@ -216,11 +233,16 @@ async function main() {
     .eq("id", idProfessor);
   if (erroPromocao) throw erroPromocao;
 
-  const idAluno = await garantirUsuario("aluno@teste.local", {
-    nome: NOME_DO_ALUNO,
-    data_nascimento: dataHaAnos(15),
-    menor_de_12: false,
-  });
+  const idAluno = await garantirUsuario(
+    "aluno@teste.local",
+    {
+      nome: NOME_DO_ALUNO,
+      data_nascimento: dataHaAnos(15),
+      menor_de_12: false,
+    },
+    true,
+    SENHA_DE_TESTE,
+  );
 
   await garantirCursoDeExemplo(idAluno);
 
@@ -241,7 +263,7 @@ async function main() {
   }
 
   console.log(
-    "Pronto: professor@teste.local (professor), aluno@teste.local (Ana Souza, 15 anos, matriculada em Violão para iniciantes) e pedido1@ / pedido2@teste.local (pedidos para testar à mão).",
+    `Pronto: professor@teste.local (professor) e aluno@teste.local (Ana Souza, 15 anos, matriculada em Violão para iniciantes), os dois com a senha ${SENHA_DE_TESTE}, e pedido1@ / pedido2@teste.local (pedidos para testar à mão, sem senha).`,
   );
 }
 

@@ -291,6 +291,12 @@ export function FormularioAluno({ cursos }: { cursos: Curso[] }) {
       {estado.sucesso && (
         <div role="status" className="space-y-2 text-sm text-sucesso">
           <p>{estado.sucesso}</p>
+          {estado.linkConvite && (
+            <BotaoCopiar
+              texto={estado.linkConvite}
+              rotulo="Link do convite do aluno"
+            />
+          )}
           {estado.linkAceite && (
             <BotaoCopiar
               texto={estado.linkAceite}
@@ -323,11 +329,7 @@ export function FormularioAluno({ cursos }: { cursos: Curso[] }) {
           <span className="text-amarelo">
             <Icone caminho="M22 2L11 13 M22 2l-7 20-4-9-9-4z" />
           </span>
-          {enviando
-            ? "Salvando…"
-            : menor
-              ? "Criar conta e gerar link"
-              : "Enviar convite"}
+          {enviando ? "Salvando…" : "Enviar convite"}
         </button>
       </div>
     </form>

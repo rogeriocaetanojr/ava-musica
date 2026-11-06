@@ -27,21 +27,13 @@ export async function POST(
     })
     .eq("token", token)
     .is("aceito_em", null)
-    .select("perfis (email)")
+    .select("aluno_id")
     .maybeSingle();
   if (error) return voltar(`/aceite/${token}?erro=falhou`);
   // Token inexistente ou já usado: a página explica o motivo.
   if (!data) return voltar(`/aceite/${token}`);
 
-  const aluno = data.perfis as unknown as { email: string } | null;
-  let enviado = false;
-  if (aluno) {
-    const { error: erroEnvio } = await admin.auth.signInWithOtp({
-      email: aluno.email,
-      options: { shouldCreateUser: false },
-    });
-    enviado = !erroEnvio;
-  }
-
-  return voltar(`/aceite/concluido${enviado ? "" : "?envio=falhou"}`);
+  // O aluno já recebeu o convite por e-mail; com o aceite, a senha que ele
+  // escolheu passa a abrir as aulas.
+  return voltar("/aceite/concluido");
 }

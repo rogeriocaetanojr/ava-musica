@@ -11,8 +11,8 @@ Ambiente virtual de aprendizagem (AVA) de um professor de música. O professor o
 ## 2. Stack
 
 - **Next.js** com App Router, TypeScript em modo `strict` e Tailwind 4
-- **Supabase**: Postgres, Auth (Google e código de 6 dígitos por e-mail) e Row Level Security (RLS). Quem entra pelo Google ou pelo código por e-mail sem cadastro vira um pedido pendente, que só conta depois de confirmado (código digitado ou volta do Google) e fica sem acesso até o professor liberar. O pedido do código passa pelo captcha (Cloudflare Turnstile), e o hook "Before User Created" barra por 7 dias quem foi recusado
-- **Resend** (SMTP): aviso ao professor quando chega um pedido de acesso
+- **Supabase**: Postgres, Auth (e-mail e senha, com mínimo de 8 caracteres, e Google) e Row Level Security (RLS). Criar conta é aberto: quem cria a conta ou entra pelo Google sem cadastro vira um pedido pendente, que só conta depois de confirmado (link de confirmação do e-mail ou volta do Google) e fica sem acesso até o professor aprovar. O aluno cadastrado pelo professor recebe por e-mail o convite com o link `/convite/<código>` (só o hash fica no banco, vale 7 dias e uma vez) e cria a senha no primeiro acesso. O login por senha, Criar conta e o convite passam pelo captcha (Cloudflare Turnstile), e o hook "Before User Created" barra por 7 dias quem foi recusado
+- **Resend** (SMTP): convite ao aluno cadastrado pelo professor, aviso ao professor quando chega um pedido de acesso e, pelo Supabase, o e-mail de confirmação de Criar conta
 - **Netlify**: hospedagem, com homologação e produção separadas
 - **GitHub Actions**: integração contínua, migrações e rotinas automáticas
 - Toda a interface é **em português do Brasil**.
@@ -59,8 +59,8 @@ Com o Supabase local rodando: Studio em http://localhost:54323 e caixa de e-mail
 - **Next.js 16** usa `proxy.ts` no lugar de `middleware.ts`.
 - O lint roda com `eslint .`, **não** com `next lint`.
 - **Tailwind 4:** uma classe própria que usa `@apply` precisa ser declarada com `@utility`.
-- **Login Google para menores de 13 anos** depende do Family Link dos pais; para esses alunos, o caminho padrão é o código de 6 dígitos por e-mail.
-- **O cadastro do Auth está aberto** (`enable_signup = true`) para o Google e o código por e-mail criarem os pedidos. Quem protege é a RLS, pela coluna `liberado_em`; nunca confie nos metadados do usuário (`raw_user_meta_data`), que qualquer um pode enviar. A marca de cadastro feito pelo professor fica no `app_metadata`.
+- **Login Google para menores de 13 anos** depende do Family Link dos pais; para esses alunos, o caminho padrão é o cadastro pelo professor, com a senha criada pelo link do convite.
+- **O cadastro do Auth está aberto** (`enable_signup = true`) para Criar conta e o Google criarem os pedidos, com a confirmação de e-mail ligada (`enable_confirmations = true`). Quem protege é a RLS, pela coluna `liberado_em`; nunca confie nos metadados do usuário (`raw_user_meta_data`), que qualquer um pode enviar. A marca de cadastro feito pelo professor fica no `app_metadata`.
 - **`npm install <pacote>` pode apagar o binário nativo do rolldown** (bug do npm com dependências opcionais), e o `npm test` passa a falhar com "Cannot find native binding". Para corrigir, apague `node_modules` e `package-lock.json` e rode `npm install`.
 
 ## 7. Jeito de trabalhar

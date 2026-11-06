@@ -8,8 +8,8 @@ import { FormularioAluno } from "../formulario-aluno";
 
 const PASSOS = [
   "Você cadastra o aluno e escolhe os cursos.",
-  "Menor de 12 anos: o responsável recebe o link e dá o aceite.",
-  "O aluno entra pelo código enviado ao e-mail ou pela conta Google.",
+  "O aluno recebe o convite por e-mail e escolhe a senha no primeiro acesso.",
+  "Menor de 12 anos: o responsável recebe o link de autorização e dá o aceite.",
 ];
 
 const DADOS = "Guardamos só nome, e-mail, data de nascimento e progresso.";

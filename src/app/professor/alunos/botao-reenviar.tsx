@@ -1,10 +1,11 @@
 "use client";
 
 import { useActionState } from "react";
-import { reenviarConvite } from "./acoes";
+import { type EstadoConvite, reenviarConvite } from "./acoes";
+import { BotaoCopiar } from "./botao-copiar";
 
 export function BotaoReenviar({ alunoId }: { alunoId: string }) {
-  const [estado, enviar, enviando] = useActionState(
+  const [estado, enviar, enviando] = useActionState<EstadoConvite>(
     reenviarConvite.bind(null, alunoId),
     {},
   );
@@ -27,12 +28,17 @@ export function BotaoReenviar({ alunoId }: { alunoId: string }) {
         </p>
       )}
       {estado.sucesso && (
-        <p
-          role="status"
-          className="rounded-xl bg-linha p-4 text-sm text-sucesso"
-        >
-          {estado.sucesso}
-        </p>
+        <div role="status" className="space-y-2">
+          <p className="rounded-xl bg-linha p-4 text-sm text-sucesso">
+            {estado.sucesso}
+          </p>
+          {estado.linkConvite && (
+            <BotaoCopiar
+              texto={estado.linkConvite}
+              rotulo="Link do convite do aluno"
+            />
+          )}
+        </div>
       )}
     </form>
   );

@@ -15,7 +15,7 @@ export const metadata: Metadata = { title: tituloDaPagina("Acesso pausado") };
 
 async function Conteudo() {
   const sessao = await obterSessao();
-  // Sem sessão, chega aqui quem teve o código ou o Google barrado por bloqueio;
+  // Sem sessão, chega aqui quem teve a senha ou o Google barrado por bloqueio;
   // a tela mostra só o texto genérico.
   if (sessao && (sessao.papel !== "aluno" || !sessao.bloqueado))
     redirect(destinoDaSessao(sessao));

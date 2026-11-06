@@ -56,3 +56,27 @@ export function mensagemDePedidoNovo(
     ].join("\n"),
   };
 }
+
+// Convite ao aluno cadastrado pelo professor: o link abre a tela em que ele
+// define a senha. Leva só o primeiro nome e o link.
+export function mensagemDeConvite(
+  aluno: { nome: string },
+  linkDoConvite: string,
+  validadeEmDias: number,
+): Mensagem {
+  const primeiro = aluno.nome.trim().split(/\s+/)[0] ?? "";
+  return {
+    assunto: `Seu convite para a ${NOME_DO_AVA}`,
+    texto: [
+      `Olá, ${primeiro}!`,
+      "",
+      `O professor criou o seu acesso na ${NOME_DO_AVA}. Para entrar pela primeira vez, abra o link abaixo e escolha a sua senha:`,
+      "",
+      linkDoConvite,
+      "",
+      `O link vale por ${validadeEmDias} dias e funciona uma vez só. Depois, entre com o seu e-mail e a senha que você escolheu.`,
+      "",
+      "Se você não esperava este convite, ignore este e-mail.",
+    ].join("\n"),
+  };
+}
