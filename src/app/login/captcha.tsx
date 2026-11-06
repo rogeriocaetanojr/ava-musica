@@ -1,18 +1,28 @@
 "use client";
 
-import { useEffect, useImperativeHandle, useRef, type Ref } from "react";
+import {
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+  type Ref,
+} from "react";
 
 // Widget do Cloudflare Turnstile, carregado direto do script oficial (sem
-// pacote). O token vale uma vez só: depois de cada pedido, o formulário
+// pacote), em modo invisível: só aparece quando a Cloudflare pede uma
+// interação. O token vale uma vez só: depois de cada pedido, o formulário
 // chama reiniciar() para gerar outro.
 
 type OpcoesTurnstile = {
   sitekey: string;
   language: string;
   size: "flexible";
+  appearance: "interaction-only";
   callback: (token: string) => void;
   "expired-callback": () => void;
   "error-callback": () => void;
+  "before-interactive-callback": () => void;
+  "after-interactive-callback": () => void;
 };
 
 declare global {
@@ -57,6 +67,8 @@ export function Captcha({
   const chave = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
   const elemento = useRef<HTMLDivElement>(null);
   const widget = useRef<string | null>(null);
+  // Enquanto não há desafio, o espaço do widget fica fechado.
+  const [interativo, setInterativo] = useState(false);
   // O callback muda a cada render do formulário; o widget lê o mais recente.
   const avisar = useRef(aoMudarToken);
   useEffect(() => {
@@ -80,9 +92,12 @@ export function Captcha({
           sitekey: chave,
           language: "pt-br",
           size: "flexible",
+          appearance: "interaction-only",
           callback: (token) => avisar.current(token),
           "expired-callback": () => avisar.current(null),
           "error-callback": () => avisar.current(null),
+          "before-interactive-callback": () => setInterativo(true),
+          "after-interactive-callback": () => setInterativo(false),
         });
       })
       .catch(() => avisar.current(null));
@@ -93,5 +108,10 @@ export function Captcha({
     };
   }, [chave]);
 
-  return <div ref={elemento} className="min-h-[65px]" />;
+  return (
+    <div
+      ref={elemento}
+      className={interativo ? "min-h-[65px]" : "m-0! h-0 overflow-hidden"}
+    />
+  );
 }

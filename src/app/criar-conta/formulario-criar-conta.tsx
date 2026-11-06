@@ -92,8 +92,8 @@ export function FormularioCriarConta() {
     );
 
   return (
-    <div className="space-y-5">
-      <form onSubmit={criar} noValidate className="space-y-5">
+    <div className="space-y-4">
+      <form onSubmit={criar} noValidate className="space-y-4">
         <Campo
           id="nome"
           rotulo="Nome completo"
@@ -135,13 +135,6 @@ export function FormularioCriarConta() {
           <p>{erro}</p>
         </Aviso>
       )}
-
-      <p className="text-sm text-texto-secundario">
-        Já tem conta?{" "}
-        <Link href="/login" className={link}>
-          Entrar
-        </Link>
-      </p>
     </div>
   );
 }

@@ -12,7 +12,7 @@ test("aluno convidado entra com e-mail e senha", async ({ page }) => {
   ).toBeVisible();
 });
 
-test("a tela de login oferece senha, Google, Criar conta e Esqueci minha senha", async ({
+test("a tela de login oferece senha, Criar conta e Esqueci minha senha", async ({
   page,
 }) => {
   await page.goto("/login");
@@ -27,7 +27,7 @@ test("a tela de login oferece senha, Google, Criar conta e Esqueci minha senha",
   ).toBeVisible();
   await expect(
     page.getByRole("button", { name: "Entrar com Google" }),
-  ).toBeVisible();
+  ).toHaveCount(0);
   await expect(page.getByRole("link", { name: "Criar conta" })).toHaveAttribute(
     "href",
     "/criar-conta",

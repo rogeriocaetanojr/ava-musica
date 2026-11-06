@@ -1,31 +1,37 @@
 "use client";
 
-import { useState, type InputHTMLAttributes } from "react";
+import { useState, type InputHTMLAttributes, type ReactNode } from "react";
 
 // Campo de senha com o rótulo acima e o botão de mostrar ou esconder a senha.
 export function CampoSenha({
   id,
   rotulo,
   dica,
+  acao,
   ...resto
 }: Omit<InputHTMLAttributes<HTMLInputElement>, "type"> & {
   id: string;
   rotulo: string;
   dica?: string;
+  // Link na mesma linha do rótulo, à direita (por exemplo, "Esqueci minha senha").
+  acao?: ReactNode;
 }) {
   const [visivel, setVisivel] = useState(false);
 
   return (
     <div className="space-y-2">
-      <label htmlFor={id} className="block text-sm font-bold text-texto">
-        {rotulo}
-      </label>
+      <div className="flex items-end justify-between gap-4">
+        <label htmlFor={id} className="block text-sm font-bold text-texto">
+          {rotulo}
+        </label>
+        {acao}
+      </div>
       <div className="relative">
         <input
           id={id}
           type={visivel ? "text" : "password"}
           aria-describedby={dica ? `${id}-dica` : undefined}
-          className="min-h-14 w-full rounded-xl border border-borda-campo bg-superficie py-3 pr-16 pl-4 text-base text-texto placeholder:text-texto-secundario"
+          className="min-h-13 w-full rounded-xl border border-borda-campo bg-superficie py-3 pr-16 pl-4 text-base text-texto placeholder:text-texto-secundario"
           {...resto}
         />
         <button

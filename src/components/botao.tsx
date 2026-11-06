@@ -14,7 +14,7 @@ export function classesDoBotao(
   variante: VarianteDoBotao = "primario",
   extra = "",
 ): string {
-  return `inline-flex min-h-14 w-full items-center justify-center gap-3 rounded-xl px-5 py-3 text-base font-bold transition-colors disabled:opacity-60 ${VARIANTES[variante]} ${extra}`;
+  return `inline-flex min-h-13 w-full items-center justify-center gap-3 rounded-xl px-5 py-3 text-base font-bold transition-colors disabled:opacity-60 ${VARIANTES[variante]} ${extra}`;
 }
 
 export function Botao({

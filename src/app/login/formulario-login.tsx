@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import Link from "next/link";
 import { Aviso } from "@/components/aviso";
-import { Botao } from "@/components/botao";
+import { Botao, classesDoBotao } from "@/components/botao";
 import { Campo } from "@/components/campo";
 import { CampoSenha } from "@/components/campo-senha";
 import { criarClienteNavegador } from "@/lib/supabase/navegador";
@@ -18,9 +18,6 @@ import {
   MENSAGEM_MUITAS_TENTATIVAS,
 } from "./mensagens";
 
-const link =
-  "inline-flex min-h-12 items-center text-sm font-bold text-destaque underline";
-
 export function FormularioLogin() {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
@@ -28,21 +25,6 @@ export function FormularioLogin() {
   const [erro, setErro] = useState<string | null>(null);
   const [tokenCaptcha, setTokenCaptcha] = useState<string | null>(null);
   const captcha = useRef<ControleDoCaptcha>(null);
-
-  async function entrarComGoogle() {
-    const supabase = criarClienteNavegador();
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
-    });
-    if (error) {
-      setErro(
-        ehLimiteDeTentativas(error)
-          ? MENSAGEM_MUITAS_TENTATIVAS
-          : "Não foi possível entrar com o Google. Tente com e-mail e senha.",
-      );
-    }
-  }
 
   async function entrar(evento: React.FormEvent<HTMLFormElement>) {
     evento.preventDefault();
@@ -80,8 +62,8 @@ export function FormularioLogin() {
   }
 
   return (
-    <div className="space-y-5">
-      <form onSubmit={entrar} className="space-y-5">
+    <div className="space-y-4">
+      <form onSubmit={entrar} className="space-y-4">
         <Campo
           id="email"
           rotulo="E-mail"
@@ -93,19 +75,22 @@ export function FormularioLogin() {
           value={email}
           onChange={(evento) => setEmail(evento.target.value)}
         />
-        <div className="space-y-1">
-          <CampoSenha
-            id="senha"
-            rotulo="Senha"
-            required
-            autoComplete="current-password"
-            value={senha}
-            onChange={(evento) => setSenha(evento.target.value)}
-          />
-          <Link href="/esqueci-senha" className={link}>
-            Esqueci minha senha
-          </Link>
-        </div>
+        <CampoSenha
+          id="senha"
+          rotulo="Senha"
+          required
+          autoComplete="current-password"
+          value={senha}
+          onChange={(evento) => setSenha(evento.target.value)}
+          acao={
+            <Link
+              href="/esqueci-senha"
+              className="-my-3 inline-flex min-h-11 items-center text-sm font-bold text-destaque hover:underline"
+            >
+              Esqueci minha senha
+            </Link>
+          }
+        />
         <Captcha ref={captcha} aoMudarToken={setTokenCaptcha} />
         <Botao type="submit" disabled={ocupado}>
           {ocupado ? "Entrando…" : "Entrar"}
@@ -126,32 +111,9 @@ export function FormularioLogin() {
         ou
         <span className="h-px flex-1 bg-linha" />
       </div>
-      <Botao variante="secundario" onClick={entrarComGoogle}>
-        <span
-          aria-hidden="true"
-          className="flex size-7 items-center justify-center rounded-full border border-linha text-sm font-extrabold"
-        >
-          G
-        </span>
-        Entrar com Google
-      </Botao>
-
-      <p className="text-sm text-texto-secundario">
-        Ainda não tem conta?{" "}
-        <Link href="/criar-conta" className={link}>
-          Criar conta
-        </Link>
-      </p>
-
-      {/* No celular, a versão curta deste aviso fica no rodapé da página. */}
-      <div className="hidden md:block">
-        <Aviso>
-          <p>
-            Quem cria a conta espera o professor liberar o acesso. Para menores
-            de 12 anos, o responsável autoriza primeiro.
-          </p>
-        </Aviso>
-      </div>
+      <Link href="/criar-conta" className={classesDoBotao("destaque")}>
+        Criar conta
+      </Link>
     </div>
   );
 }
