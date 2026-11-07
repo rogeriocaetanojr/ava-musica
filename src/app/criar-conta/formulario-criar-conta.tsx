@@ -110,7 +110,6 @@ export function FormularioCriarConta() {
           required
           autoComplete="email"
           inputMode="email"
-          placeholder="nome@email.com"
           value={email}
           onChange={(evento) => setEmail(evento.target.value)}
         />
