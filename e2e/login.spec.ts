@@ -1,5 +1,11 @@
 import { expect, test } from "@playwright/test";
-import { ALUNO, entrar, NOME_DO_ALUNO, tentarEntrar } from "./apoio";
+import {
+  ALUNO,
+  entrar,
+  esperarCaptcha,
+  NOME_DO_ALUNO,
+  tentarEntrar,
+} from "./apoio";
 
 const CREDENCIAIS_INVALIDAS = "E-mail ou senha incorretos.";
 
@@ -51,17 +57,25 @@ test("senha errada mostra a mesma mensagem para e-mail com ou sem conta", async 
   page,
 }) => {
   await tentarEntrar(page, ALUNO, "senha-errada-123");
-  await expect(
-    page.getByRole("alert").filter({ hasText: CREDENCIAIS_INVALIDAS }),
-  ).toBeVisible();
-  const comConta = await page.getByRole("alert").textContent();
+  // Filtra pelo texto: o Next também põe na página um role="alert" vazio
+  // (o anunciador de rota).
+  const aviso = page
+    .getByRole("alert")
+    .filter({ hasText: CREDENCIAIS_INVALIDAS });
+  await expect(aviso).toBeVisible();
+  const comConta = await aviso.textContent();
   await expect(page).toHaveURL(/\/login$/);
 
-  await tentarEntrar(page, "ninguem-tem@teste.local", "senha-errada-123");
-  await expect(
-    page.getByRole("alert").filter({ hasText: CREDENCIAIS_INVALIDAS }),
-  ).toBeVisible();
-  expect(await page.getByRole("alert").textContent()).toBe(comConta);
+  // Segunda tentativa passo a passo: confere que o aviso anterior sumiu antes
+  // de enviar, para que o aviso esperado depois seja a resposta nova.
+  await page.goto("/login");
+  await expect(aviso).toHaveCount(0);
+  await page.getByLabel("E-mail").fill("ninguem-tem@teste.local");
+  await page.getByLabel("Senha", { exact: true }).fill("senha-errada-123");
+  await esperarCaptcha(page);
+  await page.getByRole("button", { name: "Entrar", exact: true }).click();
+  await expect(aviso).toBeVisible();
+  expect(await aviso.textContent()).toBe(comConta);
 });
 
 test("a sessão não fica salva e termina depois de 2 horas sem uso", async ({

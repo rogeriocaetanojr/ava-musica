@@ -14,8 +14,9 @@ test("convite por e-mail: o aluno define a senha e entra matriculado; o link val
   browser,
 }, testInfo) => {
   const projeto = testInfo.project.name;
-  const email = `convite-${projeto}-${Date.now()}@teste.local`;
-  const nome = `Clara Nunes ${projeto}`;
+  const id = Date.now();
+  const email = `convite-${projeto}-${id}@teste.local`;
+  const nome = `Clara Nunes ${projeto} ${id}`;
   await apagarEmailsDe(email);
 
   // O professor convida, com o e-mail do aluno e um curso.
@@ -25,7 +26,7 @@ test("convite por e-mail: o aluno define a senha e entra matriculado; o link val
   await professor.getByLabel("Nome completo").fill(nome);
   await professor.getByLabel("Data de nascimento").fill("2008-05-10");
   await professor.getByLabel("E-mail do aluno").fill(email);
-  await professor.getByLabel(CURSO).check();
+  await professor.getByLabel(CURSO, { exact: true }).check();
   await professor.getByRole("button", { name: "Enviar convite" }).click();
   await expect(
     professor
