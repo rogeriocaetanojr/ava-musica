@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
-import Link from "next/link";
 import { TelaDeEntrada } from "@/components/tela-de-entrada";
 import { destinoDaSessao, obterSessao } from "@/lib/auth";
 import { tituloDaPagina } from "@/lib/site";
@@ -23,17 +22,7 @@ export default function PaginaCriarConta() {
       destaque="Crie a sua conta."
       apoio="Crie a conta, confirme o e-mail e espere o professor liberar o acesso."
       titulo="Criar conta"
-      rodape={
-        <p className="text-sm text-texto-secundario">
-          Já tem conta?{" "}
-          <Link
-            href="/login"
-            className="inline-flex min-h-11 items-center font-bold text-destaque underline"
-          >
-            Entrar
-          </Link>
-        </p>
-      }
+      semPrivacidade
     >
       <p className="text-sm leading-normal text-texto-secundario">
         Depois de confirmar o e-mail, o professor libera o seu acesso. Para
