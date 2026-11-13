@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { classesDoBotao } from "@/components/botao";
 import { LinhaDeVoltar } from "@/components/linha-de-voltar";
 import { TelaDoProfessor } from "@/components/tela-do-professor";
 import { CONTEINER } from "@/components/conteiner";
@@ -199,16 +200,17 @@ async function FichaDoAluno({ params }: { params: Promise<{ id: string }> }) {
               <BotaoReenviar alunoId={aluno.id} />
             )}
             {status === "pendente" && (
-              <p className="text-sm text-texto-secundario">
-                Pediu acesso pelo login.{" "}
+              <div className="space-y-2">
+                <p className="text-sm text-texto-secundario">
+                  Pediu acesso pelo login.
+                </p>
                 <Link
                   href="/professor"
-                  className="font-bold text-destaque underline"
+                  className={classesDoBotao("secundario", "", "pequeno")}
                 >
                   Libere ou recuse no painel
                 </Link>
-                .
-              </p>
+              </div>
             )}
           </header>
 

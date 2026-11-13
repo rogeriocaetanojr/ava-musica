@@ -84,7 +84,7 @@ export function FormularioLogin() {
           acao={
             <Link
               href="/esqueci-senha"
-              className="-my-3 inline-flex min-h-11 items-center text-sm font-bold text-destaque hover:underline"
+              className="-my-3.5 inline-flex min-h-12 items-center text-sm font-bold text-destaque hover:underline"
             >
               Esqueci minha senha
             </Link>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { classesDoBotao } from "@/components/botao";
 import { LogoDoAva } from "@/components/logo-do-ava";
 
 // Cabeçalho e rodapé somem nas telas de página inteira, marcadas com
@@ -30,12 +31,12 @@ export function Rodape() {
     >
       <nav
         aria-label="Rodapé"
-        className="mx-auto flex w-full max-w-4xl flex-wrap gap-x-6 gap-y-2 px-4 py-4"
+        className="mx-auto flex w-full max-w-4xl flex-wrap gap-x-6 px-4 py-1"
       >
-        <Link href="/privacidade" className="underline">
+        <Link href="/privacidade" className={classesDoBotao("link")}>
           Política de privacidade
         </Link>
-        <Link href="/termos" className="underline">
+        <Link href="/termos" className={classesDoBotao("link")}>
           Termos de uso
         </Link>
       </nav>

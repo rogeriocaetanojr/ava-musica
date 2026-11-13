@@ -40,7 +40,7 @@ function AvisoRascunho() {
 
 // Cartão do texto: links e listas no padrão do tema.
 export const CARTAO_DE_LEITURA =
-  "flex max-w-[70ch] flex-col gap-4 rounded-2xl border border-linha bg-superficie p-5 text-[17px] leading-relaxed md:p-10 md:text-base [&_a]:font-bold [&_a]:text-destaque [&_a]:underline [&_ul]:list-disc [&_ul]:space-y-1 [&_ul]:pl-5 [&_ul]:marker:text-destaque";
+  "flex max-w-[70ch] flex-col gap-4 rounded-2xl border border-linha bg-superficie p-5 text-[17px] leading-relaxed md:p-10 md:text-base [&_a]:font-bold [&_a]:text-destaque [&_a]:underline [&_a]:py-1 [&_ul]:list-disc [&_ul]:space-y-1 [&_ul]:pl-5 [&_ul]:marker:text-destaque";
 
 const link =
   "inline-flex min-h-12 items-center rounded-xl px-4 text-base font-bold";

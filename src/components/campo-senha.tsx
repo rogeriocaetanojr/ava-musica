@@ -40,7 +40,7 @@ export function CampoSenha({
           aria-pressed={visivel}
           aria-controls={id}
           aria-label={visivel ? "Esconder senha" : "Mostrar senha"}
-          className="absolute inset-y-1 right-1 grid w-12 place-items-center rounded-lg text-texto-secundario hover:text-texto"
+          className="absolute top-1/2 right-1 grid size-12 -translate-y-1/2 place-items-center rounded-lg text-texto-secundario hover:text-texto"
         >
           <svg
             aria-hidden="true"

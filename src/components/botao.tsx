@@ -20,7 +20,8 @@ const TAMANHOS: Record<TamanhoDoBotao, string> = {
 
 // Botão de texto sublinhado: 48 px de alvo, sem fundo. A cor e o peso
 // do texto vêm em "extra" (ex.: "font-bold text-destaque").
-const LINK = "inline-flex min-h-12 items-center text-sm underline";
+const LINK =
+  "inline-flex min-h-12 min-w-12 items-center justify-center text-sm underline";
 
 // Classes do botão, para usar também em links com cara de botão.
 export function classesDoBotao(
