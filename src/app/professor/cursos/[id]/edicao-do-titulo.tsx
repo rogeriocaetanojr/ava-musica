@@ -28,21 +28,30 @@ export function TituloEditavel({
   titulo,
   classeDoTitulo,
   extra,
+  quebraLinha = false,
   children,
 }: {
   titulo: string;
   classeDoTitulo: string;
   extra?: ReactNode;
+  // Mostra o título inteiro, quebrando linha, em qualquer largura.
+  quebraLinha?: boolean;
   children: ReactNode;
 }) {
   const { editando } = useContext(ContextoDaEdicao);
 
   return (
-    <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 md:block md:flex-1 lg:flex lg:flex-nowrap lg:items-center lg:gap-3">
+    <div
+      className={
+        quebraLinha
+          ? "flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1"
+          : "flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 md:block md:flex-1 lg:flex lg:flex-nowrap lg:items-center lg:gap-3"
+      }
+    >
       {!editando && (
         <p
           title={titulo}
-          className={`block min-w-0 break-words lg:truncate ${classeDoTitulo}`}
+          className={`block min-w-0 break-words ${quebraLinha ? "" : "lg:truncate"} ${classeDoTitulo}`}
         >
           {titulo}
         </p>
@@ -51,7 +60,9 @@ export function TituloEditavel({
         {children}
       </div>
       {extra && !editando && (
-        <div className="shrink-0 md:mt-1 lg:mt-0">{extra}</div>
+        <div className={quebraLinha ? "shrink-0" : "shrink-0 md:mt-1 lg:mt-0"}>
+          {extra}
+        </div>
       )}
     </div>
   );

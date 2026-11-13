@@ -137,11 +137,12 @@ function ItemAula({
   ultima: boolean;
 }) {
   return (
-    <li className="space-y-3 border-t border-linha py-3 first:border-t-0 md:flex md:items-center md:gap-2 md:space-y-0">
+    <li className="space-y-3 border-t border-linha py-3 first:border-t-0">
       <EdicaoDoTitulo>
         <TituloEditavel
           titulo={aula.titulo}
           classeDoTitulo="font-bold text-texto"
+          quebraLinha
           extra={
             <Etiqueta
               publicado={aula.publicada}
@@ -156,13 +157,10 @@ function ItemAula({
             inicial={aula.titulo}
           />
         </TituloEditavel>
-        <div className="flex flex-wrap items-center gap-2 md:contents">
+        <div className="flex flex-wrap items-center gap-2">
           <div className="contents">
             <form action={publicarAula.bind(null, aula.id, !aula.publicada)}>
-              <button
-                type="submit"
-                className={`${botaoPequeno} md:w-32 md:justify-center`}
-              >
+              <button type="submit" className={botaoPequeno}>
                 {aula.publicada ? "Despublicar" : "Publicar"}
               </button>
             </form>
