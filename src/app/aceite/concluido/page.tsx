@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import { Aviso } from "@/components/aviso";
 import { CONTEINER } from "@/components/conteiner";
+import { CARTAO_DE_LEITURA, MolduraLegal } from "@/components/texto-legal";
 import { tituloDaPagina } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -9,23 +11,24 @@ export const metadata: Metadata = {
 
 export default function AceiteConcluido() {
   return (
-    <main
-      className={`${CONTEINER} flex max-w-xl flex-1 flex-col gap-4 py-8 text-texto`}
-    >
-      <h1 className="font-titulo text-3xl">
-        Obrigado! Autorização registrada.
-      </h1>
-      <p
-        role="status"
-        className="rounded-xl bg-linha p-4 text-sm leading-relaxed text-sucesso"
+    <MolduraLegal titulo="Obrigado! Autorização registrada.">
+      <main
+        className={`${CONTEINER} flex flex-1 flex-col items-center py-6 md:py-10`}
       >
-        O aluno já pode entrar com o e-mail e a senha que escolheu pelo link do
-        convite. Se o link do convite venceu, peça um novo ao professor.
-      </p>
-      <p className="text-sm text-texto-secundario">
-        Para pedir a exclusão dos dados a qualquer momento, fale com o
-        professor.
-      </p>
-    </main>
+        <div className={`${CARTAO_DE_LEITURA} w-full`}>
+          <Aviso tom="sucesso" role="status">
+            <p>
+              O aluno já pode entrar com o e-mail e a senha que escolheu pelo
+              link do convite. Se o link do convite venceu, peça um novo ao
+              professor.
+            </p>
+          </Aviso>
+          <p className="text-texto-secundario">
+            Para pedir a exclusão dos dados a qualquer momento, fale com o
+            professor.
+          </p>
+        </div>
+      </main>
+    </MolduraLegal>
   );
 }

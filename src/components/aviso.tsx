@@ -1,14 +1,20 @@
 import type { HTMLAttributes } from "react";
 
-// Caixa de informação em amarelo claro, com o ícone de exclamação.
+// Caixa de informação. No tom de alerta (o padrão), amarelo claro com o ícone
+// de exclamação; no tom de sucesso, verde claro com o ícone de confirmação.
 export function Aviso({
   children,
   className,
+  tom = "alerta",
   ...resto
-}: HTMLAttributes<HTMLDivElement>) {
+}: HTMLAttributes<HTMLDivElement> & { tom?: "alerta" | "sucesso" }) {
+  const cores =
+    tom === "sucesso"
+      ? "bg-bloco-sucesso text-texto-sobre-bloco-sucesso"
+      : "bg-bloco text-texto-sobre-bloco";
   return (
     <div
-      className={`flex gap-3 rounded-xl bg-bloco p-4 text-sm leading-relaxed text-texto-sobre-bloco ${className ?? ""}`}
+      className={`flex gap-3 rounded-xl p-4 text-sm leading-relaxed ${cores} ${className ?? ""}`}
       {...resto}
     >
       <svg
@@ -20,8 +26,18 @@ export function Aviso({
         strokeWidth="1.6"
       >
         <circle cx="10" cy="10" r="8" />
-        <path d="M10 6v5" strokeLinecap="round" />
-        <circle cx="10" cy="14" r="0.6" fill="currentColor" />
+        {tom === "sucesso" ? (
+          <path
+            d="M6.5 10.2l2.4 2.4 4.6-4.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        ) : (
+          <>
+            <path d="M10 6v5" strokeLinecap="round" />
+            <circle cx="10" cy="14" r="0.6" fill="currentColor" />
+          </>
+        )}
       </svg>
       <div>{children}</div>
     </div>

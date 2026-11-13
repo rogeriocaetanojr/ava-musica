@@ -38,6 +38,10 @@ function AvisoRascunho() {
   );
 }
 
+// Cartão do texto: links e listas no padrão do tema.
+export const CARTAO_DE_LEITURA =
+  "flex max-w-[70ch] flex-col gap-4 rounded-2xl border border-linha bg-superficie p-5 text-[17px] leading-relaxed md:p-10 md:text-base [&_a]:font-bold [&_a]:text-destaque [&_a]:underline [&_ul]:list-disc [&_ul]:space-y-1 [&_ul]:pl-5 [&_ul]:marker:text-destaque";
+
 const link =
   "inline-flex min-h-12 items-center rounded-xl px-4 text-base font-bold";
 
@@ -68,41 +72,12 @@ export function TextoLegal({
   );
 
   return (
-    <div data-tela-cheia className="flex min-h-screen flex-1 flex-col">
-      <header className="border-b border-linha bg-superficie">
-        <div
-          className={`${CONTEINER} flex items-center justify-between gap-4 py-3`}
-        >
-          <Link href="/" className="flex min-h-12 items-center text-texto">
-            <LogoDoAva
-              semSubtitulo
-              className="[--altura:46px] lg:[--altura:60px]"
-            />
-          </Link>
-          <Link
-            href="/login"
-            className={`${link} text-texto-secundario hover:text-texto`}
-          >
-            Entrar
-          </Link>
-        </div>
-      </header>
-
-      <div className="relative overflow-hidden bg-bordo text-sobre-bordo">
-        <Cordas className="absolute inset-y-0 right-4 w-16 md:right-24 md:w-28" />
-        <div className={`${CONTEINER} relative py-5 md:py-10`}>
-          <p className="text-sm font-bold text-amarelo">{NOME_DO_AVA}</p>
-          <h1 className="mt-1 pr-20 font-titulo text-2xl tracking-tight md:pr-0 md:text-4xl">
-            {titulo}
-          </h1>
-        </div>
-      </div>
-
+    <MolduraLegal titulo={titulo}>
       <main
         className={`${CONTEINER} grid flex-1 items-start gap-6 py-6 md:grid-cols-[16rem_minmax(0,1fr)] md:gap-10 md:py-10`}
       >
         {/* No celular o sumário fica recolhido acima do texto; a partir de md,
-            na lateral. Só um dos dois aparece por vez. */}
+              na lateral. Só um dos dois aparece por vez. */}
         <details className="group rounded-2xl border border-linha bg-superficie md:hidden">
           <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between rounded-2xl px-5 font-bold text-texto [&::-webkit-details-marker]:hidden">
             Nesta página
@@ -137,7 +112,7 @@ export function TextoLegal({
           {sumario}
         </nav>
 
-        <article className="flex max-w-[70ch] flex-col gap-4 rounded-2xl border border-linha bg-superficie p-5 text-[17px] leading-relaxed md:p-10 md:text-base [&_a]:font-bold [&_a]:text-destaque [&_a]:underline [&_ul]:list-disc [&_ul]:space-y-1 [&_ul]:pl-5 [&_ul]:marker:text-destaque">
+        <article className={CARTAO_DE_LEITURA}>
           <p className="text-sm text-texto-secundario">
             {textoDaVersao(VERSAO_DOS_TERMOS)}
           </p>
@@ -161,6 +136,51 @@ export function TextoLegal({
           {fecho}
         </article>
       </main>
+    </MolduraLegal>
+  );
+}
+
+// Cabeçalho, faixa com o título e rodapé das páginas públicas de texto (a
+// política, os termos e a autorização do responsável). O conteúdo vem em children.
+export function MolduraLegal({
+  titulo,
+  children,
+}: {
+  titulo: string;
+  children: ReactNode;
+}) {
+  return (
+    <div data-tela-cheia className="flex min-h-screen flex-1 flex-col">
+      <header className="border-b border-linha bg-superficie">
+        <div
+          className={`${CONTEINER} flex items-center justify-between gap-4 py-3`}
+        >
+          <Link href="/" className="flex min-h-12 items-center text-texto">
+            <LogoDoAva
+              semSubtitulo
+              className="[--altura:46px] lg:[--altura:60px]"
+            />
+          </Link>
+          <Link
+            href="/login"
+            className={`${link} text-texto-secundario hover:text-texto`}
+          >
+            Entrar
+          </Link>
+        </div>
+      </header>
+
+      <div className="relative overflow-hidden bg-bordo text-sobre-bordo">
+        <Cordas className="absolute inset-y-0 right-4 w-16 md:right-24 md:w-28" />
+        <div className={`${CONTEINER} relative py-5 md:py-10`}>
+          <p className="text-sm font-bold text-amarelo">{NOME_DO_AVA}</p>
+          <h1 className="mt-1 pr-20 font-titulo text-2xl tracking-tight md:pr-0 md:text-4xl">
+            {titulo}
+          </h1>
+        </div>
+      </div>
+
+      {children}
 
       <footer className="border-t-4 border-amarelo bg-bordo text-sm text-sobre-bordo">
         <nav

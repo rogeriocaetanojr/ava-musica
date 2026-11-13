@@ -13,7 +13,7 @@
 - [x] Política de privacidade e Termos no celular
 - [ ] Aula do aluno sem restos do visual antigo
 - [ ] Telas de espera, bloqueio e nome no visual novo
-- [ ] Autorização do responsável no visual novo
+- [x] Autorização do responsável no visual novo
 - [ ] Botões de voltar padronizados e progresso do aluno dentro da ficha
 - [ ] Páginas de erro, página não encontrada e carregamento no visual novo
 - [ ] E-mails com a cara da escola
@@ -235,3 +235,5 @@
 - A tela `/nova-senha` só abre para quem acabou de chegar pelo link: o `/auth/callback` abre a sessão e grava um cookie de 15 minutos, e sem ele a tela manda para Entrar. A senha é gravada por uma rota (`/nova-senha/salvar`), e não por uma server action, porque quem recupera a senha pode ser um pedido ainda não liberado, que não passa por `exigirAluno()`. Depois de salvar, todas as sessões da conta são encerradas e a pessoa entra de novo com a senha nova.
 - Trocar senha fica no perfil do aluno (`/perfil`) e no do professor (`/professor/perfil`, página nova, aberta pelo avatar do cabeçalho, que agora aparece também no celular). A senha atual é conferida com um login por senha, e por isso o cartão tem o captcha e conta no limite `sign_in_sign_ups`; depois da troca, as sessões dos outros aparelhos são encerradas. O `secure_password_change` do Auth continua desligado. Quem entrou só pelo Google não tem senha atual e usa Esqueci minha senha.
 - O teste de Trocar senha usa o aluno do `seed:dev` e devolve a senha de teste no fim, direto no Auth local, mesmo se falhar no meio.
+- A autorização do responsável (`/aceite/<token>` e `/aceite/concluido`) usa a mesma moldura da política de privacidade e dos termos de uso: cabeçalho com o logo e Entrar, faixa bordô com o título e rodapé com os dois links. A moldura saiu de `TextoLegal` para `MolduraLegal`, em `src/components/texto-legal.tsx`, junto com as classes do cartão de leitura (`CARTAO_DE_LEITURA`); a política e os termos continuam iguais. Os avisos "Link inválido" e "Link já usado" aparecem na mesma moldura, o erro do formulário usa o `Aviso` e a caixa "Autorizo" tem 24 px, dentro de um rótulo de pelo menos 48 px clicável no texto todo. Lógica, consulta e rota de gravação não mudaram.
+- O `Aviso` ganhou a prop `tom`: `alerta` (padrão, amarelo claro com o ícone de exclamação) ou `sucesso` (verde claro com o ícone de confirmação), usado na tela de autorização registrada. As cores do sucesso são dois tokens novos em `src/app/globals.css`: `--color-bloco-sucesso` (fundo; `#e3f1e6` no tema claro e `#132a1c` no escuro) e `--color-texto-sobre-bloco-sucesso` (texto; `#14532d` no claro e `#c9ecd3` no escuro). O contraste medido do texto sobre o fundo é de 7,81:1 no claro e 11,94:1 no escuro.
