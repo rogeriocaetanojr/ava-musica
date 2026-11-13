@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BotaoVoltar } from "@/components/botao-voltar";
+import { LinhaDeVoltar } from "@/components/linha-de-voltar";
 import { TelaDoAluno } from "@/components/tela-do-aluno";
 import { CONTEINER } from "@/components/conteiner";
 import { notFound } from "next/navigation";
@@ -80,7 +80,11 @@ async function PaginaDoCurso({ params }: { params: Promise<{ id: string }> }) {
 
   return (
     <>
-      <BotaoVoltar href="/cursos" rotulo="Voltar para Meus cursos" />
+      <LinhaDeVoltar href="/cursos" rotulo="Voltar para Meus cursos">
+        <span aria-hidden="true" className="font-bold text-texto">
+          Meus cursos
+        </span>
+      </LinhaDeVoltar>
 
       {sessao.papel === "professor" && (
         <Aviso>Pré-visualização do aluno. Rascunhos não aparecem.</Aviso>

@@ -13,12 +13,15 @@ async function CabecalhoComSessao({ atual }: { atual?: SecaoDoAluno }) {
 
 // Moldura das subpáginas do aluno: o mesmo cabeçalho e as mesmas abas de Meus
 // cursos no lugar da moldura geral do site, que fica só nas páginas públicas.
-// Enquanto a sessão carrega, o cabeçalho aparece sem o avatar.
+// Enquanto a sessão carrega, o cabeçalho aparece sem o avatar. Telas com
+// rodapé fixo próprio no celular, como a aula, ficam sem as abas.
 export function TelaDoAluno({
   atual,
+  semAbas = false,
   children,
 }: {
   atual?: SecaoDoAluno;
+  semAbas?: boolean;
   children: ReactNode;
 }) {
   return (
@@ -27,7 +30,7 @@ export function TelaDoAluno({
         <CabecalhoComSessao atual={atual} />
       </Suspense>
       {children}
-      <AbasDoAluno atual={atual} />
+      {!semAbas && <AbasDoAluno atual={atual} />}
     </div>
   );
 }

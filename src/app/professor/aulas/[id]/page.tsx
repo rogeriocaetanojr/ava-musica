@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { TelaDoProfessor } from "@/components/tela-do-professor";
-import { BotaoVoltar } from "@/components/botao-voltar";
+import { LinhaDeVoltar } from "@/components/linha-de-voltar";
+import { Trilha } from "@/components/trilha";
 import { classesDoBotao } from "@/components/botao";
 import { CONTEINER } from "@/components/conteiner";
 import { notFound } from "next/navigation";
@@ -228,44 +229,14 @@ async function EditorDaAula({ params }: { params: Promise<{ id: string }> }) {
 
   return (
     <>
-      <div className="flex flex-wrap items-center gap-4">
-        <BotaoVoltar href={linkDoCurso} rotulo="Voltar ao curso" />
-        <div className="min-w-0 flex-1 md:hidden">
-          <p className="text-base font-bold break-words text-destaque">
-            {aula.modulos.cursos.titulo}
-          </p>
-          <p className="text-sm break-words text-texto-secundario">
-            {aula.modulos.titulo} · {aula.titulo}
-          </p>
-        </div>
-        <nav
-          aria-label="Trilha da aula"
-          className="hidden min-w-0 flex-1 md:block"
-        >
-          <ol className="flex flex-wrap items-center gap-x-2 text-base">
-            <li>
-              <Link
-                href={linkDoCurso}
-                className="inline-flex min-h-12 items-center font-semibold break-words text-destaque underline"
-              >
-                {aula.modulos.cursos.titulo}
-              </Link>
-            </li>
-            <li aria-hidden="true" className="text-texto-secundario">
-              /
-            </li>
-            <li className="break-words text-texto-secundario">
-              {aula.modulos.titulo}
-            </li>
-            <li aria-hidden="true" className="text-texto-secundario">
-              /
-            </li>
-            <li aria-current="page" className="font-bold break-words">
-              {aula.titulo}
-            </li>
-          </ol>
-        </nav>
-      </div>
+      <LinhaDeVoltar href={linkDoCurso} rotulo="Voltar ao curso">
+        <Trilha
+          curso={aula.modulos.cursos.titulo}
+          hrefDoCurso={linkDoCurso}
+          modulo={aula.modulos.titulo}
+          aula={aula.titulo}
+        />
+      </LinhaDeVoltar>
 
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div className="min-w-0 space-y-2">

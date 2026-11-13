@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { BotaoVoltar } from "@/components/botao-voltar";
+import { LinhaDeVoltar } from "@/components/linha-de-voltar";
+import { TelaDoAluno } from "@/components/tela-do-aluno";
+import { Trilha } from "@/components/trilha";
 import { CONTEINER } from "@/components/conteiner";
-import { LogoDoAva } from "@/components/logo-do-ava";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { Aviso } from "@/components/aviso";
@@ -130,10 +131,6 @@ async function PaginaDaAula({ params }: { params: Promise<{ id: string }> }) {
     (modulo) => modulo.id === aula.modulos.id,
   );
   const aulasDoModulo = moduloAtual ? aulasEmOrdem([moduloAtual]) : [];
-  const numeroDoModulo =
-    ordenar(listaDeModulos).findIndex(
-      (modulo) => modulo.id === aula.modulos.id,
-    ) + 1;
 
   const marcados = new Set(
     (progresso ?? []).map((linha) => linha.conteudo_id as string | null),
@@ -202,59 +199,19 @@ async function PaginaDaAula({ params }: { params: Promise<{ id: string }> }) {
   }
 
   return (
-    <>
-      <header className="border-linha md:border-b md:bg-superficie">
-        <div
-          className={`${CONTEINER} flex max-w-6xl items-center gap-x-4 md:flex-wrap md:gap-x-6 gap-y-2 py-3`}
-        >
-          <BotaoVoltar href={linkDoCurso} rotulo={`Voltar para ${curso}`} />
-          <div className="min-w-0 flex-1 md:hidden">
-            <p className="text-base font-bold text-destaque">
-              {numeroDoModulo > 0 && `Módulo ${numeroDoModulo}`}
-              {numeroDoModulo > 0 && posicao >= 0 && " · "}
-              {posicao >= 0 && `Aula ${posicao + 1}`}
-            </p>
-            <p className="font-titulo text-lg font-bold break-words text-texto">
-              {curso}
-            </p>
-          </div>
-          <Link
-            href="/cursos"
-            className="hidden min-h-12 items-center gap-3 font-titulo text-2xl text-texto md:flex"
-          >
-            <LogoDoAva semSubtitulo className="[--altura:60px]" />
-          </Link>
-          <nav aria-label="Trilha da aula" className="hidden min-w-0 md:block">
-            <ol className="flex flex-wrap items-center gap-x-2 text-base">
-              <li>
-                <Link
-                  href={linkDoCurso}
-                  className="inline-flex min-h-12 items-center font-semibold break-words text-destaque underline"
-                >
-                  {curso}
-                </Link>
-              </li>
-              <li aria-hidden="true" className="text-texto-secundario">
-                /
-              </li>
-              <li className="break-words text-texto-secundario">
-                {aula.modulos.titulo}
-              </li>
-              <li aria-hidden="true" className="text-texto-secundario">
-                /
-              </li>
-              <li aria-current="page" className="font-bold break-words">
-                {aula.titulo}
-              </li>
-            </ol>
-          </nav>
-        </div>
-      </header>
-
+    <TelaDoAluno atual="cursos" semAbas={aluno}>
       <main
         className={`${CONTEINER} grid max-w-6xl flex-1 gap-8 pt-4 pb-8 md:pt-8 lg:grid-cols-[minmax(0,1fr)_20rem]`}
       >
         <div className="min-w-0 space-y-6 md:space-y-8">
+          <LinhaDeVoltar href={linkDoCurso} rotulo={`Voltar para ${curso}`}>
+            <Trilha
+              curso={curso}
+              hrefDoCurso={linkDoCurso}
+              modulo={aula.modulos.titulo}
+              aula={aula.titulo}
+            />
+          </LinhaDeVoltar>
           {!aluno && (
             <Aviso>
               Pré-visualização do aluno. Os botões de concluir não aparecem para
@@ -280,7 +237,7 @@ async function PaginaDaAula({ params }: { params: Promise<{ id: string }> }) {
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div className="min-w-0 space-y-1">
               {posicao >= 0 && (
-                <p className="hidden text-sm font-bold text-destaque md:block">
+                <p className="text-sm font-bold text-destaque">
                   Aula {posicao + 1} de {sequencia.length}
                 </p>
               )}
@@ -455,7 +412,7 @@ async function PaginaDaAula({ params }: { params: Promise<{ id: string }> }) {
           className="h-[calc(5.25rem+env(safe-area-inset-bottom))] shrink-0 md:hidden"
         />
       )}
-    </>
+    </TelaDoAluno>
   );
 }
 

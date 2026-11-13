@@ -21,6 +21,11 @@
 - [ ] Arquivos e provas abrindo em nova guia
 - [ ] Login com e-mail e senha, criar conta e convite por link
 - [ ] Esqueci minha senha, nova senha pelo link do e-mail e Trocar senha no perfil do aluno e do professor
+- [ ] Cabeçalho, seta de voltar e trilha iguais nas telas internas
+- [ ] Botões e links com pelo menos 48 px para o toque
+- [ ] Lista de aulas do professor com o título inteiro
+- [ ] Acabamento visual da revisão das telas
+- [ ] Rodapés e páginas públicas num só padrão
 
 ### Testes
 

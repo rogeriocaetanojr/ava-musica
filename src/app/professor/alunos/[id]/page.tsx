@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BotaoVoltar } from "@/components/botao-voltar";
+import { LinhaDeVoltar } from "@/components/linha-de-voltar";
 import { TelaDoProfessor } from "@/components/tela-do-professor";
 import { CONTEINER } from "@/components/conteiner";
 import { notFound } from "next/navigation";
@@ -140,6 +140,11 @@ async function FichaDoAluno({ params }: { params: Promise<{ id: string }> }) {
 
   return (
     <>
+      <LinhaDeVoltar href="/professor/alunos" rotulo="Voltar para Alunos">
+        <h1 className="font-titulo text-3xl break-all text-texto md:break-words">
+          {nome}
+        </h1>
+      </LinhaDeVoltar>
       <div className="grid gap-6 lg:grid-cols-[22rem_1fr] lg:items-start">
         <div className="flex flex-col gap-6">
           <header className={`${cartao} space-y-4`}>
@@ -151,9 +156,9 @@ async function FichaDoAluno({ params }: { params: Promise<{ id: string }> }) {
                 {iniciais(nome)}
               </span>
               <div className="min-w-0 space-y-2">
-                <h1 className="font-titulo text-3xl break-all text-texto md:break-words">
+                <p className="font-titulo text-xl break-all text-texto md:break-words">
                   {nome}
-                </h1>
+                </p>
                 <span
                   className={`inline-block rounded-full px-3 py-1 text-xs font-bold ${CORES_DOS_STATUS[status]}`}
                 >
@@ -490,10 +495,17 @@ export default function Aluno({ params }: { params: Promise<{ id: string }> }) {
       <main
         className={`${CONTEINER} flex max-w-6xl flex-1 flex-col gap-6 py-6 md:py-10`}
       >
-        <div>
-          <BotaoVoltar href="/professor/alunos" rotulo="Voltar para Alunos" />
-        </div>
-        <Suspense fallback={<p>Carregando…</p>}>
+        <Suspense
+          fallback={
+            <>
+              <LinhaDeVoltar
+                href="/professor/alunos"
+                rotulo="Voltar para Alunos"
+              />
+              <p>Carregando…</p>
+            </>
+          }
+        >
           <FichaDoAluno params={params} />
         </Suspense>
       </main>

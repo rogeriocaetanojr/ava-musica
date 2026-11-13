@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { TelaDoProfessor } from "@/components/tela-do-professor";
-import { BotaoVoltar } from "@/components/botao-voltar";
+import { LinhaDeVoltar } from "@/components/linha-de-voltar";
 import { CONTEINER } from "@/components/conteiner";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
@@ -293,11 +293,8 @@ async function EditorDoCurso({ params }: { params: Promise<{ id: string }> }) {
 
   return (
     <>
-      <div className="flex items-center gap-4">
-        <div>
-          <BotaoVoltar href="/professor/cursos" rotulo="Voltar para Cursos" />
-        </div>
-        <div className="min-w-0 md:flex md:flex-wrap md:items-center md:gap-3">
+      <LinhaDeVoltar href="/professor/cursos" rotulo="Voltar para Cursos">
+        <div className="md:flex md:flex-wrap md:items-center md:gap-3">
           <h1 className="font-titulo text-3xl break-words text-texto md:text-5xl">
             {curso.titulo}
           </h1>
@@ -308,7 +305,7 @@ async function EditorDoCurso({ params }: { params: Promise<{ id: string }> }) {
             />
           </span>
         </div>
-      </div>
+      </LinhaDeVoltar>
 
       <div className="flex flex-col gap-6 md:gap-8 lg:grid lg:grid-cols-12 lg:items-start lg:gap-6">
         <section className="space-y-4 rounded-3xl border border-linha bg-superficie px-4 py-2 md:max-w-3xl md:p-6 lg:sticky lg:top-6 lg:col-span-5 lg:max-w-none">
