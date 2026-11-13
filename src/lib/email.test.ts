@@ -73,3 +73,26 @@ describe("mensagemDeConvite", () => {
     expect(texto).toContain("7 dias");
   });
 });
+
+describe("html dos e-mails", () => {
+  it("escapa < e & no nome e no e-mail do aluno", () => {
+    const { html } = mensagemDePedidoNovo(
+      { nome: "Ana <b>& Cia", email: "a&b@<x>.com" },
+      "https://ava.exemplo.com/professor",
+    );
+    expect(html).toContain("Ana &lt;b&gt;&amp; Cia");
+    expect(html).toContain("a&amp;b@&lt;x&gt;.com");
+    expect(html).not.toContain("<b>&");
+    expect(html).not.toContain("<x>");
+  });
+
+  it("escapa o primeiro nome no convite", () => {
+    const { html } = mensagemDeConvite(
+      { nome: "<Ana>& Souza" },
+      "https://ava.exemplo.com/convite/abc",
+      7,
+    );
+    expect(html).toContain("&lt;Ana&gt;&amp;");
+    expect(html).not.toContain("<Ana>");
+  });
+});

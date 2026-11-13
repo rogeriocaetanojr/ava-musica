@@ -23,6 +23,7 @@ async function enviar(
       to: para(config),
       subject: mensagem.assunto,
       text: mensagem.texto,
+      html: mensagem.html,
     });
     return true;
   } catch (erro) {
