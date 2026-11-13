@@ -234,7 +234,7 @@ async function EditorDaAula({ params }: { params: Promise<{ id: string }> }) {
         </h1>
       </LinhaDeVoltar>
 
-      <div className="flex flex-wrap items-end justify-between gap-4">
+      <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0 space-y-2">
           <p className="flex flex-wrap items-center gap-2 text-sm text-texto-secundario">
             <Etiqueta publicada={aula.publicada} /> · {blocos.length}{" "}

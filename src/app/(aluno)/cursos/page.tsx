@@ -107,7 +107,7 @@ function ContinueDeOndeParou({
             "Você concluiu todas as aulas deste curso. Pode rever quando quiser."
           )}
         </p>
-        <div className="flex max-w-md items-center gap-3">
+        <div className="flex max-w-md items-center gap-3 pr-14 md:pr-0">
           <div className="flex-1">
             <BarraProgresso
               percentual={resumo.percentual}
@@ -151,7 +151,7 @@ function RecadosDoProfessor({ avisos }: { avisos: Aviso[] }) {
     <section
       aria-labelledby="recados-recentes"
       className={`hidden flex-col gap-5 rounded-3xl bg-bloco p-7 text-texto-sobre-bloco ${
-        vazio ? "lg:flex" : "md:flex"
+        vazio ? "lg:flex lg:self-start" : "md:flex"
       }`}
     >
       <h2 id="recados-recentes" className="text-sm font-bold">

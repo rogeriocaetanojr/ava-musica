@@ -43,7 +43,7 @@ async function PerfilDoAluno() {
 
         <BotaoDoTema comTexto />
 
-        <form action="/auth/sair" method="post">
+        <form action="/auth/sair" method="post" className="md:hidden">
           <button type="submit" className={classesDoBotao("secundario")}>
             Sair
           </button>
@@ -66,7 +66,7 @@ async function PerfilDoAluno() {
   );
 }
 
-// Dados da conta e saída, para o celular, onde o cabeçalho não traz o Sair.
+// Dados da conta. O botão Sair aparece só no celular, onde o cabeçalho não o traz.
 export default function Perfil() {
   return (
     <div data-tela-cheia className="flex flex-1 flex-col">
