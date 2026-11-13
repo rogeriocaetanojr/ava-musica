@@ -143,7 +143,7 @@
 - O aluno vê os avisos gerais e os dos cursos publicados em que está matriculado, do mais novo para o mais antigo; quem decide isso é o banco. Na pré-visualização, o professor vê todos.
 - O painel do professor conta só as aulas publicadas, com a mesma regra da tela do aluno. As provas contadas são as das aulas publicadas.
 - A última atividade do aluno é o registro de progresso mais recente (aula concluída ou prova enviada), não o último login.
-- O detalhe do progresso de cada aluno fica em `/professor/progresso/...`, separado da ficha de cadastro e matrículas em `/professor/alunos/...`.
+- O detalhe do progresso de cada aluno fica na ficha, em `/professor/alunos/...`, no cartão "Progresso por aula" (por curso e módulo: aula concluída ou não, com data, e prova enviada ou não), com a última atividade nos dados do aluno. O endereço antigo `/professor/progresso/...` redireciona para a ficha, e os links do painel levam à ficha. Alunos e a ficha usam só o botão de voltar com a seta, no computador e no celular.
 - O "autorizo" do responsável é recebido por uma rota (`/aceite/.../autorizar`), não por server action, porque quem envia não tem login: a proteção é o token. A gravação só acontece onde o aceite ainda está vazio, então o mesmo link não vale duas vezes.
 - O aceite do responsável não envia mais nada ao aluno: ele já recebeu o convite e criou a senha, e com o aceite a mesma senha passa a abrir as aulas. Depois de mudar o `config.toml`, é preciso reiniciar o Supabase local.
 - A versão dos termos gravada no aceite fica em `src/lib/site.ts` (`VERSAO_DOS_TERMOS`). Mudou o texto da política ou dos termos, muda a versão.

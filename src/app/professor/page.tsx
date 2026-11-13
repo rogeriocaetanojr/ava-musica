@@ -303,7 +303,7 @@ async function Resumo() {
                   return (
                     <li key={`${aluno.id}-${curso?.id ?? "sem-curso"}`}>
                       <Link
-                        href={`/professor/progresso/${aluno.id}`}
+                        href={`/professor/alunos/${aluno.id}`}
                         className="flex min-h-12 items-center gap-4 py-3"
                       >
                         <span
@@ -418,7 +418,7 @@ async function Resumo() {
                         <tr key={`${aluno.id}-${curso?.id ?? "sem-curso"}`}>
                           <td className="px-6 py-3">
                             <Link
-                              href={`/professor/progresso/${aluno.id}`}
+                              href={`/professor/alunos/${aluno.id}`}
                               className="flex min-h-12 items-center gap-3 font-bold text-texto hover:underline"
                             >
                               <span

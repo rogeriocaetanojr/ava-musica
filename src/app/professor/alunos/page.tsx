@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { BotaoVoltar } from "@/components/botao-voltar";
 import { TelaDoProfessor } from "@/components/tela-do-professor";
 import { CONTEINER } from "@/components/conteiner";
@@ -166,15 +165,9 @@ export default function Alunos() {
       <main
         className={`${CONTEINER} flex max-w-6xl flex-1 flex-col gap-6 py-6 md:gap-8 md:py-10`}
       >
-        <div className="md:hidden">
+        <div>
           <BotaoVoltar href="/professor" rotulo="Voltar para Painel" />
         </div>
-        <Link
-          href="/professor"
-          className="hidden min-h-12 items-center self-start text-sm font-bold text-destaque underline md:inline-flex"
-        >
-          ← Painel
-        </Link>
         <Suspense fallback={<p>Carregando…</p>}>
           <ListaDeAlunos
             pedidos={

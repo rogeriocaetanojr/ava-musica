@@ -13,7 +13,8 @@ import {
 } from "@/lib/auditoria";
 import { calcularIdade, hojeNoBrasil } from "@/lib/idade";
 import { iniciais, nomeParaExibir } from "@/lib/nomes";
-import { resumoParaProfessor } from "@/lib/painel";
+import { ordenar } from "@/lib/ordem";
+import { resumoParaProfessor, ultimaAtividade } from "@/lib/painel";
 import { urlDoSite } from "@/lib/site";
 import { criarClienteAdmin } from "@/lib/supabase/admin";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
@@ -125,6 +126,17 @@ async function FichaDoAluno({ params }: { params: Promise<{ id: string }> }) {
       resumoParaProfessor(curso.modulos, painel?.progresso ?? []).percentual,
     ]),
   );
+  const registros = painel?.progresso ?? [];
+  const ultima = ultimaAtividade(registros);
+  // Quando cada aula foi concluída e cada prova marcada como enviada.
+  const aulaConcluidaEm = new Map<string, string>();
+  const provaEnviadaEm = new Map<string, string>();
+  for (const r of registros)
+    if (r.conteudo_id) provaEnviadaEm.set(r.conteudo_id, r.concluido_em);
+    else aulaConcluidaEm.set(r.aula_id, r.concluido_em);
+  const cursosMatriculados = (painel?.cursos ?? []).filter((c) =>
+    matriculados.has(c.id),
+  );
 
   return (
     <>
@@ -166,6 +178,14 @@ async function FichaDoAluno({ params }: { params: Promise<{ id: string }> }) {
                   E-mail
                 </dt>
                 <dd className="break-all text-texto">{aluno.email}</dd>
+              </div>
+              <div>
+                <dt className="text-xs font-bold text-texto-secundario">
+                  Última atividade
+                </dt>
+                <dd className="text-texto">
+                  {ultima ? formatarDataHora(ultima) : "Sem atividade ainda"}
+                </dd>
               </div>
             </dl>
             {/* O menor de 12 também define a senha antes do aceite. */}
@@ -305,6 +325,103 @@ async function FichaDoAluno({ params }: { params: Promise<{ id: string }> }) {
             )}
           </section>
 
+          <section
+            aria-labelledby="progresso-por-aula"
+            className={`${cartao} space-y-5`}
+          >
+            <h2 id="progresso-por-aula" className={tituloDeCartao}>
+              Progresso por aula
+            </h2>
+            {cursosMatriculados.length === 0 ? (
+              <p className="text-sm text-texto-secundario">
+                O aluno não está matriculado em nenhum curso.
+              </p>
+            ) : (
+              cursosMatriculados.map((curso) => {
+                const modulos = ordenar(curso.modulos)
+                  .map((modulo) => ({
+                    ...modulo,
+                    aulas: ordenar(modulo.aulas.filter((a) => a.publicada)),
+                  }))
+                  .filter((modulo) => modulo.aulas.length > 0);
+                return (
+                  <div key={curso.id} className="space-y-3">
+                    <h3 className="font-bold break-words text-texto">
+                      {curso.titulo}
+                      {!curso.publicado && (
+                        <span className="text-sm font-normal text-texto-secundario">
+                          {" "}
+                          (rascunho)
+                        </span>
+                      )}
+                    </h3>
+                    {modulos.length === 0 && (
+                      <p className="text-sm text-texto-secundario">
+                        Nenhuma aula publicada.
+                      </p>
+                    )}
+                    {modulos.map((modulo) => (
+                      <div key={modulo.id} className="space-y-2">
+                        <h4 className="text-sm font-bold break-words text-texto-secundario">
+                          {modulo.titulo}
+                        </h4>
+                        <ul className="divide-y divide-linha rounded-xl border border-linha">
+                          {modulo.aulas.map((aula) => {
+                            const concluida = aulaConcluidaEm.get(aula.id);
+                            const provas = aula.conteudos.filter(
+                              (c) => c.tipo === "prova",
+                            );
+                            return (
+                              <li
+                                key={aula.id}
+                                className="space-y-1 px-4 py-3 text-sm"
+                              >
+                                <p className="font-bold break-words text-texto">
+                                  {aula.titulo}
+                                </p>
+                                <p
+                                  className={
+                                    concluida
+                                      ? "text-sucesso"
+                                      : "text-texto-secundario"
+                                  }
+                                >
+                                  {concluida
+                                    ? `Concluída em ${formatarDataHora(concluida)}`
+                                    : "Não concluída"}
+                                </p>
+                                {provas.map((prova, i) => {
+                                  const enviada = provaEnviadaEm.get(prova.id);
+                                  return (
+                                    <p
+                                      key={prova.id}
+                                      className={
+                                        enviada
+                                          ? "text-sucesso"
+                                          : "text-texto-secundario"
+                                      }
+                                    >
+                                      {provas.length > 1
+                                        ? `Prova ${i + 1}: `
+                                        : "Prova: "}
+                                      {enviada
+                                        ? `enviada em ${formatarDataHora(enviada)}`
+                                        : "não enviada"}
+                                    </p>
+                                  );
+                                })}
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })
+            )}
+          </section>
+
           <section aria-labelledby="ultimos-acessos" className={cartaoComLista}>
             <h2
               id="ultimos-acessos"
@@ -373,15 +490,9 @@ export default function Aluno({ params }: { params: Promise<{ id: string }> }) {
       <main
         className={`${CONTEINER} flex max-w-6xl flex-1 flex-col gap-6 py-6 md:py-10`}
       >
-        <div className="md:hidden">
+        <div>
           <BotaoVoltar href="/professor/alunos" rotulo="Voltar para Alunos" />
         </div>
-        <Link
-          href="/professor/alunos"
-          className="hidden min-h-12 items-center self-start text-sm font-bold text-destaque underline md:inline-flex"
-        >
-          ← Alunos
-        </Link>
         <Suspense fallback={<p>Carregando…</p>}>
           <FichaDoAluno params={params} />
         </Suspense>
