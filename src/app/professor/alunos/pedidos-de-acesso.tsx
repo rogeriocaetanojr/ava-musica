@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useActionState, useState } from "react";
-import { classesDoBotao } from "@/components/botao";
+import { Botao } from "@/components/botao";
+import { classesDoCampo } from "@/components/campo";
 import { formatarDataHora } from "@/lib/datas";
 import { ehDataValida, hojeNoBrasil, precisaDeAceite } from "@/lib/idade";
 import { liberarPedido, recusarPedido } from "./acoes";
@@ -14,8 +15,7 @@ export type Pedido = {
   pedido_em: string;
 };
 
-const campo =
-  "min-h-14 w-full rounded-xl border border-borda-campo bg-superficie px-4 py-3 text-base text-texto";
+const campo = classesDoCampo();
 const alerta = "rounded-xl bg-bloco p-4 text-sm text-texto-sobre-bloco";
 
 // O aviso fica aqui, fora de cada pedido: depois de liberar ou recusar o
@@ -101,20 +101,22 @@ function CartaoDoPedido({
         />
       ) : (
         <div className="flex gap-2">
-          <button
-            type="button"
+          <Botao
             onClick={() => setAbrindo("liberar")}
-            className="inline-flex min-h-12 flex-1 items-center justify-center rounded-xl border border-linha bg-superficie px-3 py-2 text-sm font-bold text-texto transition-colors hover:border-borda-campo"
+            variante="secundario"
+            tamanho="pequeno"
+            className="flex-1"
           >
             Liberar
-          </button>
-          <button
-            type="button"
+          </Botao>
+          <Botao
             onClick={() => setAbrindo("recusar")}
-            className="inline-flex min-h-12 flex-1 items-center justify-center rounded-xl border border-linha bg-superficie px-3 py-2 text-sm font-bold text-texto transition-colors hover:border-borda-campo"
+            variante="secundario"
+            tamanho="pequeno"
+            className="flex-1"
           >
             Recusar
-          </button>
+          </Botao>
         </div>
       )}
     </div>
@@ -202,21 +204,17 @@ function FormularioLiberacao({
         </p>
       )}
       <div className="flex flex-wrap gap-2">
-        <button
-          type="submit"
-          disabled={enviando}
-          className={classesDoBotao("primario", "sm:w-auto")}
-        >
+        <Botao type="submit" disabled={enviando} className="sm:w-auto">
           {enviando ? "Salvando…" : "Confirmar liberação"}
-        </button>
-        <button
-          type="button"
+        </Botao>
+        <Botao
           disabled={enviando}
           onClick={aoCancelar}
-          className={classesDoBotao("secundario", "sm:w-auto")}
+          variante="secundario"
+          className="sm:w-auto"
         >
           Cancelar
-        </button>
+        </Botao>
       </div>
     </form>
   );
@@ -252,21 +250,17 @@ function ConfirmacaoRecusa({
         </p>
       )}
       <div className="flex flex-wrap gap-2">
-        <button
-          type="submit"
-          disabled={enviando}
-          className={classesDoBotao("primario", "sm:w-auto")}
-        >
+        <Botao type="submit" disabled={enviando} className="sm:w-auto">
           {enviando ? "Salvando…" : "Confirmar recusa"}
-        </button>
-        <button
-          type="button"
+        </Botao>
+        <Botao
           disabled={enviando}
           onClick={aoCancelar}
-          className={classesDoBotao("secundario", "sm:w-auto")}
+          variante="secundario"
+          className="sm:w-auto"
         >
           Cancelar
-        </button>
+        </Botao>
       </div>
     </form>
   );

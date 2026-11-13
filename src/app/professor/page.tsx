@@ -4,7 +4,7 @@ import { Suspense } from "react";
 import { Aviso } from "@/components/aviso";
 import { BarraProgresso } from "@/components/barra-progresso";
 import { AbasDoProfessor } from "@/components/abas-do-professor";
-import { classesDoBotao } from "@/components/botao";
+import { Botao, classesDoBotao } from "@/components/botao";
 import { CabecalhoDoProfessor } from "@/components/cabecalho-do-professor";
 import { Cordas } from "@/components/cordas";
 import { exigirProfessor } from "@/lib/auth";
@@ -560,23 +560,24 @@ async function Painel() {
       >
         <Link
           href="/privacidade"
-          className="inline-flex min-h-12 items-center text-sm text-texto-secundario underline"
+          className={classesDoBotao("link", "text-texto-secundario")}
         >
           Política de privacidade
         </Link>
         <Link
           href="/cursos"
-          className="inline-flex min-h-12 items-center text-sm text-texto-secundario underline md:hidden"
+          className={classesDoBotao("link", "text-texto-secundario md:hidden")}
         >
           Ver como aluno
         </Link>
         <form action="/auth/sair" method="post" className="md:hidden">
-          <button
+          <Botao
             type="submit"
-            className="inline-flex min-h-12 items-center text-sm text-texto-secundario underline"
+            variante="link"
+            className="text-texto-secundario"
           >
             Sair
-          </button>
+          </Botao>
         </form>
       </footer>
       <AbasDoProfessor atual="painel" />

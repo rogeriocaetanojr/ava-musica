@@ -313,10 +313,7 @@ export function FormularioAluno({ cursos }: { cursos: Curso[] }) {
       <div className="flex gap-2 max-md:fixed max-md:inset-x-0 max-md:bottom-0 max-md:z-10 max-md:flex-col max-md:border-t max-md:border-linha max-md:bg-superficie max-md:px-4 max-md:pt-2 max-md:pb-[calc(1rem+env(safe-area-inset-bottom))] md:flex-row md:justify-end md:gap-3">
         <Link
           href="/professor/alunos"
-          className={classesDoBotao(
-            "secundario",
-            "md:w-auto max-md:min-h-12 max-md:border-0 max-md:bg-transparent max-md:text-destaque max-md:underline",
-          )}
+          className={classesDoBotao("secundario", "md:w-auto")}
         >
           Cancelar
         </Link>

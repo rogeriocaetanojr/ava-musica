@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import Link from "next/link";
+import { Botao, classesDoBotao } from "@/components/botao";
 import { BocaDoViolao, Cordas } from "@/components/cordas";
 import { LogoDoAva } from "@/components/logo-do-ava";
 import { exigirAluno } from "@/lib/auth";
@@ -64,16 +65,17 @@ export default function SeuNome() {
           <FormularioNome />
           <footer className="mt-auto flex flex-wrap items-center gap-x-6 pt-6 md:mt-0 md:pt-0">
             <form action="/auth/sair" method="post">
-              <button
+              <Botao
                 type="submit"
-                className="inline-flex min-h-12 items-center text-sm font-bold text-texto-secundario underline"
+                variante="link"
+                className="font-bold text-texto-secundario"
               >
                 Sair
-              </button>
+              </Botao>
             </form>
             <Link
               href="/privacidade"
-              className="inline-flex min-h-12 items-center text-sm font-bold text-destaque underline"
+              className={classesDoBotao("link", "font-bold text-destaque")}
             >
               Política de privacidade
             </Link>

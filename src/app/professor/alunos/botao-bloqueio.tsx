@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { Botao } from "@/components/botao";
 import { bloquearAluno, desbloquearAluno } from "./acoes";
 
 // Pede uma confirmação antes de bloquear ou desbloquear.
@@ -57,34 +58,31 @@ export function BotaoBloqueio({
       )}
       {confirmando ? (
         <div className="flex flex-wrap gap-2">
-          <button
+          <Botao
             type="submit"
             disabled={enviando}
-            className={
-              bloqueado
-                ? "inline-flex min-h-12 items-center justify-center rounded-xl border border-linha bg-superficie px-5 py-3 font-bold text-texto hover:border-borda-campo disabled:opacity-60"
-                : "inline-flex min-h-12 items-center justify-center rounded-xl bg-bordo px-5 py-3 font-bold text-sobre-bordo hover:bg-vinho disabled:opacity-60"
-            }
+            tamanho="pequeno"
+            variante={bloqueado ? "secundario" : "primario"}
           >
             {enviando ? "Salvando…" : `Confirmar: ${acao.toLowerCase()}`}
-          </button>
-          <button
-            type="button"
+          </Botao>
+          <Botao
             disabled={enviando}
             onClick={() => setConfirmando(false)}
-            className="inline-flex min-h-12 items-center justify-center rounded-xl border border-linha bg-superficie px-5 py-3 font-bold text-texto hover:border-borda-campo disabled:opacity-60"
+            variante="secundario"
+            tamanho="pequeno"
           >
             Cancelar
-          </button>
+          </Botao>
         </div>
       ) : (
-        <button
-          type="button"
+        <Botao
           onClick={() => setConfirmando(true)}
-          className="inline-flex min-h-12 items-center justify-center rounded-xl border border-linha bg-superficie px-5 py-3 font-bold text-texto hover:border-borda-campo"
+          variante="secundario"
+          tamanho="pequeno"
         >
           {acao}
-        </button>
+        </Botao>
       )}
     </form>
   );

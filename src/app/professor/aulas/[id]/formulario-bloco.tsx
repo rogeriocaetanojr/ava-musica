@@ -3,7 +3,7 @@
 import { useActionState, useId, useState } from "react";
 import { type Bloco, BlocoConteudo } from "@/components/bloco-conteudo";
 import { Botao } from "@/components/botao";
-import { Campo } from "@/components/campo";
+import { Campo, CampoSelect, CampoTexto } from "@/components/campo";
 import { ehTipoDeBloco, TIPOS_DE_BLOCO, type TipoDeBloco } from "@/lib/embeds";
 import type { EstadoFormulario } from "../../cursos/validacao";
 import { NOMES_DOS_TIPOS } from "./validacao";
@@ -36,9 +36,6 @@ const DICAS: Record<TipoDeBloco, string> = {
 
 // Mesmas classes do Campo, que só cobre input: o select e o textarea usam
 // estas.
-const campo =
-  "min-h-14 w-full rounded-xl border border-borda-campo bg-superficie px-4 py-3 text-base text-texto placeholder:text-texto-secundario";
-const rotulo = "block text-sm font-bold text-texto";
 
 export function FormularioBloco({
   acao,
@@ -78,26 +75,21 @@ export function FormularioBloco({
 
   return (
     <form action={enviar} className="space-y-4">
-      <div className="space-y-2">
-        <label htmlFor={`${id}-tipo`} className={rotulo}>
-          Tipo
-        </label>
-        <select
-          id={`${id}-tipo`}
-          name="tipo"
-          value={tipo}
-          onChange={(e) => {
-            if (ehTipoDeBloco(e.target.value)) setTipo(e.target.value);
-          }}
-          className={campo}
-        >
-          {TIPOS_DE_BLOCO.map((t) => (
-            <option key={t} value={t}>
-              {NOMES_DOS_TIPOS[t]}
-            </option>
-          ))}
-        </select>
-      </div>
+      <CampoSelect
+        id={`${id}-tipo`}
+        rotulo="Tipo"
+        name="tipo"
+        value={tipo}
+        onChange={(e) => {
+          if (ehTipoDeBloco(e.target.value)) setTipo(e.target.value);
+        }}
+      >
+        {TIPOS_DE_BLOCO.map((t) => (
+          <option key={t} value={t}>
+            {NOMES_DOS_TIPOS[t]}
+          </option>
+        ))}
+      </CampoSelect>
 
       <Campo
         id={`${id}-titulo`}
@@ -111,21 +103,16 @@ export function FormularioBloco({
       />
 
       {tipo === "texto" ? (
-        <div className="space-y-2">
-          <label htmlFor={`${id}-texto`} className={rotulo}>
-            Texto
-          </label>
-          <textarea
-            id={`${id}-texto`}
-            name="texto"
-            required
-            rows={5}
-            maxLength={10000}
-            value={texto}
-            onChange={(e) => setTexto(e.target.value)}
-            className={campo}
-          />
-        </div>
+        <CampoTexto
+          id={`${id}-texto`}
+          rotulo="Texto"
+          name="texto"
+          required
+          rows={5}
+          maxLength={10000}
+          value={texto}
+          onChange={(e) => setTexto(e.target.value)}
+        />
       ) : (
         <div className="space-y-2">
           <Campo

@@ -1,7 +1,8 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { classesDoBotao } from "@/components/botao";
+import { Botao } from "@/components/botao";
+import { classesDoCampo } from "@/components/campo";
 import { formatarDataHora } from "@/lib/datas";
 import { permitirNovoPedido, permitirNovoPedidoPorEmail } from "./acoes";
 
@@ -12,8 +13,7 @@ export type Recusa = {
   vale_ate: string;
 };
 
-const campo =
-  "min-h-14 w-full rounded-xl border border-borda-campo bg-superficie px-4 py-3 text-base text-texto";
+const campo = classesDoCampo();
 const alerta = "rounded-xl bg-bloco p-4 text-sm text-texto-sobre-bloco";
 
 // Quem foi recusado não consegue pedir de novo por 7 dias. O banco guarda só
@@ -78,13 +78,9 @@ function CartaoDaRecusa({
           {estado.erro}
         </p>
       )}
-      <button
-        type="submit"
-        disabled={enviando}
-        className={classesDoBotao("secundario")}
-      >
+      <Botao type="submit" disabled={enviando} variante="secundario">
         {enviando ? "Salvando…" : "Permitir novo pedido"}
-      </button>
+      </Botao>
     </form>
   );
 }
@@ -127,13 +123,9 @@ function PermitirPorEmail({
           {estado.erro}
         </p>
       )}
-      <button
-        type="submit"
-        disabled={enviando}
-        className={classesDoBotao("secundario")}
-      >
+      <Botao type="submit" disabled={enviando} variante="secundario">
         {enviando ? "Salvando…" : "Permitir"}
-      </button>
+      </Botao>
     </form>
   );
 }

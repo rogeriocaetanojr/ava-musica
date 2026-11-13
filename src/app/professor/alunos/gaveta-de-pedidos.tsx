@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { type ReactNode, useEffect, useRef, useState } from "react";
-import { classesDoBotao } from "@/components/botao";
+import { Botao, classesDoBotao } from "@/components/botao";
 
 // Pedidos de acesso e recusados recentes. No computador ficam à vista, nos
 // mesmos lugares de antes; no celular saem da página e vão para um painel que
@@ -51,22 +51,19 @@ export function GavetaDePedidos({
         >
           Convidar aluno
         </Link>
-        <button
+        <Botao
           ref={botao}
-          type="button"
           aria-expanded={aberto}
           onClick={() => setAberto(true)}
-          className={classesDoBotao(
-            comPedidos ? "destaque" : "secundario",
-            "px-3",
-          )}
+          variante={comPedidos ? "destaque" : "secundario"}
+          className="px-3"
         >
           {/* Na tela cabe só "Pedidos"; o nome acessível continua completo. */}
           <span>
             Pedidos<span className="sr-only"> de acesso</span>
             {quantidade !== null && ` · ${quantidade}`}
           </span>
-        </button>
+        </Botao>
       </div>
 
       {aberto && (
@@ -90,13 +87,9 @@ export function GavetaDePedidos({
         }
       >
         <div className="ml-auto w-fit md:hidden">
-          <button
-            type="button"
-            onClick={fechar}
-            className={classesDoBotao("secundario")}
-          >
+          <Botao onClick={fechar} variante="secundario">
             Fechar
-          </button>
+          </Botao>
         </div>
         <div className="md:order-1 lg:order-none">{pedidos}</div>
         <div className="md:order-3 lg:order-none">{recusados}</div>

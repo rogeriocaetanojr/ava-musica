@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 import { Botao } from "@/components/botao";
-import { Campo } from "@/components/campo";
+import { Campo, CampoSelect, CampoTexto } from "@/components/campo";
 import type { EstadoFormulario } from "../cursos/validacao";
 
 type Props = {
@@ -18,11 +18,6 @@ type Props = {
   // Chamado depois de salvar sem erro (fecha o painel).
   aoSalvar?: () => void;
 };
-
-// Mesmo visual do Campo, para a mensagem e o destino.
-const campo =
-  "min-h-14 w-full rounded-xl border border-borda-campo bg-superficie px-4 py-3 text-base text-texto placeholder:text-texto-secundario";
-const rotulo = "block text-sm font-bold text-texto";
 
 export function FormularioAviso({
   acao,
@@ -55,39 +50,29 @@ export function FormularioAviso({
         defaultValue={valores.titulo}
       />
 
-      <div className="space-y-2">
-        <label htmlFor={`${prefixo}-texto`} className={rotulo}>
-          Mensagem
-        </label>
-        <textarea
-          id={`${prefixo}-texto`}
-          name="texto"
-          required
-          rows={4}
-          maxLength={2000}
-          defaultValue={valores.texto}
-          className={campo}
-        />
-      </div>
+      <CampoTexto
+        id={`${prefixo}-texto`}
+        rotulo="Mensagem"
+        name="texto"
+        required
+        rows={4}
+        maxLength={2000}
+        defaultValue={valores.texto}
+      />
 
-      <div className="space-y-2">
-        <label htmlFor={`${prefixo}-curso`} className={rotulo}>
-          Para quem
-        </label>
-        <select
-          id={`${prefixo}-curso`}
-          name="curso_id"
-          defaultValue={valores.curso_id ?? ""}
-          className={campo}
-        >
-          <option value="">Todos os alunos</option>
-          {cursos.map((curso) => (
-            <option key={curso.id} value={curso.id}>
-              Alunos de {curso.titulo}
-            </option>
-          ))}
-        </select>
-      </div>
+      <CampoSelect
+        id={`${prefixo}-curso`}
+        rotulo="Para quem"
+        name="curso_id"
+        defaultValue={valores.curso_id ?? ""}
+      >
+        <option value="">Todos os alunos</option>
+        {cursos.map((curso) => (
+          <option key={curso.id} value={curso.id}>
+            Alunos de {curso.titulo}
+          </option>
+        ))}
+      </CampoSelect>
 
       <Botao type="submit" disabled={enviando} className="sm:w-auto">
         {enviando ? "Salvando…" : textoDoBotao}

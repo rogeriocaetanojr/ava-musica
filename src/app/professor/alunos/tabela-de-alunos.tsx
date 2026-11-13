@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { type ReactNode, useState } from "react";
 import { classesDoBotao } from "@/components/botao";
+import { classesDoCampo } from "@/components/campo";
 import { BarraProgresso } from "@/components/barra-progresso";
 import { iniciais } from "@/lib/nomes";
 
@@ -301,7 +302,7 @@ function BuscaDeAlunos({
           onChange={(e) => aoMudar(e.target.value)}
           placeholder="Buscar pelo nome"
           autoComplete="off"
-          className="min-h-14 w-full rounded-xl border border-borda-campo bg-superficie py-3 pr-4 pl-12 text-base text-texto placeholder:text-texto-secundario"
+          className={classesDoCampo("pr-4 pl-12")}
         />
       </div>
     </div>

@@ -1,6 +1,8 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { Botao } from "@/components/botao";
+import { classesDoCampo } from "@/components/campo";
 import { confirmaExclusao } from "./validacao";
 import { excluirAluno } from "./acoes";
 
@@ -35,7 +37,7 @@ export function FormularioExclusao({
           autoComplete="off"
           value={digitado}
           onChange={(e) => setDigitado(e.target.value)}
-          className="min-h-14 w-full rounded-xl border border-borda-campo bg-superficie px-4 py-3 text-base text-texto"
+          className={classesDoCampo()}
         />
       </label>
       {estado.erro && (
@@ -46,13 +48,9 @@ export function FormularioExclusao({
           {estado.erro}
         </p>
       )}
-      <button
-        type="submit"
-        disabled={!confere || enviando}
-        className="inline-flex min-h-12 items-center justify-center rounded-xl bg-bordo px-5 py-3 font-bold text-sobre-bordo hover:bg-vinho disabled:opacity-60"
-      >
+      <Botao type="submit" disabled={!confere || enviando} tamanho="pequeno">
         {enviando ? "Excluindo…" : "Excluir todos os dados"}
-      </button>
+      </Botao>
     </form>
   );
 }

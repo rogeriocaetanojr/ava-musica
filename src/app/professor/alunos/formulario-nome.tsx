@@ -1,6 +1,8 @@
 "use client";
 
 import { useActionState } from "react";
+import { Botao } from "@/components/botao";
+import { classesDoCampo } from "@/components/campo";
 import type { EstadoFormulario } from "../cursos/validacao";
 import { renomearAluno } from "./acoes";
 
@@ -33,15 +35,17 @@ export function FormularioNome({
           maxLength={120}
           autoComplete="off"
           defaultValue={estado.valores?.nome ?? nome}
-          className="min-h-12 min-w-0 flex-1 rounded-xl border border-borda-campo bg-superficie px-4 py-2 text-base text-texto"
+          className={classesDoCampo("min-w-0 flex-1")}
         />
-        <button
+        <Botao
           type="submit"
           disabled={enviando}
-          className="inline-flex min-h-12 items-center justify-center shrink-0 rounded-xl border border-linha bg-superficie px-5 py-3 font-bold text-texto hover:border-borda-campo disabled:opacity-60"
+          variante="secundario"
+          tamanho="pequeno"
+          className="shrink-0"
         >
           {enviando ? "Salvando…" : "Salvar nome"}
-        </button>
+        </Botao>
       </div>
       {estado.erro && (
         <p

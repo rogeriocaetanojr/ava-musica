@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { type EstadoConvite, reenviarConvite } from "./acoes";
+import { Botao } from "@/components/botao";
 import { BotaoCopiar } from "./botao-copiar";
 
 export function BotaoReenviar({ alunoId }: { alunoId: string }) {
@@ -12,13 +13,14 @@ export function BotaoReenviar({ alunoId }: { alunoId: string }) {
 
   return (
     <form action={enviar} className="space-y-2">
-      <button
+      <Botao
         type="submit"
         disabled={enviando}
-        className="inline-flex min-h-12 items-center justify-center rounded-xl border border-linha bg-superficie px-5 py-3 font-bold text-texto hover:border-borda-campo disabled:opacity-60"
+        variante="secundario"
+        tamanho="pequeno"
       >
         {enviando ? "Reenviando…" : "Reenviar convite"}
-      </button>
+      </Botao>
       {estado.erro && (
         <p
           role="alert"

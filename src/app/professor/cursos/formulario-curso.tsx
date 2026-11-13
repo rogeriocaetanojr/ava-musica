@@ -1,6 +1,8 @@
 "use client";
 
 import { useActionState } from "react";
+import { Botao } from "@/components/botao";
+import { Campo, CampoSelect, CampoTexto } from "@/components/campo";
 import { type EstadoFormulario, NIVEIS } from "./validacao";
 
 type Props = {
@@ -12,92 +14,63 @@ type Props = {
   textoDoBotao: string;
 };
 
-const campo =
-  "min-h-14 w-full rounded-xl border border-borda-campo bg-superficie px-4 py-3 text-base text-texto placeholder:text-texto-secundario";
-const rotulo = "block text-sm font-bold text-texto";
-
 export function FormularioCurso({ acao, inicial = {}, textoDoBotao }: Props) {
   const [estado, enviar, enviando] = useActionState(acao, {});
   const valores = estado.valores ?? inicial;
 
   return (
     <form action={enviar} className="space-y-4">
-      <div className="space-y-2">
-        <label htmlFor="titulo" className={rotulo}>
-          Título
-        </label>
-        <input
-          id="titulo"
-          name="titulo"
-          required
-          maxLength={120}
-          defaultValue={valores.titulo}
-          className={campo}
-        />
-      </div>
+      <Campo
+        id="titulo"
+        rotulo="Título"
+        name="titulo"
+        required
+        maxLength={120}
+        defaultValue={valores.titulo}
+      />
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <div className="space-y-2">
-          <label htmlFor="instrumento" className={rotulo}>
-            Instrumento
-          </label>
-          <input
-            id="instrumento"
-            name="instrumento"
-            required
-            maxLength={60}
-            defaultValue={valores.instrumento}
-            className={campo}
-          />
-        </div>
-        <div className="space-y-2">
-          <label htmlFor="nivel" className={rotulo}>
-            Nível
-          </label>
-          <select
-            id="nivel"
-            name="nivel"
-            defaultValue={valores.nivel ?? ""}
-            className={campo}
-          >
-            <option value="">Sem nível</option>
-            {NIVEIS.map((nivel) => (
-              <option key={nivel} value={nivel}>
-                {nivel}
-              </option>
-            ))}
-          </select>
-        </div>
+        <Campo
+          id="instrumento"
+          rotulo="Instrumento"
+          name="instrumento"
+          required
+          maxLength={60}
+          defaultValue={valores.instrumento}
+        />
+        <CampoSelect
+          id="nivel"
+          rotulo="Nível"
+          name="nivel"
+          defaultValue={valores.nivel ?? ""}
+        >
+          <option value="">Sem nível</option>
+          {NIVEIS.map((nivel) => (
+            <option key={nivel} value={nivel}>
+              {nivel}
+            </option>
+          ))}
+        </CampoSelect>
       </div>
 
-      <div className="space-y-2">
-        <label htmlFor="descricao" className={rotulo}>
-          Descrição
-        </label>
-        <textarea
-          id="descricao"
-          name="descricao"
-          rows={3}
-          maxLength={2000}
-          defaultValue={valores.descricao}
-          className={campo}
-        />
-      </div>
+      <CampoTexto
+        id="descricao"
+        rotulo="Descrição"
+        name="descricao"
+        rows={3}
+        maxLength={2000}
+        defaultValue={valores.descricao}
+      />
 
-      <div className="space-y-2">
-        <label htmlFor="capa_url" className={rotulo}>
-          Endereço da imagem de capa (opcional)
-        </label>
-        <input
-          id="capa_url"
-          name="capa_url"
-          type="url"
-          inputMode="url"
-          placeholder="https://"
-          defaultValue={valores.capa_url}
-          className={campo}
-        />
-      </div>
+      <Campo
+        id="capa_url"
+        rotulo="Endereço da imagem de capa (opcional)"
+        name="capa_url"
+        type="url"
+        inputMode="url"
+        placeholder="https://"
+        defaultValue={valores.capa_url}
+      />
 
       <label className="flex min-h-12 items-center gap-3 py-2">
         <input
@@ -109,13 +82,9 @@ export function FormularioCurso({ acao, inicial = {}, textoDoBotao }: Props) {
         Publicado (visível para os alunos matriculados)
       </label>
 
-      <button
-        type="submit"
-        disabled={enviando}
-        className="inline-flex min-h-14 w-full items-center justify-center rounded-xl bg-bordo px-5 py-3 font-bold text-sobre-bordo hover:bg-vinho disabled:opacity-60 sm:w-auto"
-      >
+      <Botao type="submit" disabled={enviando} className="sm:w-auto">
         {enviando ? "Salvando…" : textoDoBotao}
-      </button>
+      </Botao>
 
       {estado.erro && (
         <p
