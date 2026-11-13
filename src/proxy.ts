@@ -6,6 +6,7 @@ import { COOKIE_ULTIMO_USO, semValidade, sessaoExpirou } from "./lib/sessao";
 const ROTAS_PUBLICAS = [
   "/login",
   "/criar-conta",
+  "/esqueci-senha",
   "/convite",
   "/auth",
   "/aceite",

@@ -40,9 +40,9 @@ O Supabase local lê esses limites do `supabase/config.toml` (`[auth.rate_limit]
 Observações:
 
 - O envio de e-mails na nuvem só aceita o valor acima depois que um SMTP próprio estiver configurado; com o SMTP padrão do Supabase o limite é fixo e bem menor.
-- O limite de e-mails do Supabase conta os e-mails de confirmação de Criar conta. Os convites saem pelo SMTP do próprio site, fora desse limite, e têm o limite do site: 20 por hora para o professor, contando os reenvios.
+- O limite de e-mails do Supabase conta os e-mails de confirmação de Criar conta e os de Esqueci minha senha. Os convites saem pelo SMTP do próprio site, fora desse limite, e têm o limite do site: 20 por hora para o professor, contando os reenvios.
 - O login por senha e Criar conta dividem o mesmo limite (`sign_in_sign_ups`): o Supabase não separa os dois. Com 15 a cada 5 minutos por IP, dá no máximo 180 tentativas por hora para cada endereço.
-- O limite de verificações conta a abertura dos links de confirmação.
+- O limite de verificações conta a abertura dos links de confirmação e dos links de senha nova.
 - Quando um limite é atingido, a tela `/login` mostra a mensagem "Muitas tentativas de entrar em pouco tempo…".
 - Mudou um valor aqui, mude também no `config.toml` (e vice-versa) e reinicie o Supabase local.
 
@@ -53,6 +53,7 @@ Nos dois projetos do Supabase (homologação e produção):
 1. **Cadastro aberto:** em **Authentication → Sign In / Providers**, deixe **Allow new users to sign up** ligado. É o que permite Criar conta e o pedido pelo Google; quem garante que o pendente não vê nada é a regra de acesso do banco (migração `20261022030000_pedidos_de_acesso.sql`), não o painel.
 2. **Google:** ative o provedor Google com o cliente OAuth do ambiente (passo a passo em `guias/login-google.md`). Sem ele, o botão Entrar com Google não funciona; Criar conta e o login por senha continuam.
 3. **Criar conta (e-mail e senha):** o site cria a conta com `signUp`, e a conta só vira pedido de acesso depois que a pessoa abre o link de confirmação (`/auth/confirmar`). Em **Authentication → Emails → Templates**, em **Confirm signup**, cole o conteúdo de `supabase/templates/confirmacao.html`, com o assunto "Confirme o seu e-mail na Escola de Música John Meyer". O modelo usa `{{ .SiteURL }}/auth/confirmar?token_hash={{ .TokenHash }}&type=email`; com `{{ .ConfirmationURL }}`, a confirmação não passa pelo site e o pedido não chega ao professor.
+   **Esqueci minha senha:** em **Reset Password**, cole o conteúdo de `supabase/templates/nova-senha.html`, com o assunto "Crie uma senha nova na Escola de Música John Meyer". O modelo usa `{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=recovery`, que abre a tela `/nova-senha`; com `{{ .ConfirmationURL }}`, o link só funciona no mesmo navegador que fez o pedido. O link vale o mesmo tempo da "Email OTP Expiration" (24 horas). Em **Authentication → Sign In / Providers → Email**, deixe **Secure password change** desligado, como no `config.toml`.
 4. **Modelos que não são usados:** o convite do aluno sai pelo SMTP do próprio site (Resend), com o link `/convite/<código>`, e o login não usa código por e-mail. Os modelos **Invite user** e **Magic Link** do painel não são usados; se tiverem o texto antigo da escola, volte ao padrão para não confundir.
 5. **Hook dos recusados:** em **Authentication → Hooks**, adicione o hook **Before User Created** do tipo **Postgres**, com o schema `public` e a função `antes_de_criar_usuario`. Ele barra por 7 dias o cadastro de quem foi recusado. A função vem da migração `20261023000000_pedido_por_email_e_recusas.sql`; o painel não liga o hook sozinho.
 

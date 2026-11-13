@@ -8,10 +8,12 @@ import { tituloDaPagina } from "@/lib/site";
 import { FormularioLogin } from "./formulario-login";
 import {
   MENSAGEM_BLOQUEADO,
+  MENSAGEM_LINK_DA_SENHA_VENCIDO,
   MENSAGEM_LINK_VENCIDO,
   MENSAGEM_MUITAS_TENTATIVAS,
   MENSAGEM_NAO_CONVIDADO,
   MENSAGEM_PEDIDO_BARRADO,
+  MENSAGEM_SENHA_ALTERADA,
   MENSAGEM_SESSAO_EXPIRADA,
 } from "./mensagens";
 
@@ -24,6 +26,8 @@ const MENSAGENS_DE_ERRO: Record<string, string> = {
   "pedido-barrado": MENSAGEM_PEDIDO_BARRADO,
   "sessao-expirada": MENSAGEM_SESSAO_EXPIRADA,
   "link-vencido": MENSAGEM_LINK_VENCIDO,
+  "link-senha-vencido": MENSAGEM_LINK_DA_SENHA_VENCIDO,
+  "senha-alterada": MENSAGEM_SENHA_ALTERADA,
   "senha-definida":
     "Sua senha foi salva. Entre com o seu e-mail e a senha que você criou.",
   google:

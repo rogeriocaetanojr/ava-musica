@@ -5,9 +5,14 @@ import { BotaoDoTema } from "@/components/seletor-de-tema";
 
 import { iniciais } from "@/lib/nomes";
 
-export type SecaoDoProfessor = "painel" | "cursos" | "alunos" | "recados";
+export type SecaoDoProfessor =
+  "painel" | "cursos" | "alunos" | "recados" | "perfil";
 
-const ITENS: { secao: SecaoDoProfessor; rotulo: string; href: string }[] = [
+const ITENS: {
+  secao: Exclude<SecaoDoProfessor, "perfil">;
+  rotulo: string;
+  href: string;
+}[] = [
   { secao: "painel", rotulo: "Painel", href: "/professor" },
   { secao: "cursos", rotulo: "Cursos e aulas", href: "/professor/cursos" },
   { secao: "alunos", rotulo: "Alunos", href: "/professor/alunos" },
@@ -17,8 +22,24 @@ const ITENS: { secao: SecaoDoProfessor; rotulo: string; href: string }[] = [
 const item =
   "inline-flex min-h-12 items-center whitespace-nowrap rounded-xl px-4 text-base font-bold md:px-2 lg:px-4";
 
-// Cabeçalho da área do professor: logo, navegação, avatar e Sair. O selo
-// "Professor" só aparece no celular, onde a navegação vai para as abas.
+// Avatar com as iniciais, que leva ao perfil do professor.
+function Avatar({ nome, atual }: { nome: string; atual: boolean }) {
+  return (
+    <Link
+      href="/professor/perfil"
+      title={nome}
+      aria-current={atual ? "page" : undefined}
+      className="inline-flex size-12 shrink-0 items-center justify-center rounded-full bg-amarelo text-base font-bold text-texto-sobre-amarelo hover:bg-amarelo-claro"
+    >
+      <span aria-hidden="true">{iniciais(nome)}</span>
+      <span className="sr-only">Perfil: conectado como {nome}</span>
+    </Link>
+  );
+}
+
+// Cabeçalho da área do professor: logo, navegação, avatar (que abre o perfil)
+// e Sair. O selo "Professor" só aparece no celular, onde a navegação vai para
+// as abas.
 export function CabecalhoDoProfessor({
   nome,
   atual,
@@ -44,8 +65,9 @@ export function CabecalhoDoProfessor({
           </span>
         </Link>
 
-        <div className="md:hidden">
+        <div className="flex items-center gap-2 md:hidden">
           <BotaoDoTema />
+          {nome && <Avatar nome={nome} atual={atual === "perfil"} />}
         </div>
 
         <nav aria-label="Área do professor" className="hidden md:block">
@@ -76,15 +98,7 @@ export function CabecalhoDoProfessor({
             Ver como aluno
           </Link>
           <BotaoDoTema />
-          {nome && (
-            <span
-              title={nome}
-              className="inline-flex size-12 items-center justify-center rounded-full bg-amarelo text-base font-bold text-texto-sobre-amarelo"
-            >
-              <span aria-hidden="true">{iniciais(nome)}</span>
-              <span className="sr-only">Conectado como {nome}</span>
-            </span>
-          )}
+          {nome && <Avatar nome={nome} atual={atual === "perfil"} />}
           <form action="/auth/sair" method="post">
             <button
               type="submit"

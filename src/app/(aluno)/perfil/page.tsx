@@ -6,6 +6,7 @@ import { classesDoBotao } from "@/components/botao";
 import { CabecalhoDoAluno } from "@/components/cabecalho-do-aluno";
 import { exigirAlunoOuProfessor } from "@/lib/auth";
 import { BotaoDoTema } from "@/components/seletor-de-tema";
+import { TrocarSenha } from "@/components/trocar-senha";
 import { iniciais } from "@/lib/nomes";
 
 const link =
@@ -37,6 +38,8 @@ async function PerfilDoAluno() {
             </p>
           </div>
         </section>
+
+        <TrocarSenha email={sessao.email} />
 
         <BotaoDoTema comTexto />
 

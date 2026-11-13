@@ -24,6 +24,13 @@ export const MENSAGEM_CREDENCIAIS_INVALIDAS =
 export const MENSAGEM_LINK_VENCIDO =
   "O link de confirmação venceu ou já foi usado. Entre com o e-mail e a senha; se a conta ainda não estiver confirmada, crie a conta de novo para receber outro link.";
 
+// Link de "Esqueci minha senha" (supabase/templates/nova-senha.html).
+export const MENSAGEM_LINK_DA_SENHA_VENCIDO =
+  "O link para criar uma senha nova venceu ou já foi usado. Peça outro em Esqueci minha senha.";
+
+export const MENSAGEM_SENHA_ALTERADA =
+  "Senha alterada. Entre com o seu e-mail e a senha nova.";
+
 export const MENSAGEM_SESSAO_EXPIRADA =
   "Sua sessão terminou depois de 2 horas sem uso. Entre de novo para continuar.";
 

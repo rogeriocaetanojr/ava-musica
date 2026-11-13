@@ -235,6 +235,8 @@ double_confirm_changes = true
 # Criar conta só vale depois do link de confirmação (supabase/templates/confirmacao.html).
 enable_confirmations = true
 # If enabled, users will need to reauthenticate or have logged in recently to change their password.
+# Desligado: o perfil confere a senha atual com um login antes de trocar, e /nova-senha só abre
+# pelo link do e-mail.
 secure_password_change = false
 # Controls the minimum amount of time that must pass before sending another signup confirmation or password reset email.
 max_frequency = "1s"
@@ -259,6 +261,12 @@ otp_expiry = 86400
 [auth.email.template.confirmation]
 subject = "Confirme o seu e-mail na Escola de Música John Meyer"
 content_path = "./supabase/templates/confirmacao.html"
+
+# Link de "Esqueci minha senha" ({{ .TokenHash }}), aberto em /auth/callback, que leva a
+# /nova-senha. Vale as mesmas 24 horas do otp_expiry acima.
+[auth.email.template.recovery]
+subject = "Crie uma senha nova na Escola de Música John Meyer"
+content_path = "./supabase/templates/nova-senha.html"
 
 # Uncomment to customize notification email template
 # [auth.email.notification.password_changed]

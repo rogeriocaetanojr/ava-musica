@@ -41,11 +41,11 @@ export async function contarEmails(
 }
 
 // Espera o e-mail chegar e devolve o primeiro link do site que ele traz
-// (confirmação de Criar conta ou convite), já apontando para o site dos
-// testes.
+// (confirmação de Criar conta, convite ou senha nova), já apontando para o
+// site dos testes.
 export async function linkDoEmail(
   email: string,
-  caminho: "/auth/confirmar" | "/convite/",
+  caminho: "/auth/confirmar" | "/convite/" | "/auth/callback",
 ): Promise<string> {
   let id: string | undefined;
   await expect
@@ -130,12 +130,13 @@ export async function criarEConfirmarConta(
   await page.goto(await linkDoEmail(dados.email, "/auth/confirmar"));
 }
 
-// Conta pendente sem nome, como a de quem entra pelo Google sem nome: criada
-// direto no Auth local com a chave de serviço, que o Supabase local informa.
-export async function criarContaSemNome(
-  email: string,
-  senha: string,
-): Promise<void> {
+// Chama a API de administração do Auth local com a chave de serviço, que o
+// Supabase local informa.
+async function chamarAuthLocal(
+  caminho: string,
+  metodo: "GET" | "POST" | "PUT",
+  corpo?: object,
+): Promise<Response> {
   const ambiente = Object.fromEntries(
     execSync("npx supabase status -o env", { encoding: "utf8" })
       .split(/\r?\n/)
@@ -143,17 +144,48 @@ export async function criarContaSemNome(
       .filter((achado) => achado !== null)
       .map((achado) => [achado[1], achado[2]]),
   );
-  const resposta = await fetch(`${ambiente.API_URL}/auth/v1/admin/users`, {
-    method: "POST",
+  const resposta = await fetch(`${ambiente.API_URL}/auth/v1/admin${caminho}`, {
+    method: metodo,
     headers: {
       apikey: ambiente.SERVICE_ROLE_KEY,
       Authorization: `Bearer ${ambiente.SERVICE_ROLE_KEY}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ email, password: senha, email_confirm: true }),
+    body: corpo ? JSON.stringify(corpo) : undefined,
   });
   if (!resposta.ok)
-    throw new Error(`Auth local respondeu ${resposta.status} ao criar conta`);
+    throw new Error(
+      `Auth local respondeu ${resposta.status} em ${metodo} ${caminho}`,
+    );
+  return resposta;
+}
+
+// Conta pendente sem nome, como a de quem entra pelo Google sem nome: criada
+// direto no Auth local.
+export async function criarContaSemNome(
+  email: string,
+  senha: string,
+): Promise<void> {
+  await chamarAuthLocal("/users", "POST", {
+    email,
+    password: senha,
+    email_confirm: true,
+  });
+}
+
+// Grava a senha de uma conta direto no Auth local, para devolver a senha de
+// teste a quem teve a senha trocada num teste.
+export async function definirSenha(
+  email: string,
+  senha: string,
+): Promise<void> {
+  const resposta = await chamarAuthLocal("/users?per_page=1000", "GET");
+  const { users } = (await resposta.json()) as {
+    users: { id: string; email?: string }[];
+  };
+  const conta = users.find((usuario) => usuario.email === email);
+  if (!conta) throw new Error(`Conta ${email} não encontrada no Auth local`);
+  await chamarAuthLocal(`/users/${conta.id}`, "PUT", { password: senha });
 }
 
 // Quem entra sem nome cai na tela "Como você se chama?" e informa o nome.

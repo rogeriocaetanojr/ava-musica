@@ -20,6 +20,7 @@
 - [ ] Botões e campos usando os componentes padrão
 - [ ] Arquivos e provas abrindo em nova guia
 - [ ] Login com e-mail e senha, criar conta e convite por link
+- [ ] Esqueci minha senha, nova senha pelo link do e-mail e Trocar senha no perfil do aluno e do professor
 
 ### Testes
 
@@ -229,3 +230,8 @@
 - A senha do convite é gravada por uma rota (`/convite/<código>/definir`), e não por uma server action, porque quem chega pelo link ainda não tem sessão para `exigirAluno()`; quem protege é o código, como no aceite do responsável. O convite é marcado como usado antes de gravar a senha, e volta a valer se a gravação falhar. Como o captcha vale para todo login por senha, a página do convite também tem o captcha.
 - O login por senha e Criar conta dividem o limite `sign_in_sign_ups` (15 a cada 5 minutos por IP), porque o Auth não separa os dois. O link de confirmação vale 24 horas (`otp_expiry`). Os valores da nuvem estão em `guias/deploy.md`.
 - O professor e o aluno do `seed:dev` têm a senha `senha-local-123`, que só existe no Supabase local. O teste da tela do nome cria a conta sem nome direto no Auth local, porque Criar conta exige o nome.
+- Esqueci minha senha (`/esqueci-senha`: e-mail e captcha) chama `resetPasswordForEmail` e mostra o mesmo aviso para e-mail com ou sem conta; só o captcha recusado e o limite por endereço de rede aparecem como erro. O link do e-mail (`supabase/templates/nova-senha.html`) leva o `{{ .TokenHash }}` para `/auth/callback?token_hash=…&type=recovery`, conferido com `verifyOtp`, e por isso funciona em qualquer aparelho, e não só no navegador que fez o pedido.
+- O link de senha nova vale 24 horas e uma vez só. O prazo é o `otp_expiry` do Auth, o mesmo do link de confirmação de Criar conta: diminuir um diminui o outro.
+- A tela `/nova-senha` só abre para quem acabou de chegar pelo link: o `/auth/callback` abre a sessão e grava um cookie de 15 minutos, e sem ele a tela manda para Entrar. A senha é gravada por uma rota (`/nova-senha/salvar`), e não por uma server action, porque quem recupera a senha pode ser um pedido ainda não liberado, que não passa por `exigirAluno()`. Depois de salvar, todas as sessões da conta são encerradas e a pessoa entra de novo com a senha nova.
+- Trocar senha fica no perfil do aluno (`/perfil`) e no do professor (`/professor/perfil`, página nova, aberta pelo avatar do cabeçalho, que agora aparece também no celular). A senha atual é conferida com um login por senha, e por isso o cartão tem o captcha e conta no limite `sign_in_sign_ups`; depois da troca, as sessões dos outros aparelhos são encerradas. O `secure_password_change` do Auth continua desligado. Quem entrou só pelo Google não tem senha atual e usa Esqueci minha senha.
+- O teste de Trocar senha usa o aluno do `seed:dev` e devolve a senha de teste no fim, direto no Auth local, mesmo se falhar no meio.
