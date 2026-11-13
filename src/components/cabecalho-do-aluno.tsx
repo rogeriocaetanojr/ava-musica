@@ -34,7 +34,7 @@ export function CabecalhoDoAluno({
   naoLidos = 0,
 }: {
   nome?: string;
-  atual: SecaoDoAluno;
+  atual?: SecaoDoAluno;
   naoLidos?: number;
 }) {
   return (

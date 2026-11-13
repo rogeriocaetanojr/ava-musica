@@ -6,7 +6,7 @@ import {
 } from "@/components/cabecalho-do-aluno";
 import { exigirAlunoOuProfessor } from "@/lib/auth";
 
-async function CabecalhoComSessao({ atual }: { atual: SecaoDoAluno }) {
+async function CabecalhoComSessao({ atual }: { atual?: SecaoDoAluno }) {
   const sessao = await exigirAlunoOuProfessor();
   return <CabecalhoDoAluno nome={sessao.nome} atual={atual} />;
 }
@@ -18,7 +18,7 @@ export function TelaDoAluno({
   atual,
   children,
 }: {
-  atual: SecaoDoAluno;
+  atual?: SecaoDoAluno;
   children: ReactNode;
 }) {
   return (

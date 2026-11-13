@@ -75,7 +75,7 @@ const altura = "h-[calc(5rem+env(safe-area-inset-bottom))]";
 
 // Barra de abas fixa no rodapé da área do professor, só no celular. O perfil
 // não tem aba: abre pelo avatar do cabeçalho, e nenhuma aba fica marcada.
-export function AbasDoProfessor({ atual }: { atual: SecaoDoProfessor }) {
+export function AbasDoProfessor({ atual }: { atual?: SecaoDoProfessor }) {
   return (
     <>
       <div aria-hidden="true" className={`${altura} shrink-0 md:hidden`} />

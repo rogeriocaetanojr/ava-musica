@@ -45,7 +45,7 @@ export function CabecalhoDoProfessor({
   atual,
 }: {
   nome?: string;
-  atual: SecaoDoProfessor;
+  atual?: SecaoDoProfessor;
 }) {
   return (
     <header className="border-b border-linha bg-superficie">

@@ -56,7 +56,7 @@ const ABAS: {
 const altura = "h-[calc(5rem+env(safe-area-inset-bottom))]";
 
 // Barra de abas fixa no rodapé da área do aluno, só no celular.
-export function AbasDoAluno({ atual }: { atual: SecaoDoAluno }) {
+export function AbasDoAluno({ atual }: { atual?: SecaoDoAluno }) {
   return (
     <>
       <div aria-hidden="true" className={`${altura} shrink-0 md:hidden`} />
