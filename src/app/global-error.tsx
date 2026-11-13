@@ -24,6 +24,8 @@ export default function ErroGeral({ reset }: { reset: () => void }) {
           >
             Tentar de novo
           </button>
+          {/* O layout raiz quebrou, então o <Link> do Next não é confiável aqui. */}
+          {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
           <a
             href="/"
             className="inline-flex min-h-13 w-full items-center justify-center rounded-xl border border-linha bg-superficie px-5 py-3 font-bold text-texto hover:border-borda-campo"

@@ -7,6 +7,16 @@ const nextConfig: NextConfig = {
   distDir: process.env.NEXT_DIST_DIR || ".next",
   cacheComponents: true,
   partialPrefetching: true,
+  // O progresso do aluno agora fica na ficha dele.
+  async redirects() {
+    return [
+      {
+        source: "/professor/progresso/:id",
+        destination: "/professor/alunos/:id",
+        permanent: true,
+      },
+    ];
+  },
   turbopack: {
     rules: {
       "*.css": {
