@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { BotaoVoltar } from "@/components/botao-voltar";
 
 // Primeira linha do conteúdo das telas internas: a seta de voltar e, ao lado,
-// a trilha, o título ou o nome.
+// o título ou o nome.
 export function LinhaDeVoltar({
   href,
   rotulo,

@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { LinhaDeVoltar } from "@/components/linha-de-voltar";
 import { TelaDoAluno } from "@/components/tela-do-aluno";
-import { Trilha } from "@/components/trilha";
 import { CONTEINER } from "@/components/conteiner";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
@@ -205,12 +204,9 @@ async function PaginaDaAula({ params }: { params: Promise<{ id: string }> }) {
       >
         <div className="min-w-0 space-y-6 md:space-y-8">
           <LinhaDeVoltar href={linkDoCurso} rotulo={`Voltar para ${curso}`}>
-            <Trilha
-              curso={curso}
-              hrefDoCurso={linkDoCurso}
-              modulo={aula.modulos.titulo}
-              aula={aula.titulo}
-            />
+            <h1 className="font-titulo text-3xl font-bold break-words text-texto sm:text-4xl">
+              {aula.titulo}
+            </h1>
           </LinhaDeVoltar>
           {!aluno && (
             <Aviso>
@@ -241,9 +237,6 @@ async function PaginaDaAula({ params }: { params: Promise<{ id: string }> }) {
                   Aula {posicao + 1} de {sequencia.length}
                 </p>
               )}
-              <h1 className="font-titulo text-3xl font-bold break-words text-texto sm:text-4xl">
-                {aula.titulo}
-              </h1>
             </div>
             {aluno && (
               <form

@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { TelaDoProfessor } from "@/components/tela-do-professor";
 import { LinhaDeVoltar } from "@/components/linha-de-voltar";
-import { Trilha } from "@/components/trilha";
 import { classesDoBotao } from "@/components/botao";
 import { CONTEINER } from "@/components/conteiner";
 import { notFound } from "next/navigation";
@@ -230,19 +229,13 @@ async function EditorDaAula({ params }: { params: Promise<{ id: string }> }) {
   return (
     <>
       <LinhaDeVoltar href={linkDoCurso} rotulo="Voltar ao curso">
-        <Trilha
-          curso={aula.modulos.cursos.titulo}
-          hrefDoCurso={linkDoCurso}
-          modulo={aula.modulos.titulo}
-          aula={aula.titulo}
-        />
+        <h1 className="font-titulo text-3xl break-words text-texto md:text-5xl">
+          {aula.titulo}
+        </h1>
       </LinhaDeVoltar>
 
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div className="min-w-0 space-y-2">
-          <h1 className="font-titulo text-3xl break-words text-texto md:text-5xl">
-            {aula.titulo}
-          </h1>
           <p className="flex flex-wrap items-center gap-2 text-sm text-texto-secundario">
             <Etiqueta publicada={aula.publicada} /> · {blocos.length}{" "}
             {blocos.length === 1 ? "bloco" : "blocos"}
