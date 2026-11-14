@@ -1,9 +1,7 @@
 import Link from "next/link";
 import { CONTEINER } from "@/components/conteiner";
 import { LogoDoAva } from "@/components/logo-do-ava";
-import { BotaoDoTema } from "@/components/seletor-de-tema";
-
-import { iniciais } from "@/lib/nomes";
+import { MenuDaConta } from "@/components/menu-da-conta";
 
 export type SecaoDoProfessor =
   "painel" | "cursos" | "alunos" | "recados" | "perfil";
@@ -22,23 +20,29 @@ const ITENS: {
 const item =
   "inline-flex min-h-12 items-center whitespace-nowrap rounded-xl px-4 text-base font-bold md:px-2 lg:px-4";
 
-// Avatar com as iniciais, que leva ao perfil do professor.
-function Avatar({ nome, atual }: { nome: string; atual: boolean }) {
+// Avatar que abre o menu da conta, nas cores da área do professor.
+function Avatar({
+  nome,
+  atual,
+  id,
+}: {
+  nome: string;
+  atual: boolean;
+  id: string;
+}) {
   return (
-    <Link
-      href="/professor/perfil"
-      title={nome}
-      aria-current={atual ? "page" : undefined}
-      className="inline-flex size-12 shrink-0 items-center justify-center rounded-full bg-amarelo text-base font-bold text-texto-sobre-amarelo hover:bg-amarelo-claro"
-    >
-      <span aria-hidden="true">{iniciais(nome)}</span>
-      <span className="sr-only">Perfil: conectado como {nome}</span>
-    </Link>
+    <MenuDaConta
+      nome={nome}
+      perfil="/professor/perfil"
+      atual={atual}
+      id={id}
+      cores="bg-amarelo text-texto-sobre-amarelo hover:bg-amarelo-claro"
+    />
   );
 }
 
-// Cabeçalho da área do professor: logo, navegação, avatar (que abre o perfil)
-// e Sair. O selo "Professor" só aparece no celular, onde a navegação vai para
+// Cabeçalho da área do professor: logo, navegação e o avatar, que abre o
+// menu da conta (perfil, tema e sair). O selo "Professor" só aparece no celular, onde a navegação vai para
 // as abas.
 export function CabecalhoDoProfessor({
   nome,
@@ -66,8 +70,13 @@ export function CabecalhoDoProfessor({
         </Link>
 
         <div className="flex items-center gap-2 md:hidden">
-          <BotaoDoTema />
-          {nome && <Avatar nome={nome} atual={atual === "perfil"} />}
+          {nome && (
+            <Avatar
+              nome={nome}
+              atual={atual === "perfil"}
+              id="menu-da-conta-celular"
+            />
+          )}
         </div>
 
         <nav aria-label="Área do professor" className="hidden md:block">
@@ -97,16 +106,9 @@ export function CabecalhoDoProfessor({
           >
             Ver como aluno
           </Link>
-          <BotaoDoTema />
-          {nome && <Avatar nome={nome} atual={atual === "perfil"} />}
-          <form action="/auth/sair" method="post">
-            <button
-              type="submit"
-              className={`${item} text-texto-secundario hover:text-texto`}
-            >
-              Sair
-            </button>
-          </form>
+          {nome && (
+            <Avatar nome={nome} atual={atual === "perfil"} id="menu-da-conta" />
+          )}
         </div>
       </div>
     </header>

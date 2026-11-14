@@ -1,21 +1,10 @@
 import Link from "next/link";
-import { BotaoDoTema } from "@/components/seletor-de-tema";
+import { MenuDaConta } from "@/components/menu-da-conta";
 import { CONTEINER } from "@/components/conteiner";
 import { LogoDoAva } from "@/components/logo-do-ava";
 import { type Recado, SinoDeRecados } from "@/components/sino-de-recados";
 
-import { iniciais } from "@/lib/nomes";
-
 export type SecaoDoAluno = "cursos" | "perfil";
-
-const ITENS: {
-  secao: Exclude<SecaoDoAluno, "perfil">;
-  rotulo: string;
-  href: string;
-}[] = [{ secao: "cursos", rotulo: "Meus cursos", href: "/cursos" }];
-
-const item =
-  "inline-flex min-h-12 items-center rounded-xl px-4 text-base font-bold md:px-2 lg:px-4";
 
 function textoDoSino(naoLidos: number): string {
   if (naoLidos === 0) return "Avisos";
@@ -24,8 +13,8 @@ function textoDoSino(naoLidos: number): string {
     : `Avisos: ${naoLidos} avisos não lidos`;
 }
 
-// Cabeçalho da área do aluno: logo, navegação, sino de avisos e avatar. No
-// celular fica só o logo e o sino; a navegação vai para as AbasDoAluno.
+// Cabeçalho da área do aluno: logo, sino de recados e o avatar, que abre o
+// menu da conta (perfil, tema e sair). A navegação fica nas AbasDoAluno, no celular.
 export function CabecalhoDoAluno({
   nome,
   atual,
@@ -41,11 +30,11 @@ export function CabecalhoDoAluno({
   return (
     <header className="border-b border-linha bg-superficie">
       <div
-        className={`${CONTEINER} flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-2 py-3 md:grid md:grid-cols-[1fr_auto_1fr] md:gap-x-4 lg:gap-x-6`}
+        className={`${CONTEINER} flex max-w-6xl items-center justify-between gap-x-6 py-3`}
       >
         <Link
           href="/cursos"
-          className="flex min-h-12 items-center gap-3 font-titulo text-2xl text-texto md:justify-self-start"
+          className="flex min-h-12 items-center gap-3 font-titulo text-2xl text-texto "
         >
           <LogoDoAva
             semSubtitulo
@@ -53,28 +42,7 @@ export function CabecalhoDoAluno({
           />
         </Link>
 
-        <nav aria-label="Área do aluno" className="hidden md:block">
-          <ul className="flex items-center gap-1 lg:gap-2">
-            {ITENS.map(({ secao, rotulo, href }) => (
-              <li key={secao}>
-                <Link
-                  href={href}
-                  aria-current={secao === atual ? "page" : undefined}
-                  className={`${item} ${
-                    secao === atual
-                      ? "bg-bloco text-texto-sobre-bloco"
-                      : "text-texto-secundario hover:text-texto"
-                  }`}
-                >
-                  {rotulo}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
-
-        <div className="ml-auto flex items-center gap-3 md:justify-self-end md:gap-2">
-          <BotaoDoTema />
+        <div className="flex items-center gap-2">
           {recados ? (
             <SinoDeRecados recados={recados} rotulo={textoDoSino(naoLidos)} />
           ) : (
@@ -106,23 +74,12 @@ export function CabecalhoDoAluno({
           )}
 
           {nome && (
-            <span
-              title={nome}
-              className="hidden size-12 items-center justify-center rounded-full bg-bordo md:inline-flex text-base font-bold text-sobre-bordo"
-            >
-              <span aria-hidden="true">{iniciais(nome)}</span>
-              <span className="sr-only">Conectado como {nome}</span>
-            </span>
+            <MenuDaConta
+              nome={nome}
+              perfil="/perfil"
+              atual={atual === "perfil"}
+            />
           )}
-
-          <form action="/auth/sair" method="post" className="hidden md:block">
-            <button
-              type="submit"
-              className={`${item} text-texto-secundario hover:text-texto`}
-            >
-              Sair
-            </button>
-          </form>
         </div>
       </div>
     </header>
