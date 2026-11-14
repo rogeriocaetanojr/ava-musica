@@ -2,19 +2,17 @@ import Link from "next/link";
 import { BotaoDoTema } from "@/components/seletor-de-tema";
 import { CONTEINER } from "@/components/conteiner";
 import { LogoDoAva } from "@/components/logo-do-ava";
+import { type Recado, SinoDeRecados } from "@/components/sino-de-recados";
 
 import { iniciais } from "@/lib/nomes";
 
-export type SecaoDoAluno = "cursos" | "avisos" | "perfil";
+export type SecaoDoAluno = "cursos" | "perfil";
 
 const ITENS: {
   secao: Exclude<SecaoDoAluno, "perfil">;
   rotulo: string;
   href: string;
-}[] = [
-  { secao: "cursos", rotulo: "Meus cursos", href: "/cursos" },
-  { secao: "avisos", rotulo: "Avisos", href: "/cursos#recados" },
-];
+}[] = [{ secao: "cursos", rotulo: "Meus cursos", href: "/cursos" }];
 
 const item =
   "inline-flex min-h-12 items-center rounded-xl px-4 text-base font-bold md:px-2 lg:px-4";
@@ -32,10 +30,13 @@ export function CabecalhoDoAluno({
   nome,
   atual,
   naoLidos = 0,
+  recados,
 }: {
   nome?: string;
   atual?: SecaoDoAluno;
   naoLidos?: number;
+  // Sem os recados (enquanto a sessão carrega), o sino leva a Meus cursos.
+  recados?: Recado[];
 }) {
   return (
     <header className="border-b border-linha bg-superficie">
@@ -74,31 +75,35 @@ export function CabecalhoDoAluno({
 
         <div className="ml-auto flex items-center gap-3 md:justify-self-end md:gap-2">
           <BotaoDoTema />
-          <Link
-            href="/cursos#recados"
-            aria-label={textoDoSino(naoLidos)}
-            className="relative inline-flex size-12 items-center justify-center rounded-xl border border-linha bg-superficie text-texto"
-          >
-            <svg
-              aria-hidden="true"
-              viewBox="0 0 24 24"
-              className="size-5"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
+          {recados ? (
+            <SinoDeRecados recados={recados} rotulo={textoDoSino(naoLidos)} />
+          ) : (
+            <Link
+              href="/cursos"
+              aria-label={textoDoSino(naoLidos)}
+              className="relative inline-flex size-12 items-center justify-center rounded-xl border border-linha bg-superficie text-texto"
             >
-              <path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z" />
-              <path d="M10 20a2 2 0 0 0 4 0" />
-            </svg>
-            {naoLidos > 0 && (
-              <span
+              <svg
                 aria-hidden="true"
-                className="absolute top-2 right-2 size-2.5 rounded-full bg-amarelo"
-              />
-            )}
-          </Link>
+                viewBox="0 0 24 24"
+                className="size-5"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z" />
+                <path d="M10 20a2 2 0 0 0 4 0" />
+              </svg>
+              {naoLidos > 0 && (
+                <span
+                  aria-hidden="true"
+                  className="absolute top-2 right-2 size-2.5 rounded-full bg-amarelo"
+                />
+              )}
+            </Link>
+          )}
 
           {nome && (
             <span

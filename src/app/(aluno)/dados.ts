@@ -1,4 +1,5 @@
 import "server-only";
+import type { Recado } from "@/components/sino-de-recados";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 
 // Ids das aulas que o usuário concluiu (registros sem conteúdo = aula inteira).
@@ -27,4 +28,15 @@ export async function ultimaAulaEstudada(
     .limit(1)
     .maybeSingle();
   return (data?.aula_id as string | undefined) ?? null;
+}
+
+// Recados do professor, do mais novo para o mais antigo. A RLS já limita o
+// aluno aos avisos gerais e aos dos cursos em que está matriculado.
+export async function recadosDoAluno(): Promise<Recado[]> {
+  const supabase = await criarClienteServidor();
+  const { data } = await supabase
+    .from("avisos")
+    .select("id, titulo, texto, publicado_em, cursos (titulo)")
+    .order("publicado_em", { ascending: false });
+  return (data ?? []) as unknown as Recado[];
 }

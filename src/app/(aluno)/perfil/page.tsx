@@ -8,13 +8,15 @@ import { exigirAlunoOuProfessor } from "@/lib/auth";
 import { BotaoDoTema } from "@/components/seletor-de-tema";
 import { TrocarSenha } from "@/components/trocar-senha";
 import { iniciais } from "@/lib/nomes";
+import { recadosDoAluno } from "../dados";
 
 async function PerfilDoAluno() {
   const sessao = await exigirAlunoOuProfessor();
+  const recados = await recadosDoAluno();
 
   return (
     <>
-      <CabecalhoDoAluno nome={sessao.nome} atual="perfil" />
+      <CabecalhoDoAluno nome={sessao.nome} atual="perfil" recados={recados} />
 
       <main
         className={`${CONTEINER} flex max-w-xl flex-1 flex-col gap-6 py-6 md:py-10`}

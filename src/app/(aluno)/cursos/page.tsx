@@ -7,6 +7,7 @@ import { classesDoBotao } from "@/components/botao";
 import { Rodape } from "@/components/rodape";
 import { AbasDoAluno } from "@/components/abas-do-aluno";
 import { CabecalhoDoAluno } from "@/components/cabecalho-do-aluno";
+import { ID_DOS_RECADOS, type Recado } from "@/components/sino-de-recados";
 import { BocaDoViolao, Cordas } from "@/components/cordas";
 import { exigirAlunoOuProfessor } from "@/lib/auth";
 import { formatarDataHora, saudacao } from "@/lib/datas";
@@ -18,7 +19,7 @@ import {
   resumoDoCurso,
 } from "@/lib/progresso";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
-import { aulasConcluidas, ultimaAulaEstudada } from "../dados";
+import { aulasConcluidas, recadosDoAluno, ultimaAulaEstudada } from "../dados";
 
 type Aula = AulaDoCurso & { titulo: string };
 type Modulo = ModuloDoCurso<Aula> & { titulo: string };
@@ -29,13 +30,7 @@ type Curso = {
   nivel: string | null;
   modulos: Modulo[];
 };
-type Aviso = {
-  id: string;
-  titulo: string;
-  texto: string;
-  publicado_em: string;
-  cursos: { titulo: string } | null;
-};
+type Aviso = Recado;
 
 // Capas alternadas pela ordem da lista; as cordas mudam de cor no amarelo.
 const CAPAS = [
@@ -156,7 +151,7 @@ function RecadosDoProfessor({ avisos }: { avisos: Aviso[] }) {
       }`}
     >
       <h2 id="recados-recentes" className="text-sm font-bold">
-        Recados do professor
+        Recados recentes
       </h2>
       {vazio ? (
         <p className="text-base">Nenhum recado novo por enquanto.</p>
@@ -180,24 +175,26 @@ function RecadosDoProfessor({ avisos }: { avisos: Aviso[] }) {
               </li>
             ))}
           </ul>
-          <Link
-            href="#recados"
-            className="mt-auto inline-flex min-h-12 items-center self-start text-sm font-bold underline"
+          <button
+            type="button"
+            popoverTarget={ID_DOS_RECADOS}
+            className="mt-auto inline-flex min-h-12 cursor-pointer items-center self-end text-sm font-bold text-destaque"
           >
             Ver todos os recados
-          </Link>
+          </button>
         </>
       )}
     </section>
   );
 }
 
-// No celular, só o recado mais recente, levando à lista completa.
+// No celular, só o recado mais recente; o toque abre o painel de recados.
 function RecadoMaisRecente({ aviso }: { aviso: Aviso }) {
   return (
-    <Link
-      href="#recados"
-      className="flex min-h-12 items-center gap-4 rounded-3xl bg-bloco p-5 text-texto-sobre-bloco md:hidden"
+    <button
+      type="button"
+      popoverTarget={ID_DOS_RECADOS}
+      className="flex min-h-12 w-full cursor-pointer items-center gap-4 rounded-3xl bg-bloco p-5 text-left text-texto-sobre-bloco md:hidden"
     >
       <svg
         aria-hidden="true"
@@ -218,7 +215,7 @@ function RecadoMaisRecente({ aviso }: { aviso: Aviso }) {
         </span>
         <span className="block text-base">Recado do professor</span>
       </span>
-    </Link>
+    </button>
   );
 }
 
@@ -281,29 +278,24 @@ async function MeusCursosDoAluno() {
   // o filtro de publicado vale para a pré-visualização do professor.
   // Os avisos também são filtrados pela RLS: gerais e dos cursos matriculados.
   const supabase = await criarClienteServidor();
-  const [{ data }, concluidas, ultimaAula, { data: dadosAvisos }] =
-    await Promise.all([
-      supabase
-        .from("cursos")
-        .select(
-          "id, titulo, instrumento, nivel, modulos (id, titulo, ordem, aulas (id, titulo, ordem, publicada))",
-        )
-        .eq("publicado", true)
-        .order("titulo"),
-      aulasConcluidas(sessao.id),
-      ultimaAulaEstudada(sessao.id),
-      supabase
-        .from("avisos")
-        .select("id, titulo, texto, publicado_em, cursos (titulo)")
-        .order("publicado_em", { ascending: false }),
-    ]);
+  const [{ data }, concluidas, ultimaAula, avisos] = await Promise.all([
+    supabase
+      .from("cursos")
+      .select(
+        "id, titulo, instrumento, nivel, modulos (id, titulo, ordem, aulas (id, titulo, ordem, publicada))",
+      )
+      .eq("publicado", true)
+      .order("titulo"),
+    aulasConcluidas(sessao.id),
+    ultimaAulaEstudada(sessao.id),
+    recadosDoAluno(),
+  ]);
   const cursos = (data ?? []) as unknown as Curso[];
-  const avisos = (dadosAvisos ?? []) as unknown as Aviso[];
   const continuar = cursoParaContinuar(cursos, ultimaAula);
 
   return (
     <>
-      <CabecalhoDoAluno nome={sessao.nome} atual="cursos" />
+      <CabecalhoDoAluno nome={sessao.nome} atual="cursos" recados={avisos} />
 
       <main
         className={`${CONTEINER} flex max-w-6xl flex-1 flex-col gap-6 py-6 md:gap-8 md:py-10`}
@@ -364,37 +356,6 @@ async function MeusCursosDoAluno() {
             </ul>
           )}
         </section>
-
-        {avisos.length > 0 && (
-          <section
-            id="recados"
-            aria-labelledby="todos-os-recados"
-            className="scroll-mt-6 space-y-4"
-          >
-            <h2 id="todos-os-recados" className={rotuloDeSecao}>
-              Todos os recados
-            </h2>
-            <ul className="space-y-3">
-              {avisos.map((aviso) => (
-                <li
-                  key={aviso.id}
-                  className="space-y-1 rounded-2xl border border-linha bg-superficie p-5"
-                >
-                  <h3 className="text-lg font-bold break-words">
-                    {aviso.titulo}
-                  </h3>
-                  <p className="text-sm text-texto-secundario">
-                    {aviso.cursos ? `${aviso.cursos.titulo} · ` : ""}
-                    {formatarDataHora(aviso.publicado_em)}
-                  </p>
-                  <p className="text-base break-words whitespace-pre-line">
-                    {aviso.texto}
-                  </p>
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
       </main>
     </>
   );

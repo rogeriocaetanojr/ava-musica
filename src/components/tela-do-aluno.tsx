@@ -6,10 +6,14 @@ import {
 } from "@/components/cabecalho-do-aluno";
 import { type FolgaDoRodape, Rodape } from "@/components/rodape";
 import { exigirAlunoOuProfessor } from "@/lib/auth";
+import { recadosDoAluno } from "@/app/(aluno)/dados";
 
 async function CabecalhoComSessao({ atual }: { atual?: SecaoDoAluno }) {
   const sessao = await exigirAlunoOuProfessor();
-  return <CabecalhoDoAluno nome={sessao.nome} atual={atual} />;
+  const recados = await recadosDoAluno();
+  return (
+    <CabecalhoDoAluno nome={sessao.nome} atual={atual} recados={recados} />
+  );
 }
 
 // Moldura das subpáginas do aluno: o mesmo cabeçalho e as mesmas abas de Meus

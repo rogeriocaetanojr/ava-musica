@@ -28,17 +28,6 @@ const ABAS: {
     ),
   },
   {
-    secao: "avisos",
-    rotulo: "Avisos",
-    href: "/cursos#recados",
-    icone: (
-      <>
-        <path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z" />
-        <path d="M10 20a2 2 0 0 0 4 0" />
-      </>
-    ),
-  },
-  {
     secao: "perfil",
     rotulo: "Perfil",
     href: "/perfil",
@@ -64,7 +53,7 @@ export function AbasDoAluno({ atual }: { atual?: SecaoDoAluno }) {
         aria-label="Abas da área do aluno"
         className="fixed inset-x-0 bottom-0 z-10 border-t border-linha bg-superficie pb-[env(safe-area-inset-bottom)] md:hidden"
       >
-        <ul className="grid grid-cols-3 gap-2 px-3 py-2">
+        <ul className="grid grid-cols-2 gap-2 px-3 py-2">
           {ABAS.map(({ secao, rotulo, href, icone }) => (
             <li key={secao}>
               <Link
