@@ -16,7 +16,12 @@ async function PerfilDoAluno() {
 
   return (
     <>
-      <CabecalhoDoAluno nome={sessao.nome} atual="perfil" recados={recados} />
+      <CabecalhoDoAluno
+        nome={sessao.nome}
+        atual="perfil"
+        recados={recados}
+        professor={sessao.papel === "professor"}
+      />
 
       <main
         className={`${CONTEINER} flex max-w-xl flex-1 flex-col gap-6 py-6 md:py-10`}

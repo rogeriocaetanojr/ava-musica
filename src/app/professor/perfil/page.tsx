@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { Suspense } from "react";
 import { classesDoBotao } from "@/components/botao";
 import { CONTEINER } from "@/components/conteiner";
@@ -11,9 +10,6 @@ import { iniciais } from "@/lib/nomes";
 import { tituloDaPagina } from "@/lib/site";
 
 export const metadata: Metadata = { title: tituloDaPagina("Perfil") };
-
-const link =
-  "inline-flex min-h-12 items-center text-base text-texto-secundario underline";
 
 async function DadosDoProfessor() {
   const sessao = await exigirProfessor();
@@ -61,14 +57,6 @@ export default function PerfilDoProfessor() {
             Sair
           </button>
         </form>
-
-        <ul>
-          <li>
-            <Link href="/cursos" className={link}>
-              Ver como aluno
-            </Link>
-          </li>
-        </ul>
       </main>
     </TelaDoProfessor>
   );

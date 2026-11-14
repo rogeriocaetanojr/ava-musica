@@ -532,14 +532,6 @@ async function Painel() {
               Olá, {primeiroNome(sessao.nome)}
             </h1>
           </div>
-          {/* No computador, o link fica no cabeçalho. Mesmo padrão do
-              "Voltar ao painel" da tela do aluno. */}
-          <Link
-            href="/cursos"
-            className="inline-flex min-h-12 items-center text-base font-bold underline md:hidden"
-          >
-            Ver como aluno
-          </Link>
           <div className="hidden w-auto flex-wrap gap-3 md:flex">
             <Link
               href="/professor/alunos/convidar"

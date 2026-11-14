@@ -28,7 +28,7 @@ export function SinoDeRecados({
         type="button"
         popoverTarget={ID_DOS_RECADOS}
         aria-label={rotulo}
-        className="relative inline-flex size-12 items-center justify-center rounded-xl border border-linha bg-superficie text-texto"
+        className="relative inline-flex size-12 cursor-pointer items-center justify-center rounded-full text-texto hover:bg-bloco hover:text-texto-sobre-bloco"
       >
         <svg
           aria-hidden="true"

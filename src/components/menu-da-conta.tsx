@@ -1,12 +1,17 @@
 import Link from "next/link";
 import { BotaoDoTema } from "@/components/seletor-de-tema";
-import { iniciais, primeiroNome } from "@/lib/nomes";
+import { iniciais } from "@/lib/nomes";
+
+// Pílula arredondada que agrupa os ícones do cabeçalho (sino e avatar) e a
+// navegação do professor.
+export const PILULA =
+  "flex items-center gap-1 rounded-full border border-linha bg-superficie p-1 shadow-sm";
 
 const opcao =
   "flex min-h-12 w-full items-center rounded-xl px-4 text-left text-base font-bold text-texto hover:bg-bloco hover:text-texto-sobre-bloco";
 
-// Avatar com as iniciais que abre um menu pequeno da conta (primeiro nome com
-// o botão de tema ao lado, perfil e sair), no mesmo estilo do painel de recados: popover nativo, que fecha com
+// Avatar com as iniciais que abre um menu pequeno da conta (botão de tema,
+// perfil e sair; e o atalho de troca de área do professor), no mesmo estilo do painel de recados: popover nativo, que fecha com
 // Esc ou com clique fora. Igual nas áreas do aluno e do professor.
 export function MenuDaConta({
   nome,
@@ -14,6 +19,7 @@ export function MenuDaConta({
   atual = false,
   cores = "bg-bordo text-sobre-bordo",
   id = "menu-da-conta",
+  atalho,
 }: {
   nome: string;
   // Endereço do perfil da área.
@@ -23,6 +29,8 @@ export function MenuDaConta({
   cores?: string;
   // Id do menu, único na página (o professor tem um avatar por tamanho de tela).
   id?: string;
+  // Só para a conta do professor: "Ver como aluno" ou "Voltar ao painel".
+  atalho?: { href: string; rotulo: string };
 }) {
   return (
     <>
@@ -42,20 +50,25 @@ export function MenuDaConta({
         aria-label="Menu da conta"
         className="fixed top-20 right-4 bottom-auto left-auto m-0 w-64 rounded-2xl border border-linha bg-superficie p-2 text-texto shadow-xl md:top-22 md:right-10"
       >
-        <div className="flex items-center justify-between gap-2 pb-1 pl-4">
-          <p className="truncate text-base font-bold">{primeiroNome(nome)}</p>
-          <BotaoDoTema />
-        </div>
         <ul>
-          <li>
+          {/* O botão de tema fica na linha do perfil, à direita. */}
+          <li className="flex items-center gap-1">
             <Link
               href={perfil}
               aria-current={atual ? "page" : undefined}
-              className={opcao}
+              className={`${opcao} flex-1`}
             >
               Meu perfil
             </Link>
+            <BotaoDoTema />
           </li>
+          {atalho && (
+            <li>
+              <Link href={atalho.href} className={opcao}>
+                {atalho.rotulo}
+              </Link>
+            </li>
+          )}
           <li>
             <form action="/auth/sair" method="post">
               <button type="submit" className={`${opcao} cursor-pointer`}>

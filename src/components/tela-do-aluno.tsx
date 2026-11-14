@@ -12,7 +12,12 @@ async function CabecalhoComSessao({ atual }: { atual?: SecaoDoAluno }) {
   const sessao = await exigirAlunoOuProfessor();
   const recados = await recadosDoAluno();
   return (
-    <CabecalhoDoAluno nome={sessao.nome} atual={atual} recados={recados} />
+    <CabecalhoDoAluno
+      nome={sessao.nome}
+      atual={atual}
+      recados={recados}
+      professor={sessao.papel === "professor"}
+    />
   );
 }
 

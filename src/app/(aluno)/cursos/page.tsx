@@ -295,7 +295,12 @@ async function MeusCursosDoAluno() {
 
   return (
     <>
-      <CabecalhoDoAluno nome={sessao.nome} atual="cursos" recados={avisos} />
+      <CabecalhoDoAluno
+        nome={sessao.nome}
+        atual="cursos"
+        recados={avisos}
+        professor={professor}
+      />
 
       <main
         className={`${CONTEINER} flex max-w-6xl flex-1 flex-col gap-6 py-6 md:gap-8 md:py-10`}
@@ -307,14 +312,6 @@ async function MeusCursosDoAluno() {
               {sessao.nome}
             </h1>
           </div>
-          {professor && (
-            <Link
-              href="/professor"
-              className="inline-flex min-h-12 items-center text-base font-bold underline"
-            >
-              Voltar ao painel
-            </Link>
-          )}
         </header>
 
         {professor && (
