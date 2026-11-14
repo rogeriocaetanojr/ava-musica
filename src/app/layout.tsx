@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque, Manrope } from "next/font/google";
-import { Cabecalho, Rodape } from "@/components/moldura-do-site";
+import { Cabecalho, RodapeDoSite } from "@/components/moldura-do-site";
 import {
   COR_DA_BARRA,
   ReaplicarTema,
@@ -51,11 +51,11 @@ export default function RootLayout({
         {/* Aplica o tema do cookie antes da primeira pintura, sem piscar claro. */}
         <script dangerouslySetInnerHTML={{ __html: SCRIPT_DO_TEMA }} />
       </head>
-      <body className="min-h-full flex flex-col">
+      <body className="flex min-h-dvh flex-col">
         <ReaplicarTema />
         <Cabecalho />
-        {children}
-        <Rodape />
+        <div className="flex flex-1 flex-col">{children}</div>
+        <RodapeDoSite />
       </body>
     </html>
   );

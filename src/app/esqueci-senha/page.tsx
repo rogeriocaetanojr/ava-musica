@@ -24,7 +24,6 @@ export default function PaginaEsqueciSenha() {
       destaque="A gente resolve."
       apoio="Informe o seu e-mail e abra o link que enviamos para criar uma senha nova."
       titulo="Esqueci minha senha"
-      semPrivacidade
     >
       <p className="text-sm leading-normal text-texto-secundario">
         Informe o e-mail da sua conta. Enviamos um link para você criar uma

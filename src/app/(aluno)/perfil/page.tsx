@@ -1,6 +1,6 @@
-import Link from "next/link";
 import { CONTEINER } from "@/components/conteiner";
 import { Suspense } from "react";
+import { Rodape } from "@/components/rodape";
 import { AbasDoAluno } from "@/components/abas-do-aluno";
 import { classesDoBotao } from "@/components/botao";
 import { CabecalhoDoAluno } from "@/components/cabecalho-do-aluno";
@@ -8,9 +8,6 @@ import { exigirAlunoOuProfessor } from "@/lib/auth";
 import { BotaoDoTema } from "@/components/seletor-de-tema";
 import { TrocarSenha } from "@/components/trocar-senha";
 import { iniciais } from "@/lib/nomes";
-
-const link =
-  "inline-flex min-h-12 items-center text-base text-texto-secundario underline";
 
 async function PerfilDoAluno() {
   const sessao = await exigirAlunoOuProfessor();
@@ -48,19 +45,6 @@ async function PerfilDoAluno() {
             Sair
           </button>
         </form>
-
-        <ul>
-          <li>
-            <Link href="/privacidade" className={link}>
-              Política de privacidade
-            </Link>
-          </li>
-          <li>
-            <Link href="/termos" className={link}>
-              Termos de uso
-            </Link>
-          </li>
-        </ul>
       </main>
     </>
   );
@@ -69,10 +53,13 @@ async function PerfilDoAluno() {
 // Dados da conta. O botão Sair aparece só no celular, onde o cabeçalho não o traz.
 export default function Perfil() {
   return (
-    <div data-tela-cheia className="flex flex-1 flex-col">
-      <Suspense fallback={<p className="p-8">Carregando…</p>}>
-        <PerfilDoAluno />
-      </Suspense>
+    <div data-tela-cheia className="flex min-h-dvh flex-1 flex-col">
+      <div className="flex flex-1 flex-col">
+        <Suspense fallback={<p className="p-8">Carregando…</p>}>
+          <PerfilDoAluno />
+        </Suspense>
+      </div>
+      <Rodape largura="max-w-6xl" />
       <AbasDoAluno atual="perfil" />
     </div>
   );

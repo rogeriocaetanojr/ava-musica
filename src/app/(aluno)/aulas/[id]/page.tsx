@@ -198,7 +198,11 @@ async function PaginaDaAula({ params }: { params: Promise<{ id: string }> }) {
   }
 
   return (
-    <TelaDoAluno atual="cursos" semAbas={aluno}>
+    <TelaDoAluno
+      atual="cursos"
+      semAbas={aluno}
+      folgaDoRodape={aluno ? "barra" : undefined}
+    >
       <main
         className={`${CONTEINER} grid max-w-6xl flex-1 gap-8 pt-4 pb-8 md:pt-8 lg:grid-cols-[minmax(0,1fr)_20rem]`}
       >

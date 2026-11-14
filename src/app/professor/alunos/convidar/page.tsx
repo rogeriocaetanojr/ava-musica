@@ -27,7 +27,7 @@ async function Formulario() {
 
 export default function ConvidarAluno() {
   return (
-    <TelaDoProfessor atual="alunos" semAbas>
+    <TelaDoProfessor atual="alunos" semAbas folgaDoRodape="barra-dupla">
       <main
         className={`${CONTEINER} flex flex-1 flex-col gap-5 py-6 md:gap-6 md:py-8`}
       >

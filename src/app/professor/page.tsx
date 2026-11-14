@@ -3,6 +3,7 @@ import { CONTEINER } from "@/components/conteiner";
 import { Suspense } from "react";
 import { Aviso } from "@/components/aviso";
 import { BarraProgresso } from "@/components/barra-progresso";
+import { Rodape } from "@/components/rodape";
 import { AbasDoProfessor } from "@/components/abas-do-professor";
 import { Botao, classesDoBotao } from "@/components/botao";
 import { CabecalhoDoProfessor } from "@/components/cabecalho-do-professor";
@@ -555,22 +556,16 @@ async function Painel() {
           <Resumo />
         </Suspense>
       </main>
-      <footer
-        className={`${CONTEINER} flex max-w-6xl flex-wrap items-center gap-x-6 pb-6`}
+      <div
+        className={`${CONTEINER} flex max-w-6xl flex-wrap items-center gap-x-6 md:hidden`}
       >
         <Link
-          href="/privacidade"
-          className={classesDoBotao("link", "text-texto-secundario")}
-        >
-          Política de privacidade
-        </Link>
-        <Link
           href="/cursos"
-          className={classesDoBotao("link", "text-texto-secundario md:hidden")}
+          className={classesDoBotao("link", "text-texto-secundario")}
         >
           Ver como aluno
         </Link>
-        <form action="/auth/sair" method="post" className="md:hidden">
+        <form action="/auth/sair" method="post">
           <Botao
             type="submit"
             variante="link"
@@ -579,7 +574,8 @@ async function Painel() {
             Sair
           </Botao>
         </form>
-      </footer>
+      </div>
+      <Rodape largura="max-w-6xl" />
       <AbasDoProfessor atual="painel" />
     </>
   );
@@ -587,7 +583,7 @@ async function Painel() {
 
 export default function PainelProfessor() {
   return (
-    <div data-tela-cheia className="flex flex-1 flex-col">
+    <div data-tela-cheia className="flex min-h-dvh flex-1 flex-col">
       <Suspense fallback={<p className="p-8">Carregando…</p>}>
         <Painel />
       </Suspense>

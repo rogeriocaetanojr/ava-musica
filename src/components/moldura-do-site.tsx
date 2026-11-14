@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { classesDoBotao } from "@/components/botao";
+import { Rodape } from "@/components/rodape";
 import { LogoDoAva } from "@/components/logo-do-ava";
 
 // Cabeçalho e rodapé somem nas telas de página inteira, marcadas com
@@ -23,23 +23,12 @@ export function Cabecalho() {
   );
 }
 
-export function Rodape() {
+// Rodapé das páginas que usam a moldura geral; some nas telas de página
+// inteira, que trazem o próprio rodapé.
+export function RodapeDoSite() {
   return (
-    <footer
-      data-moldura
-      className="border-t-4 border-amarelo bg-bordo text-sm text-sobre-bordo"
-    >
-      <nav
-        aria-label="Rodapé"
-        className="mx-auto flex w-full max-w-4xl flex-wrap gap-x-6 px-4 py-1"
-      >
-        <Link href="/privacidade" className={classesDoBotao("link")}>
-          Política de privacidade
-        </Link>
-        <Link href="/termos" className={classesDoBotao("link")}>
-          Termos de uso
-        </Link>
-      </nav>
-    </footer>
+    <div data-moldura>
+      <Rodape />
+    </div>
   );
 }

@@ -366,7 +366,7 @@ export default function EditarAula({
   params: Promise<{ id: string }>;
 }) {
   return (
-    <TelaDoProfessor atual="cursos" semAbas>
+    <TelaDoProfessor atual="cursos" semAbas folgaDoRodape="barra">
       <main
         className={`${CONTEINER} flex max-w-2xl flex-1 flex-col gap-6 pt-6 pb-32 md:gap-8 md:py-10`}
       >

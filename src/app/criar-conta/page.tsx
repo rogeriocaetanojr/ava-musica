@@ -22,7 +22,6 @@ export default function PaginaCriarConta() {
       destaque="Crie a sua conta."
       apoio="Crie a conta, confirme o e-mail e espere o professor liberar o acesso."
       titulo="Criar conta"
-      semPrivacidade
     >
       <p className="text-sm leading-normal text-texto-secundario">
         Depois de confirmar o e-mail, o professor libera o seu acesso. Para

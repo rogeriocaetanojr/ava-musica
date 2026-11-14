@@ -3,7 +3,9 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { connection } from "next/server";
 import { Aviso } from "@/components/aviso";
+import { CONTEINER } from "@/components/conteiner";
 import { TelaDeEntrada } from "@/components/tela-de-entrada";
+import { CARTAO_DE_LEITURA, MolduraLegal } from "@/components/texto-legal";
 import {
   ehCodigoDeConvite,
   hashDoConvite,
@@ -31,16 +33,23 @@ const MENSAGENS_DE_ERRO: Record<string, string> = {
 const link =
   "inline-flex min-h-12 items-center text-sm font-bold text-destaque underline";
 
-function LinkSemValor({ texto }: { texto: string }) {
+// Convite sem valor: tela só de aviso, no layout das páginas públicas de texto.
+function LinkSemValor({ titulo, texto }: { titulo: string; texto: string }) {
   return (
-    <>
-      <Aviso role="alert">
-        <p>{texto}</p>
-      </Aviso>
-      <Link href="/login" className={link}>
-        Ir para Entrar
-      </Link>
-    </>
+    <MolduraLegal titulo={titulo}>
+      <main
+        className={`${CONTEINER} flex flex-1 flex-col items-center py-6 md:py-10`}
+      >
+        <div className={`${CARTAO_DE_LEITURA} w-full`}>
+          <Aviso role="alert">
+            <p>{texto}</p>
+          </Aviso>
+          <Link href="/login" className={link}>
+            Ir para Entrar
+          </Link>
+        </div>
+      </main>
+    </MolduraLegal>
   );
 }
 
@@ -57,7 +66,10 @@ async function Convite({
   const [{ codigo }, { erro }] = await Promise.all([params, searchParams]);
 
   const invalido = (
-    <LinkSemValor texto="Este link de convite não existe. Confira se abriu o link inteiro do e-mail ou peça um novo ao professor." />
+    <LinkSemValor
+      titulo="Link inválido"
+      texto="Este link de convite não existe. Confira se abriu o link inteiro do e-mail ou peça um novo ao professor."
+    />
   );
   if (!ehCodigoDeConvite(codigo)) return invalido;
 
@@ -75,16 +87,26 @@ async function Convite({
   const situacao = situacaoDoConvite(data, new Date());
   if (situacao === "usado")
     return (
-      <LinkSemValor texto="Este convite já foi usado. Entre com o seu e-mail e a senha que você criou." />
+      <LinkSemValor
+        titulo="Convite já usado"
+        texto="Este convite já foi usado. Entre com o seu e-mail e a senha que você criou."
+      />
     );
   if (situacao === "vencido")
     return (
-      <LinkSemValor texto="Este convite venceu. Peça ao professor para reenviar o convite." />
+      <LinkSemValor
+        titulo="Convite vencido"
+        texto="Este convite venceu. Peça ao professor para reenviar o convite."
+      />
     );
 
   const mensagem = erro ? MENSAGENS_DE_ERRO[erro] : undefined;
   return (
-    <>
+    <TelaDeEntrada
+      chamada="Bem-vindo à escola."
+      destaque="Falta só a sua senha."
+      titulo="Seu convite"
+    >
       <div className="space-y-2">
         <p className="text-lg font-bold break-words text-texto">
           Olá, {nomeParaExibir(aluno.nome)}!
@@ -101,7 +123,7 @@ async function Convite({
         </Aviso>
       )}
       <FormularioSenha codigo={codigo} email={aluno.email} />
-    </>
+    </TelaDeEntrada>
   );
 }
 
@@ -113,14 +135,16 @@ export default function PaginaConvite({
   searchParams: Busca;
 }) {
   return (
-    <TelaDeEntrada
-      chamada="Bem-vindo à escola."
-      destaque="Falta só a sua senha."
-      titulo="Seu convite"
+    <Suspense
+      fallback={
+        <MolduraLegal titulo="Seu convite">
+          <main className={`${CONTEINER} flex-1 py-6 md:py-10`}>
+            <p>Carregando…</p>
+          </main>
+        </MolduraLegal>
+      }
     >
-      <Suspense>
-        <Convite params={params} searchParams={searchParams} />
-      </Suspense>
-    </TelaDeEntrada>
+      <Convite params={params} searchParams={searchParams} />
+    </Suspense>
   );
 }

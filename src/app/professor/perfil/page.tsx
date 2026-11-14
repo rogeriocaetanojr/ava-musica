@@ -68,16 +68,6 @@ export default function PerfilDoProfessor() {
               Ver como aluno
             </Link>
           </li>
-          <li>
-            <Link href="/privacidade" className={link}>
-              Política de privacidade
-            </Link>
-          </li>
-          <li>
-            <Link href="/termos" className={link}>
-              Termos de uso
-            </Link>
-          </li>
         </ul>
       </main>
     </TelaDoProfessor>

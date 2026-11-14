@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { CONTEINER } from "@/components/conteiner";
 import { Cordas } from "@/components/cordas";
+import { Rodape } from "@/components/rodape";
 import { LogoDoAva } from "@/components/logo-do-ava";
 import { NOME_DO_AVA, VERSAO_DOS_TERMOS } from "@/lib/site";
 
@@ -150,7 +151,7 @@ export function MolduraLegal({
   children: ReactNode;
 }) {
   return (
-    <div data-tela-cheia className="flex min-h-screen flex-1 flex-col">
+    <div data-tela-cheia className="flex min-h-dvh flex-1 flex-col">
       <header className="border-b border-linha bg-superficie">
         <div
           className={`${CONTEINER} flex items-center justify-between gap-4 py-3`}
@@ -180,27 +181,9 @@ export function MolduraLegal({
         </div>
       </div>
 
-      {children}
+      <div className="flex flex-1 flex-col">{children}</div>
 
-      <footer className="border-t-4 border-amarelo bg-bordo text-sm text-sobre-bordo">
-        <nav
-          aria-label="Rodapé"
-          className={`${CONTEINER} flex flex-wrap gap-x-2 py-2`}
-        >
-          <Link
-            href="/privacidade"
-            className="flex min-h-12 items-center px-2 underline"
-          >
-            Política de privacidade
-          </Link>
-          <Link
-            href="/termos"
-            className="flex min-h-12 items-center px-2 underline"
-          >
-            Termos de uso
-          </Link>
-        </nav>
-      </footer>
+      <Rodape />
     </div>
   );
 }

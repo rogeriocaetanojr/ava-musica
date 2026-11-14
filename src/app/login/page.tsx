@@ -68,7 +68,6 @@ export default function PaginaLogin({
       titulo="Entrar"
       subtitulo="Entre com o seu e-mail e a sua senha."
       nota="Acesso liberado pelo professor. Para menores de 12 anos, o responsável autoriza primeiro."
-      semPrivacidade
     >
       <Suspense>
         <RedirecionarLogado />

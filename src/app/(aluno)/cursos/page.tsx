@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { Aviso } from "@/components/aviso";
 import { BarraProgresso } from "@/components/barra-progresso";
 import { classesDoBotao } from "@/components/botao";
+import { Rodape } from "@/components/rodape";
 import { AbasDoAluno } from "@/components/abas-do-aluno";
 import { CabecalhoDoAluno } from "@/components/cabecalho-do-aluno";
 import { BocaDoViolao, Cordas } from "@/components/cordas";
@@ -402,18 +403,13 @@ async function MeusCursosDoAluno() {
 // A área do aluno traz o próprio cabeçalho; o da moldura do site some.
 export default function MeusCursos() {
   return (
-    <div data-tela-cheia className="flex flex-1 flex-col">
-      <Suspense fallback={<p className="p-8">Carregando…</p>}>
-        <MeusCursosDoAluno />
-      </Suspense>
-      <footer className={`${CONTEINER} max-w-6xl py-6`}>
-        <Link
-          href="/privacidade"
-          className="inline-flex min-h-12 items-center text-sm text-texto-secundario underline"
-        >
-          Política de privacidade
-        </Link>
-      </footer>
+    <div data-tela-cheia className="flex min-h-dvh flex-1 flex-col">
+      <div className="flex flex-1 flex-col">
+        <Suspense fallback={<p className="p-8">Carregando…</p>}>
+          <MeusCursosDoAluno />
+        </Suspense>
+      </div>
+      <Rodape largura="max-w-6xl" />
       <AbasDoAluno atual="cursos" />
     </div>
   );

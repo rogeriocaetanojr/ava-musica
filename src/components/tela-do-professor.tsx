@@ -4,6 +4,7 @@ import {
   CabecalhoDoProfessor,
   type SecaoDoProfessor,
 } from "@/components/cabecalho-do-professor";
+import { type FolgaDoRodape, Rodape } from "@/components/rodape";
 import { exigirProfessor } from "@/lib/auth";
 
 async function CabecalhoComSessao({ atual }: { atual?: SecaoDoProfessor }) {
@@ -18,18 +19,22 @@ async function CabecalhoComSessao({ atual }: { atual?: SecaoDoProfessor }) {
 export function TelaDoProfessor({
   atual,
   semAbas = false,
+  folgaDoRodape,
   children,
 }: {
   atual?: SecaoDoProfessor;
   semAbas?: boolean;
+  // Telas sem abas com barra de ações fixa no celular.
+  folgaDoRodape?: FolgaDoRodape;
   children: ReactNode;
 }) {
   return (
-    <div data-tela-cheia className="flex flex-1 flex-col">
+    <div data-tela-cheia className="flex min-h-dvh flex-1 flex-col">
       <Suspense fallback={<CabecalhoDoProfessor atual={atual} />}>
         <CabecalhoComSessao atual={atual} />
       </Suspense>
-      {children}
+      <div className="flex flex-1 flex-col">{children}</div>
+      <Rodape largura="max-w-6xl" folga={folgaDoRodape} />
       {!semAbas && <AbasDoProfessor atual={atual} />}
     </div>
   );

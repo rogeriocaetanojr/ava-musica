@@ -60,7 +60,6 @@ export default function PaginaNovaSenha({
       destaque="mesma música."
       apoio="Depois de salvar, entre com o seu e-mail e a senha nova."
       titulo="Nova senha"
-      semPrivacidade
     >
       <Suspense>
         <NovaSenha searchParams={searchParams} />

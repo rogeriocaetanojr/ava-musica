@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
-import Link from "next/link";
 import { BocaDoViolao, Cordas } from "@/components/cordas";
+import { Rodape } from "@/components/rodape";
 import { LogoDoAva } from "@/components/logo-do-ava";
 
 // Moldura das telas de entrada (login, criar conta e convite): a faixa bordô
@@ -14,7 +14,6 @@ export function TelaDeEntrada({
   subtitulo,
   nota,
   rodape,
-  semPrivacidade = false,
   children,
 }: {
   chamada: string;
@@ -26,10 +25,8 @@ export function TelaDeEntrada({
   subtitulo?: string;
   // Texto curto no pé da tela, só no celular.
   nota?: string;
-  // Link extra na linha do rodapé, ao lado da política de privacidade.
+  // Link extra no pé do formulário (ex.: Criar conta).
   rodape?: ReactNode;
-  // Esconde o link da política de privacidade no rodapé.
-  semPrivacidade?: boolean;
   children: ReactNode;
 }) {
   return (
@@ -72,7 +69,7 @@ export function TelaDeEntrada({
             )}
           </div>
           {children}
-          <footer className="mt-auto space-y-1 md:mt-0">
+          <div className="mt-auto space-y-1 md:mt-0">
             {nota && (
               <p className="text-sm leading-normal text-texto-secundario md:hidden">
                 {nota}
@@ -80,16 +77,9 @@ export function TelaDeEntrada({
             )}
             <div className="flex flex-wrap items-center justify-between gap-x-4">
               {rodape}
-              {!semPrivacidade && (
-                <Link
-                  href="/privacidade"
-                  className="inline-flex min-h-11 items-center text-sm font-bold text-destaque underline"
-                >
-                  Política de privacidade
-                </Link>
-              )}
             </div>
-          </footer>
+          </div>
+          <Rodape compacto />
         </div>
       </section>
     </main>
