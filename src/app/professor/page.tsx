@@ -5,7 +5,7 @@ import { Aviso } from "@/components/aviso";
 import { BarraProgresso } from "@/components/barra-progresso";
 import { Rodape } from "@/components/rodape";
 import { AbasDoProfessor } from "@/components/abas-do-professor";
-import { Botao, classesDoBotao } from "@/components/botao";
+import { classesDoBotao } from "@/components/botao";
 import { CabecalhoDoProfessor } from "@/components/cabecalho-do-professor";
 import { Cordas } from "@/components/cordas";
 import { exigirProfessor } from "@/lib/auth";
@@ -532,6 +532,14 @@ async function Painel() {
               Olá, {primeiroNome(sessao.nome)}
             </h1>
           </div>
+          {/* No computador, o link fica no cabeçalho. Mesmo padrão do
+              "Voltar ao painel" da tela do aluno. */}
+          <Link
+            href="/cursos"
+            className="inline-flex min-h-12 items-center text-base font-bold underline md:hidden"
+          >
+            Ver como aluno
+          </Link>
           <div className="hidden w-auto flex-wrap gap-3 md:flex">
             <Link
               href="/professor/alunos/convidar"
@@ -556,25 +564,6 @@ async function Painel() {
           <Resumo />
         </Suspense>
       </main>
-      <div
-        className={`${CONTEINER} flex max-w-6xl flex-wrap items-center gap-x-6 md:hidden`}
-      >
-        <Link
-          href="/cursos"
-          className={classesDoBotao("link", "text-texto-secundario")}
-        >
-          Ver como aluno
-        </Link>
-        <form action="/auth/sair" method="post">
-          <Botao
-            type="submit"
-            variante="link"
-            className="text-texto-secundario"
-          >
-            Sair
-          </Botao>
-        </form>
-      </div>
       <Rodape largura="max-w-6xl" />
       <AbasDoProfessor atual="painel" />
     </>
