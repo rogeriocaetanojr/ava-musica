@@ -91,12 +91,27 @@ export async function esperarCaptcha(page: Page): Promise<void> {
   );
 }
 
+// O servidor dos testes é o npm run dev, que desenha o selo do Next.js
+// (ferramentas e avisos, como "1 Insight") no canto inferior esquerdo. No
+// celular, ele fica por cima do rodapé fixo (botão "Novo bloco") e engole o
+// clique. O site publicado não tem o selo, então os testes o escondem.
+export async function esconderSeloDoNext(page: Page): Promise<void> {
+  await page.addInitScript(() => {
+    const estilo = document.createElement("style");
+    estilo.textContent = "nextjs-portal { display: none !important; }";
+    document.addEventListener("DOMContentLoaded", () =>
+      document.head.appendChild(estilo),
+    );
+  });
+}
+
 // Preenche e envia a tela de login, sem esperar o resultado.
 export async function tentarEntrar(
   page: Page,
   email: string,
   senha: string,
 ): Promise<void> {
+  await esconderSeloDoNext(page);
   await page.goto("/login");
   await page.getByLabel("E-mail").fill(email);
   await page.getByLabel("Senha", { exact: true }).fill(senha);

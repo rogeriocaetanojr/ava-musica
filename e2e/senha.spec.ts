@@ -162,7 +162,11 @@ test("o avatar do professor abre o perfil, com Trocar senha", async ({
   page,
 }) => {
   await entrar(page, PROFESSOR);
-  await page.getByRole("link", { name: /^Perfil: conectado como/ }).click();
+  // O avatar abre o menu da conta, que leva ao perfil.
+  await page
+    .getByRole("button", { name: /^Menu da conta: conectado como/ })
+    .click();
+  await page.getByRole("link", { name: "Meu perfil" }).click();
   await expect(page).toHaveURL(/\/professor\/perfil$/);
   await expect(
     page.getByRole("heading", { level: 1, name: "Perfil" }),

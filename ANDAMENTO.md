@@ -37,7 +37,7 @@
 - [ ] Teste de ações sem permissão
 - [ ] Teste automático de acessibilidade
 - [ ] Testes de ponta a ponta no CI e CI nos pull requests
-- [ ] Corrigir testes de ponta a ponta que já falhavam antes da correção B1: "o avatar do professor abre o perfil" procura o link "Perfil: conectado como", que virou o botão "Menu da conta"; "professor cria curso…" para por tempo esgotado no computador e no celular
+- [ ] Atualizar o Next.js para uma versão sem as vulnerabilidades apontadas pelo `npm audit` (16.0.0 a 16.4.4, gravidade moderada); no `npm run dev`, o Next mostra o aviso "1 Insight" e às vezes encerra o servidor ao exibi-lo
 
 ### Revisão
 
@@ -120,8 +120,11 @@
 ### Correções da auditoria
 
 - [x] B1: painel do professor com o progresso contado no banco (função `progresso_por_curso`), sem o corte de 1000 linhas da API; a ficha do aluno lê os registros em páginas
+- [x] Testes de ponta a ponta voltando a passar: o do avatar abre o "Menu da conta" e depois "Meu perfil"; e os testes escondem o selo de desenvolvimento do Next, que no celular cobria o botão "Novo bloco" do rodapé
 
 ## Decisões
+
+- Os testes de ponta a ponta escondem o selo de desenvolvimento do Next.js (`esconderSeloDoNext` em `e2e/apoio.ts`), porque no `npm run dev` ele fica por cima do rodapé fixo do celular; o site publicado não tem o selo. A opção `devIndicators: false` não serve, porque o selo de avisos continua aparecendo.
 
 - O painel recebe uma linha por aluno e curso de `progresso_por_curso`. Essa resposta também tem o limite de 1000 linhas da API, o que só pesa com mais de 1000 matrículas com progresso; até lá não é preciso paginar.
 
