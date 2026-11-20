@@ -261,6 +261,8 @@ test("com a CSP ativa: login com captcha, tema escuro, YouTube, áudio e Forms",
       duracao: Math.round(elemento.duration || 0),
     }));
   await expect.poll(estado).toMatchObject({ erro: null, duracao: 1 });
+  // E o tocador mostra a duração, mesmo se o arquivo carregou antes do React.
+  await expect(page.getByText("0:00 de 0:01")).toBeVisible();
 
   // Prova: o link leva o código do aluno, e não o e-mail.
   const prova = page.getByRole("link", { name: /Abrir a prova/ });

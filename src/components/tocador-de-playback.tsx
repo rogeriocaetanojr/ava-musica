@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 function minutos(segundos: number): string {
   if (!Number.isFinite(segundos)) return "0:00";
@@ -21,6 +21,14 @@ export function TocadorDePlayback({
   const [tocando, setTocando] = useState(false);
   const [atual, setAtual] = useState(0);
   const [duracao, setDuracao] = useState(0);
+
+  // O navegador pode ler a duração antes de o React ligar o onLoadedMetadata
+  // (o <audio> chega no HTML do servidor); nesse caso ela é lida aqui.
+  useEffect(() => {
+    const elemento = audio.current;
+    if (elemento && elemento.readyState >= HTMLMediaElement.HAVE_METADATA)
+      setDuracao(elemento.duration);
+  }, []);
 
   function alternar() {
     const elemento = audio.current;

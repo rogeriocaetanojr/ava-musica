@@ -62,7 +62,11 @@ Com o Supabase local rodando: Studio em http://localhost:54323 e caixa de e-mail
 - **Tailwind 4:** uma classe própria que usa `@apply` precisa ser declarada com `@utility`.
 - **Login Google para menores de 13 anos** depende do Family Link dos pais; para esses alunos, o caminho padrão é o cadastro pelo professor, com a senha criada pelo link do convite.
 - **O cadastro do Auth está aberto** (`enable_signup = true`) para Criar conta e o Google criarem os pedidos, com a confirmação de e-mail ligada (`enable_confirmations = true`). Quem protege é a RLS, pela coluna `liberado_em`; nunca confie nos metadados do usuário (`raw_user_meta_data`), que qualquer um pode enviar. A marca de cadastro feito pelo professor fica no `app_metadata`.
-- **`npm install <pacote>` pode apagar o binário nativo do rolldown** (bug do npm com dependências opcionais), e o `npm test` passa a falhar com "Cannot find native binding". Para corrigir, apague `node_modules` e `package-lock.json` e rode `npm install`.
+- **Qualquer `npm install` que reescreve o `package-lock.json` apaga os binários opcionais de plataforma** (`@rolldown/binding-*` e `lightningcss-*`, cerca de 560 linhas), por um bug do npm com dependências opcionais. O `npm test` passa a falhar com "Cannot find module './rolldown-binding.wasi.cjs'" ou "Cannot find native binding". Apagar o lock e rodar `npm install` de novo **não resolve**: gera o lock sem eles outra vez. O que funciona:
+  1. Volte o lock do commit: `git checkout HEAD -- package-lock.json`.
+  2. Para mudar a versão de um pacote, aplique no lock do commit só as entradas que mudaram (versão, `resolved` e `integrity` do pacote e dos que vêm com ele), mantendo as entradas que o npm tirou.
+  3. Apague o `node_modules` (com o `npm run dev` parado, que trava a pasta no Windows) e rode `npm ci`, que instala exatamente o que está no lock.
+  4. Confira no `git diff` do lock que só mudaram os pacotes que você quis trocar.
 
 ## 7. Jeito de trabalhar
 

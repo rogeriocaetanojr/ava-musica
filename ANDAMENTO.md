@@ -38,7 +38,6 @@
 - [ ] Teste automático de acessibilidade
 - [ ] Testes de ponta a ponta no CI e CI nos pull requests
 - [ ] Telas que leem dados e ignoram o erro do Supabase, mostrando a página vazia em vez de um aviso: `src/app/(aluno)/dados.ts` (aulas concluídas, última aula, recados), a aula do aluno, a página do convite e a do aceite, Convidar aluno (lista de cursos), a lista de alunos (último acesso), o conteúdo da aula e o curso do professor, e `obterSessao` em `src/lib/auth.ts`
-- [ ] Atualizar o Next.js para uma versão sem as vulnerabilidades apontadas pelo `npm audit` (16.0.0 a 16.4.4, gravidade moderada); no `npm run dev`, o Next mostra o aviso "1 Insight" e às vezes encerra o servidor ao exibi-lo
 
 ### Revisão
 
@@ -49,6 +48,7 @@
 
 - [ ] Contas dos serviços criadas e com acesso de duas pessoas
 - [ ] Banco de dados na nuvem, com ambientes de teste e de uso real
+  - Ligar à mão o **Secure password change** do Auth nos dois projetos da nuvem (Authentication → Sign In / Providers → Email), como no `config.toml`: o `config.toml` vale só para o Supabase local, e sem essa opção a proteção do S6 não existe no site publicado (veja `guias/deploy.md`).
 - [ ] Chaves e configurações secretas guardadas com segurança
 - [ ] Site publicado na Netlify, com versão de teste e versão oficial
 - [ ] Login com Google e envio de e-mails funcionando de verdade
@@ -59,7 +59,6 @@
 - [ ] Publicação automática da versão de teste e promoção para a oficial
 - [ ] Endereço próprio do site
   - Os cabeçalhos de segurança e a CSP já saem do próprio site (S2). Com o endereço próprio, conferir no site publicado que eles chegam iguais e, depois de um tempo no ar sem problemas, avaliar o `preload` do HSTS.
-  - Ligar o **Secure password change** do Auth nos dois projetos da nuvem, como no `config.toml` (veja `guias/deploy.md`).
 - [ ] Cópias de segurança do banco de dados
 - [ ] Rotinas automáticas do banco
   - Apagar as contas criadas em Criar conta e nunca confirmadas (ninguém abriu o link de confirmação) depois de 48 horas. Hoje elas só ficam fora da lista do professor e dão lugar ao cadastro feito por ele.
@@ -128,10 +127,14 @@
 - [x] S2: cabeçalhos de segurança em toda resposta (`X-Content-Type-Options`, `Referrer-Policy`, `X-Frame-Options`, `Permissions-Policy` e HSTS) e CSP com nonce a cada requisição, sem `'unsafe-inline'` em script, com `frame-ancestors 'none'`
 - [x] S4: o bloco de áudio só toca arquivo público do Supabase Storage do próprio site; Drive continua abrindo em nova guia, e a CSP reforça com o `media-src`
 - [x] S5: o link da prova leva o código do aluno (8 caracteres do id), e não o e-mail; o professor vê o código na ficha do aluno
-- [x] S6: `secure_password_change` ligado no Auth local
+- [x] S6: `secure_password_change` ligado no Auth local; na nuvem, falta ligar à mão (ver Publicação do site)
 - [x] S7: as rotas POST (`/auth/sair`, `/convite/<código>/definir`, `/aceite/<token>/autorizar` e `/nova-senha/salvar`) recusam com 403 o pedido vindo de outro site
 - [x] O teste do painel com mais de 1000 registros apaga o aluno e o curso que criou, mesmo se falhar no meio
 - [x] B2 e B6: as server actions e o registro do pedido de acesso conferem o erro do Supabase e mostram uma mensagem na tela; concluir a aula ou marcar a prova que falha não fica marcado e avisa o aluno
+
+### Dependências
+
+- [x] Next.js e `eslint-config-next` atualizados para a 16.4.6, fora da faixa com as vulnerabilidades apontadas pelo `npm audit` (16.0.0 a 16.4.4); o lock manteve os binários opcionais de plataforma (ver a armadilha do rolldown nas regras do projeto)
 
 ## Decisões
 
@@ -276,4 +279,5 @@
 - Os dois scripts inline fixos que continuam no `<head>`, o do tema (`src/lib/tema.ts`) e um trecho do React (`SCRIPT_FIXO_DO_REACT`, em `src/lib/seguranca.ts`), são liberados pelo hash. Os testes de ponta a ponta rodam com o `npm run dev`, que não tem esqueleto estático, e por isso não acusam um script novo no esqueleto. Depois de atualizar o Next ou o React, confira o build de produção (`next build` e `next start`) com o navegador aberto: uma violação da CSP aparece no console.
 - O estilo inline continua liberado na CSP (`style-src 'unsafe-inline'`): o React grava `style=""` (a largura das barras de progresso) e o captcha injeta o próprio CSS. O Google Forms, o Drive e os links abrem em nova guia, uma navegação que a CSP não controla; por isso não entram nela.
 - A conferência de origem das rotas POST aceita o `Origin` do endereço em que o pedido chegou e o do `NEXT_PUBLIC_SITE_URL`. Sem `Origin`, vale o `Sec-Fetch-Site: same-origin`; pedido sem nenhum dos dois é recusado. As server actions já têm a conferência do próprio Next.
-- O `npm run test:db` só passa num banco recém-recriado (`npx supabase db reset`), sem o `seed:dev`: o teste `15_progresso_por_curso.sql` conta todas as linhas de `progresso_por_curso()` e falha com a matrícula da Ana do seed. O `npm run test:db:ci` não tem esse problema, porque sempre usa um banco novo.
+- Os testes SQL rodam também no banco local com os dados do `seed:dev` e dos testes de ponta a ponta: o `15_progresso_por_curso.sql` conta só as linhas dos alunos que ele mesmo cria.
+- O tocador de áudio lê a duração também quando o navegador carregou o arquivo antes de o React ligar o `onLoadedMetadata` (o `<audio>` chega no HTML do servidor); antes, ficava em "0:00 de 0:00".

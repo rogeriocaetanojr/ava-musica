@@ -71,7 +71,12 @@ begin
   assert linha.ultima_aula_id = 'e1000000-0000-0000-0000-000000001200',
     'a última aula publicada concluída de a1 deveria ser a 1200';
 
-  assert (select count(*) from public.progresso_por_curso()) = 2,
+  -- Só os alunos deste teste: no banco local, o seed:dev tem outros alunos.
+  assert (
+    select count(*) from public.progresso_por_curso()
+    where aluno_id in ('00000000-0000-0000-0000-0000000000a1',
+                       '00000000-0000-0000-0000-0000000000b1')
+  ) = 2,
     'o professor deveria ver uma linha para a1 e outra para b1';
 
   assert (select count(*) from public.progresso_por_curso('00000000-0000-0000-0000-0000000000b1')) = 1,
