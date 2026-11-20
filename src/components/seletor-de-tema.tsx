@@ -2,20 +2,7 @@
 
 import { useLayoutEffect } from "react";
 
-type Tema = "claro" | "escuro";
-
-const COOKIE = "tema";
-
-// Cor da barra do navegador e do sistema: a mesma do fundo de cada tema.
-export const COR_DA_BARRA: Record<Tema, string> = {
-  claro: "#fbf5ea",
-  escuro: "#170b0e",
-};
-
-// Lido também pelo script do layout raiz, antes da primeira pintura. Sem
-// cookie, vale o tema do sistema. Com tema escolhido, a barra do navegador
-// segue a escolha em vez do sistema.
-export const SCRIPT_DO_TEMA = `(function(){try{var m=document.cookie.match(/(?:^|; )${COOKIE}=(claro|escuro)(?:;|$)/);if(!m)return;var t=m[1],c=${JSON.stringify(COR_DA_BARRA)}[t];document.documentElement.setAttribute("data-tema",t);var b=function(){document.querySelectorAll('meta[name="theme-color"]').forEach(function(e){e.setAttribute("content",c)})};b();document.addEventListener("DOMContentLoaded",b)}catch(e){}})()`;
+import { COOKIE_DO_TEMA as COOKIE, COR_DA_BARRA, type Tema } from "@/lib/tema";
 
 function aplicar(tema: Tema) {
   document.documentElement.setAttribute("data-tema", tema);

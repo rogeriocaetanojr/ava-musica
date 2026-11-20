@@ -12,14 +12,14 @@ export type Bloco = {
 type Props = {
   bloco: Bloco;
   // E-mail que substitui o marcador do Forms (o do aluno logado).
-  email?: string;
+  codigo?: string;
   // Ações extras abaixo do bloco, como o "Enviei a prova" da área do aluno.
   children?: ReactNode;
 };
 
 // Um bloco de conteúdo da aula, usado na edição do professor e na área do aluno.
 // Fora o texto, aparece igual ao cartão de material da aula do aluno.
-export function BlocoConteudo({ bloco, email, children }: Props) {
+export function BlocoConteudo({ bloco, codigo, children }: Props) {
   if (bloco.tipo === "texto")
     return (
       <article className="space-y-3">
@@ -36,7 +36,7 @@ export function BlocoConteudo({ bloco, email, children }: Props) {
       {bloco.tipo === "youtube" && bloco.titulo && (
         <h2 className="font-semibold break-words">{bloco.titulo}</h2>
       )}
-      <ConteudoDoMaterial bloco={bloco} email={email} />
+      <ConteudoDoMaterial bloco={bloco} codigo={codigo} />
       {children}
     </article>
   );

@@ -8,6 +8,7 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { BarraProgresso } from "@/components/barra-progresso";
 import { exigirProfessor } from "@/lib/auth";
+import { codigoDoAluno } from "@/lib/embeds";
 import {
   type AcaoAuditada,
   NOMES_DAS_ACOES,
@@ -187,6 +188,15 @@ async function FichaDoAluno({ params }: { params: Promise<{ id: string }> }) {
                   E-mail
                 </dt>
                 <dd className="break-all text-texto">{aluno.email}</dd>
+              </div>
+              {/* O Forms recebe este código no lugar do e-mail (ver lib/embeds.ts). */}
+              <div>
+                <dt className="text-xs font-bold text-texto-secundario">
+                  Código nas provas
+                </dt>
+                <dd className="font-mono text-texto">
+                  {codigoDoAluno(aluno.id)}
+                </dd>
               </div>
               <div>
                 <dt className="text-xs font-bold text-texto-secundario">

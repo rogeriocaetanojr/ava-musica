@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
 import { PHASE_PRODUCTION_BUILD } from "next/constants";
+import { CABECALHOS_DE_SEGURANCA } from "./src/lib/seguranca";
 
 const nextConfig: NextConfig = {
   // Os testes de ponta a ponta usam uma pasta própria, para o servidor deles
@@ -7,6 +8,11 @@ const nextConfig: NextConfig = {
   distDir: process.env.NEXT_DIST_DIR || ".next",
   cacheComponents: true,
   partialPrefetching: true,
+  // Cabeçalhos fixos em toda resposta, inclusive arquivos estáticos. A CSP
+  // muda a cada requisição (nonce) e por isso sai do src/proxy.ts.
+  async headers() {
+    return [{ source: "/:caminho*", headers: CABECALHOS_DE_SEGURANCA }];
+  },
   // O progresso do aluno agora fica na ficha dele.
   async redirects() {
     return [

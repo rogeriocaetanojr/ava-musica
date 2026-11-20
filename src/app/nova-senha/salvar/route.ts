@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { recusarOutraOrigem } from "@/lib/seguranca";
 import { COOKIE_NOVA_SENHA, erroDaNovaSenha } from "@/lib/senha";
 import { COOKIE_ULTIMO_USO } from "@/lib/sessao";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
@@ -8,6 +9,9 @@ import { criarClienteServidor } from "@/lib/supabase/servidor";
 // passa por exigirAluno(). Quem protege é a sessão aberta pelo link do e-mail
 // mais o cookie gravado em /auth/callback.
 export async function POST(request: NextRequest) {
+  // S7: só aceita o envio feito pela página do próprio site.
+  const recusa = recusarOutraOrigem(request);
+  if (recusa) return recusa;
   const origin = request.nextUrl.origin;
   // 303: o navegador segue com GET, e não reenvia o formulário.
   const voltar = (caminho: string) =>

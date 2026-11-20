@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { ehCodigoDeConvite, hashDoConvite } from "@/lib/convites";
+import { recusarOutraOrigem } from "@/lib/seguranca";
 import { erroDaSenha } from "@/lib/senha";
 import { criarClienteAdmin } from "@/lib/supabase/admin";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
@@ -12,6 +13,9 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ codigo: string }> },
 ) {
+  // S7: só aceita o envio feito pela página do próprio site.
+  const recusa = recusarOutraOrigem(request);
+  if (recusa) return recusa;
   const { codigo } = await params;
   const origin = request.nextUrl.origin;
   // 303: o navegador segue com GET, e não reenvia o formulário.

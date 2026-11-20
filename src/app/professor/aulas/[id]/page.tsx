@@ -7,7 +7,7 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import type { Bloco } from "@/components/bloco-conteudo";
 import { exigirProfessor } from "@/lib/auth";
-import type { TipoDeBloco } from "@/lib/embeds";
+import { codigoDoAluno, type TipoDeBloco } from "@/lib/embeds";
 import { type Direcao, ordenar } from "@/lib/ordem";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 import { publicarAula, renomearAula } from "../../cursos/[id]/acoes";
@@ -155,13 +155,13 @@ function ItemBloco({
   posicao,
   primeiro,
   ultimo,
-  email,
+  codigo,
 }: {
   bloco: Conteudo;
   posicao: number;
   primeiro: boolean;
   ultimo: boolean;
-  email: string;
+  codigo: string;
 }) {
   const nome = `o bloco ${posicao}, ${nomeDoBloco(bloco)}`;
 
@@ -200,7 +200,7 @@ function ItemBloco({
               acao={editarBloco.bind(null, bloco.id)}
               textoDoBotao="Salvar bloco"
               inicial={bloco}
-              email={email}
+              codigo={codigo}
             />
           </div>
         </AoEditar>
@@ -263,7 +263,7 @@ async function EditorDaAula({ params }: { params: Promise<{ id: string }> }) {
         <div className="flex flex-col gap-6 md:gap-8 lg:col-span-8">
           <NovoBloco
             acao={criarBloco.bind(null, aula.id)}
-            email={sessao.email}
+            codigo={codigoDoAluno(sessao.id)}
             className={cartao}
             classeDoTitulo={tituloDeSecao}
             publicar={
@@ -308,7 +308,7 @@ async function EditorDaAula({ params }: { params: Promise<{ id: string }> }) {
                     posicao={indice + 1}
                     primeiro={indice === 0}
                     ultimo={indice === blocos.length - 1}
-                    email={sessao.email}
+                    codigo={codigoDoAluno(sessao.id)}
                   />
                 ))}
               </ol>

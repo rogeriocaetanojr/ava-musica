@@ -18,8 +18,18 @@ export function ehTipoDeBloco(valor: unknown): valor is TipoDeBloco {
   return (TIPOS_DE_BLOCO as readonly unknown[]).includes(valor);
 }
 
-// Texto que o professor coloca no link pré-preenchido do Forms.
-export const MARCADOR_EMAIL = "EMAIL_DO_ALUNO";
+// Texto que o professor coloca no link pré-preenchido do Forms. O site troca
+// pelo código do aluno, nunca pelo e-mail: a URL fica no histórico, nos logs
+// do Google e no Referer. O marcador antigo (EMAIL_DO_ALUNO) também vira o
+// código, para os links já cadastrados não mandarem o e-mail.
+export const MARCADOR_CODIGO = "CODIGO_DO_ALUNO";
+const MARCADOR_ANTIGO = "EMAIL_DO_ALUNO";
+
+// Código do aluno nas provas: os 8 primeiros caracteres do id, em maiúsculas.
+// Não revela nada da pessoa; o professor vê o código na ficha do aluno.
+export function codigoDoAluno(id: string): string {
+  return id.replaceAll("-", "").slice(0, 8).toUpperCase();
+}
 
 export type Embed =
   | { tipo: "youtube"; id: string; src: string }
@@ -109,10 +119,10 @@ const CAMINHO_FORMS =
   /^\/forms\/d\/(e\/)?([A-Za-z0-9_-]+)(?:\/(?:viewform|edit))?\/?$/;
 const CAMINHO_FORMS_GLE = /^\/[A-Za-z0-9_-]+\/?$/;
 
-// Troca o marcador pelo e-mail do aluno (quando informado), normaliza para
+// Troca o marcador pelo código do aluno (quando informado), normaliza para
 // /viewform e tira o embedded. Links forms.gle abrem como estão, sem
 // preenchimento.
-export function lerForms(link: string, email?: string): Embed | null {
+export function lerForms(link: string, codigo?: string): Embed | null {
   const url = lerUrlHttps(link);
   if (!url) return null;
 
@@ -132,17 +142,49 @@ export function lerForms(link: string, email?: string): Embed | null {
     if (campo === "embedded") continue;
     destino.searchParams.append(
       campo,
-      email === undefined ? valor : valor.replaceAll(MARCADOR_EMAIL, email),
+      codigo === undefined
+        ? valor
+        : valor
+            .replaceAll(MARCADOR_CODIGO, codigo)
+            .replaceAll(MARCADOR_ANTIGO, codigo),
     );
   }
   return { tipo: "forms", url: destino.href };
 }
 
-// Áudio do Drive abre em nova guia; outro link https toca no tocador da aula.
-export function lerAudio(link: string): Embed | null {
+// Arquivo público do Supabase Storage do próprio projeto. A origem vem do
+// NEXT_PUBLIC_SUPABASE_URL (no computador é http, no ar é https).
+const CAMINHO_DO_STORAGE = "/storage/v1/object/public/";
+
+function ehDoStorage(
+  link: string,
+  supabaseUrl: string | undefined,
+): URL | null {
+  if (!supabaseUrl) return null;
+  let url: URL;
+  let supabase: URL;
+  try {
+    url = new URL(link.trim());
+    supabase = new URL(supabaseUrl);
+  } catch {
+    return null;
+  }
+  if (url.username || url.password) return null;
+  if (url.origin !== supabase.origin) return null;
+  return url.pathname.startsWith(CAMINHO_DO_STORAGE) ? url : null;
+}
+
+// Áudio do Drive abre em nova guia; arquivo do Supabase Storage toca no
+// tocador da aula. Link de outro servidor é recusado: o navegador do aluno
+// (inclusive menores) não acessa servidores de terceiros, que veriam o IP.
+// A CSP reforça com o media-src (ver lib/seguranca.ts).
+export function lerAudio(
+  link: string,
+  supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL,
+): Embed | null {
   const drive = lerDrive(link);
   if (drive) return drive;
-  const url = lerUrlHttps(link);
+  const url = ehDoStorage(link, supabaseUrl);
   return url ? { tipo: "audio", src: url.href } : null;
 }
 
@@ -155,7 +197,7 @@ export function lerLink(link: string): Embed | null {
 export function lerConteudo(
   tipo: TipoDeBloco,
   link: string,
-  email?: string,
+  codigo?: string,
 ): Embed | null {
   switch (tipo) {
     case "youtube":
@@ -167,7 +209,7 @@ export function lerConteudo(
     case "link":
       return lerLink(link);
     case "prova":
-      return lerForms(link, email);
+      return lerForms(link, codigo);
     case "texto":
       return null;
   }

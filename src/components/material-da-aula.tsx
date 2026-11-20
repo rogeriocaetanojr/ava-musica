@@ -98,12 +98,12 @@ function Cartao({
 // Forms e links abrem em nova guia. Usado também na pré-visualização.
 export function ConteudoDoMaterial({
   bloco,
-  email,
+  codigo,
 }: {
   bloco: Bloco;
-  email?: string;
+  codigo?: string;
 }) {
-  const embed = lerConteudo(bloco.tipo, bloco.url ?? "", email);
+  const embed = lerConteudo(bloco.tipo, bloco.url ?? "", codigo);
   if (!embed)
     return (
       <p role="alert" className="text-sm font-semibold text-destaque">
@@ -172,18 +172,18 @@ export function ConteudoDoMaterial({
 // Cartão de um material da aula (Drive, playback, link ou prova).
 export function MaterialDaAula({
   bloco,
-  email,
+  codigo,
   children,
 }: {
   bloco: Bloco;
-  email?: string;
+  codigo?: string;
   children?: ReactNode;
 }) {
   return (
     <li
       className={`space-y-3 rounded-2xl border border-linha bg-superficie p-4 ${bloco.tipo === "youtube" ? "md:col-span-2" : ""}`}
     >
-      <ConteudoDoMaterial bloco={bloco} email={email} />
+      <ConteudoDoMaterial bloco={bloco} codigo={codigo} />
       {children}
     </li>
   );

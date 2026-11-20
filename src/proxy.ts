@@ -1,7 +1,19 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { ehBloqueado } from "./app/login/mensagens";
+import {
+  gerarNonce,
+  hashDoScript,
+  montarCsp,
+  SCRIPT_FIXO_DO_REACT,
+} from "./lib/seguranca";
 import { COOKIE_ULTIMO_USO, semValidade, sessaoExpirou } from "./lib/sessao";
+import { SCRIPT_DO_TEMA } from "./lib/tema";
+
+// Os scripts inline fixos: os hashes são calculados uma vez só.
+const hashesFixos = Promise.all(
+  [SCRIPT_DO_TEMA, SCRIPT_FIXO_DO_REACT].map(hashDoScript),
+);
 
 const ROTAS_PUBLICAS = [
   "/login",
@@ -42,7 +54,22 @@ function paraLogin(request: NextRequest, erro?: string): NextResponse {
 // A conta bloqueada pelo professor tem a sessão recusada pelo Supabase
 // (user_banned): os cookies são apagados e o aluno vê o aviso no login.
 // Depois de 2 horas sem uso (ver lib/sessao.ts), a sessão é encerrada.
+// Toda resposta leva a CSP com um nonce novo; o Next lê o nonce do cabeçalho
+// da requisição e o aplica nos próprios scripts.
 export async function proxy(request: NextRequest) {
+  const csp = montarCsp({
+    nonce: gerarNonce(),
+    hashes: await hashesFixos,
+    supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
+    desenvolvimento: process.env.NODE_ENV === "development",
+  });
+  request.headers.set("content-security-policy", csp);
+  const resposta = await tratarSessao(request);
+  resposta.headers.set("Content-Security-Policy", csp);
+  return resposta;
+}
+
+async function tratarSessao(request: NextRequest): Promise<NextResponse> {
   let resposta = NextResponse.next({ request });
 
   const supabase = createServerClient(

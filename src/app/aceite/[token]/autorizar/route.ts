@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { recusarOutraOrigem } from "@/lib/seguranca";
 import { VERSAO_DOS_TERMOS } from "@/lib/site";
 import { criarClienteAdmin } from "@/lib/supabase/admin";
 import { ehTokenDeAceite, hashDoTokenDeAceite } from "../../validacao";
@@ -10,6 +11,9 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ token: string }> },
 ) {
+  // S7: só aceita o envio feito pela página do próprio site.
+  const recusa = recusarOutraOrigem(request);
+  if (recusa) return recusa;
   const { token } = await params;
   const voltar = (caminho: string) =>
     NextResponse.redirect(new URL(caminho, request.nextUrl.origin), 303);

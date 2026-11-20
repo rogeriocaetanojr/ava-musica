@@ -19,7 +19,7 @@ import {
 } from "@/components/marcador-da-aula";
 import { MaterialDaAula } from "@/components/material-da-aula";
 import { exigirAlunoOuProfessor } from "@/lib/auth";
-import { lerConteudo } from "@/lib/embeds";
+import { codigoDoAluno, lerConteudo } from "@/lib/embeds";
 import { ordenar } from "@/lib/ordem";
 import {
   aulasEmOrdem,
@@ -308,7 +308,7 @@ async function PaginaDaAula({ params }: { params: Promise<{ id: string }> }) {
                   <MaterialDaAula
                     key={bloco.id}
                     bloco={bloco}
-                    email={sessao.email}
+                    codigo={codigoDoAluno(sessao.id)}
                   >
                     {aluno && bloco.tipo === "prova" && (
                       <BotaoProva

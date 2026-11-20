@@ -19,7 +19,7 @@ const ERROS_DE_LINK: Record<Exclude<TipoDeBloco, "texto">, string> = {
   drive:
     "Cole o link de compartilhamento de um arquivo do Google Drive, começando com https://.",
   audio:
-    "Cole um link do Google Drive ou de um arquivo de áudio, começando com https://.",
+    "Cole um link do Google Drive ou de um arquivo de áudio do Supabase Storage do site. Áudio de outros sites não é aceito.",
   link: "O link precisa ser completo e começar com https://.",
   prova:
     "Cole o link de um Google Forms (docs.google.com/forms ou forms.gle), começando com https://.",

@@ -8,6 +8,26 @@ import { clienteAdmin, entrar, PROFESSOR } from "./apoio";
 
 const AULAS = 1100;
 
+// O que o teste criou, para apagar no fim, mesmo se ele falhar no meio. Apagar
+// o usuário leva junto perfil, matrícula e progresso; apagar o curso leva
+// módulo e aulas (on delete cascade).
+let alunoId: string | undefined;
+let cursoId: string | undefined;
+
+test.afterEach(async () => {
+  const admin = clienteAdmin();
+  if (alunoId) {
+    const { error } = await admin.auth.admin.deleteUser(alunoId);
+    expect(error).toBeNull();
+    alunoId = undefined;
+  }
+  if (cursoId) {
+    const { error } = await admin.from("cursos").delete().eq("id", cursoId);
+    expect(error).toBeNull();
+    cursoId = undefined;
+  }
+});
+
 test("painel mostra 100% com mais de 1000 registros de progresso", async ({
   page,
 }, testInfo) => {
@@ -30,7 +50,7 @@ test("painel mostra 100% com mais de 1000 registros de progresso", async ({
       app_metadata: { origem: "professor" },
     });
   expect(erroUsuario).toBeNull();
-  const alunoId = criado.user!.id;
+  alunoId = criado.user!.id;
 
   const { data: curso, error: erroCurso } = await admin
     .from("cursos")
@@ -38,6 +58,7 @@ test("painel mostra 100% com mais de 1000 registros de progresso", async ({
     .select("id")
     .single();
   expect(erroCurso).toBeNull();
+  cursoId = curso!.id;
   const { data: modulo, error: erroModulo } = await admin
     .from("modulos")
     .insert({ curso_id: curso!.id, titulo: "Módulo único", ordem: 1 })

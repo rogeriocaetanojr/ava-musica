@@ -16,7 +16,7 @@ type Props = {
   textoDoBotao: string;
   inicial?: Bloco;
   // E-mail do professor, para a pré-visualização da prova.
-  email: string;
+  codigo: string;
   // Limpa os campos depois de salvar (formulário de bloco novo).
   limparAoSalvar?: boolean;
   // Chamado depois de salvar sem erro (fecha o painel no celular).
@@ -28,10 +28,11 @@ const DICAS: Record<TipoDeBloco, string> = {
   youtube: "Aceita links watch, youtu.be, shorts, embed e live.",
   drive:
     'O arquivo precisa estar compartilhado como "qualquer pessoa com o link".',
-  audio: "Link do Google Drive ou de um arquivo de áudio (por exemplo, .mp3).",
+  audio:
+    "Link do Google Drive ou de um arquivo de áudio guardado no Supabase Storage do site.",
   link: "Qualquer página que comece com https://.",
   prova:
-    "No Forms, gere um link pré-preenchido com EMAIL_DO_ALUNO no campo de e-mail. Links forms.gle abrem sem o e-mail preenchido.",
+    "No Forms, crie uma pergunta de resposta curta “Código do aluno” e gere um link pré-preenchido com CODIGO_DO_ALUNO nela. O código de cada aluno aparece na ficha dele. Links forms.gle abrem sem o código preenchido.",
 };
 
 // Mesmas classes do Campo, que só cobre input: o select e o textarea usam
@@ -41,7 +42,7 @@ export function FormularioBloco({
   acao,
   textoDoBotao,
   inicial,
-  email,
+  codigo,
   limparAoSalvar = false,
   aoSalvar,
 }: Props) {
@@ -138,7 +139,7 @@ export function FormularioBloco({
           <p className="text-xs font-bold tracking-wide text-texto-secundario uppercase">
             Pré-visualização
           </p>
-          <BlocoConteudo bloco={previa} email={email} />
+          <BlocoConteudo bloco={previa} codigo={codigo} />
         </div>
       )}
 

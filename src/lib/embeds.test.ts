@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  codigoDoAluno,
   ehTipoDeBloco,
   lerAudio,
   lerConteudo,
@@ -105,18 +106,29 @@ describe("lerDrive", () => {
 describe("lerForms", () => {
   const base = "https://docs.google.com/forms/d/e/1FAIpQLSabc_123";
 
-  it("troca o marcador pelo e-mail", () => {
+  it("troca o marcador pelo código do aluno", () => {
     const resultado = lerForms(
-      `${base}/viewform?usp=pp_url&entry.123=EMAIL_DO_ALUNO`,
-      "ana@exemplo.com",
+      `${base}/viewform?usp=pp_url&entry.123=CODIGO_DO_ALUNO`,
+      "A1B2C3D4",
     );
     expect(resultado).toEqual({
       tipo: "forms",
-      url: `${base}/viewform?usp=pp_url&entry.123=ana%40exemplo.com`,
+      url: `${base}/viewform?usp=pp_url&entry.123=A1B2C3D4`,
     });
   });
 
-  it("mantém o marcador quando não há e-mail", () => {
+  it("troca o marcador antigo pelo código, nunca pelo e-mail", () => {
+    const resultado = lerForms(
+      `${base}/viewform?entry.123=EMAIL_DO_ALUNO`,
+      "A1B2C3D4",
+    );
+    expect(resultado).toEqual({
+      tipo: "forms",
+      url: `${base}/viewform?entry.123=A1B2C3D4`,
+    });
+  });
+
+  it("mantém o marcador quando não há código", () => {
     const resultado = lerForms(`${base}/viewform?entry.1=EMAIL_DO_ALUNO`);
     expect(resultado).toEqual({
       tipo: "forms",
@@ -124,7 +136,7 @@ describe("lerForms", () => {
     });
   });
 
-  it("não deixa o e-mail injetar outros campos", () => {
+  it("não deixa o valor injetar outros campos", () => {
     const resultado = lerForms(
       `${base}/viewform?entry.1=EMAIL_DO_ALUNO`,
       "a&entry.2=x@exemplo.com",
@@ -150,7 +162,7 @@ describe("lerForms", () => {
   });
 
   it("abre forms.gle sem preenchimento", () => {
-    expect(lerForms("https://forms.gle/AbC123xyz", "ana@exemplo.com")).toEqual({
+    expect(lerForms("https://forms.gle/AbC123xyz", "A1B2C3D4")).toEqual({
       tipo: "forms",
       url: "https://forms.gle/AbC123xyz",
     });
@@ -177,19 +189,39 @@ describe("lerAudio", () => {
     ).toBe("drive");
   });
 
-  it("toca outros links https direto", () => {
-    expect(lerAudio("https://exemplo.com/playback.mp3")).toEqual({
+  const supabase = "https://projeto.supabase.co";
+  const arquivo = `${supabase}/storage/v1/object/public/playbacks/a.mp3`;
+
+  it("toca o arquivo público do Supabase Storage do site", () => {
+    expect(lerAudio(arquivo, supabase)).toEqual({
       tipo: "audio",
-      src: "https://exemplo.com/playback.mp3",
+      src: arquivo,
     });
   });
 
-  it.each(["http://exemplo.com/a.mp3", "javascript:alert(1)"])(
-    "recusa %s",
-    (link) => {
-      expect(lerAudio(link)).toBeNull();
-    },
-  );
+  it("aceita o Supabase local em http", () => {
+    const local = "http://127.0.0.1:54321";
+    const link = `${local}/storage/v1/object/public/playbacks/a.mp3`;
+    expect(lerAudio(link, local)).toEqual({ tipo: "audio", src: link });
+  });
+
+  it.each([
+    "https://exemplo.com/playback.mp3",
+    "http://exemplo.com/a.mp3",
+    "javascript:alert(1)",
+    "https://outro.supabase.co/storage/v1/object/public/playbacks/a.mp3",
+    "https://projeto.supabase.co.golpe.com/storage/v1/object/public/a.mp3",
+    "http://projeto.supabase.co/storage/v1/object/public/playbacks/a.mp3",
+    "https://projeto.supabase.co/storage/v1/object/sign/playbacks/a.mp3",
+    "https://projeto.supabase.co/rest/v1/perfis",
+    "https://x:y@projeto.supabase.co/storage/v1/object/public/a.mp3",
+  ])("recusa %s", (link) => {
+    expect(lerAudio(link, supabase)).toBeNull();
+  });
+
+  it("recusa tudo fora do Drive sem o endereço do Supabase", () => {
+    expect(lerAudio(arquivo, "")).toBeNull();
+  });
 });
 
 describe("lerLink", () => {
@@ -217,12 +249,12 @@ describe("lerConteudo", () => {
     expect(
       lerConteudo(
         "prova",
-        "https://docs.google.com/forms/d/e/x/viewform?entry.1=EMAIL_DO_ALUNO",
-        "b@c.com",
+        "https://docs.google.com/forms/d/e/x/viewform?entry.1=CODIGO_DO_ALUNO",
+        "A1B2C3D4",
       ),
     ).toEqual({
       tipo: "forms",
-      url: "https://docs.google.com/forms/d/e/x/viewform?entry.1=b%40c.com",
+      url: "https://docs.google.com/forms/d/e/x/viewform?entry.1=A1B2C3D4",
     });
     expect(lerConteudo("texto", "https://exemplo.com")).toBeNull();
   });
@@ -233,5 +265,13 @@ describe("ehTipoDeBloco", () => {
     expect(ehTipoDeBloco("prova")).toBe(true);
     expect(ehTipoDeBloco("html")).toBe(false);
     expect(ehTipoDeBloco(undefined)).toBe(false);
+  });
+});
+
+describe("codigoDoAluno", () => {
+  it("usa os 8 primeiros caracteres do id, em maiúsculas", () => {
+    expect(codigoDoAluno("a1b2c3d4-e5f6-4789-90ab-cdef01234567")).toBe(
+      "A1B2C3D4",
+    );
   });
 });

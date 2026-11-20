@@ -235,9 +235,11 @@ double_confirm_changes = true
 # Criar conta só vale depois do link de confirmação (supabase/templates/confirmacao.html).
 enable_confirmations = true
 # If enabled, users will need to reauthenticate or have logged in recently to change their password.
-# Desligado: o perfil confere a senha atual com um login antes de trocar, e /nova-senha só abre
-# pelo link do e-mail.
-secure_password_change = false
+# Ligado (S6 da auditoria): com uma sessão de mais de 24 horas, o Auth recusa trocar a senha
+# sem reautenticação, mesmo chamando a API direto. O perfil confere a senha atual com um
+# login novo antes de trocar, e /nova-senha abre a sessão pelo link do e-mail; as duas
+# sessões são recentes e passam.
+secure_password_change = true
 # Controls the minimum amount of time that must pass before sending another signup confirmation or password reset email.
 max_frequency = "1s"
 # Number of characters used in the email OTP.

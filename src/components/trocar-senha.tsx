@@ -18,7 +18,9 @@ import {
 
 // Cartão "Trocar senha" do perfil do aluno e do professor. A senha atual é
 // conferida com um login por senha (por isso o captcha); depois a senha nova é
-// gravada e as sessões dos outros aparelhos são encerradas.
+// gravada e as sessões dos outros aparelhos são encerradas. A conferência aqui
+// é só para o aluno: quem protege é o Auth, com o secure_password_change ligado
+// (S6), que exige uma sessão recente, como a que este login acabou de abrir.
 export function TrocarSenha({ email }: { email: string }) {
   const [atual, setAtual] = useState("");
   const [nova, setNova] = useState("");

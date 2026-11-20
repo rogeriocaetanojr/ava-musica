@@ -10,7 +10,7 @@ type Props = {
     estado: EstadoFormulario,
     formData: FormData,
   ) => Promise<EstadoFormulario>;
-  email: string;
+  codigo: string;
   // Botão de publicar do rodapé, que vem pronto da página.
   publicar: ReactNode;
   className: string;
@@ -22,7 +22,7 @@ type Props = {
 // É o mesmo formulário nos dois casos, só muda a classe.
 export function NovoBloco({
   acao,
-  email,
+  codigo,
   publicar,
   className,
   classeDoTitulo,
@@ -84,7 +84,7 @@ export function NovoBloco({
         <FormularioBloco
           acao={acao}
           textoDoBotao="Adicionar bloco"
-          email={email}
+          codigo={codigo}
           limparAoSalvar
           aoSalvar={fechar}
         />
