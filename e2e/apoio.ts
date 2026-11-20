@@ -1,4 +1,5 @@
 import { execSync } from "node:child_process";
+import { createClient } from "@supabase/supabase-js";
 import { expect, type Page } from "@playwright/test";
 
 // Caixa de e-mail de teste do Supabase local (Mailpit).
@@ -218,4 +219,15 @@ export async function entrar(
 ): Promise<void> {
   await tentarEntrar(page, email, senha);
   await expect(page).not.toHaveURL(/\/login/);
+}
+
+// Cliente com a chave de serviço do Supabase local, para preparar dados que a
+// tela não cria (muitos registros, um link vencido).
+export function clienteAdmin() {
+  const status = JSON.parse(
+    execSync("npx supabase status -o json", { encoding: "utf8" }),
+  ) as { API_URL: string; SERVICE_ROLE_KEY: string };
+  return createClient(status.API_URL, status.SERVICE_ROLE_KEY, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  });
 }

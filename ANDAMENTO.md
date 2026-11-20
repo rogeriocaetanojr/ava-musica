@@ -37,6 +37,7 @@
 - [ ] Teste de ações sem permissão
 - [ ] Teste automático de acessibilidade
 - [ ] Testes de ponta a ponta no CI e CI nos pull requests
+- [ ] B5: liberar sem aceite quem completa 12 anos (calcular a idade pela data de nascimento em `aluno_liberado()`), aguardando decisão sobre a regra de LGPD
 - [ ] Atualizar o Next.js para uma versão sem as vulnerabilidades apontadas pelo `npm audit` (16.0.0 a 16.4.4, gravidade moderada); no `npm run dev`, o Next mostra o aviso "1 Insight" e às vezes encerra o servidor ao exibi-lo
 
 ### Revisão
@@ -121,8 +122,14 @@
 
 - [x] B1: painel do professor com o progresso contado no banco (função `progresso_por_curso`), sem o corte de 1000 linhas da API; a ficha do aluno lê os registros em páginas
 - [x] Testes de ponta a ponta voltando a passar: o do avatar abre o "Menu da conta" e depois "Meu perfil"; e os testes escondem o selo de desenvolvimento do Next, que no celular cobria o botão "Novo bloco" do rodapé
+- [x] S1: link de autorização do responsável guardado só como hash, válido por 7 dias e uma vez só; os links antigos deixaram de valer, e o professor gera um novo na ficha do aluno
+- [x] S3: idade, faixa de menor de 12 e papel do perfil não mudam pela API, nem pelo professor nem com a chave de serviço; só pela função que grava a auditoria
+- [x] S8: um perfil por e-mail, sem diferença de maiúsculas
 
 ## Decisões
+
+- A conta do professor é promovida direto no banco (papel = professor), nunca pela API: o gatilho `dados_protegidos_so_pela_funcao` barra a mudança de papel até com a chave de serviço. O `seed:dev` faz isso pela conexão direta com o banco local.
+- Não existe e-mail de autorização para o responsável: o professor copia o link (no cadastro ou em "Gerar link de autorização", na ficha) e envia por outro meio.
 
 - Os testes de ponta a ponta escondem o selo de desenvolvimento do Next.js (`esconderSeloDoNext` em `e2e/apoio.ts`), porque no `npm run dev` ele fica por cima do rodapé fixo do celular; o site publicado não tem o selo. A opção `devIndicators: false` não serve, porque o selo de avisos continua aparecendo.
 

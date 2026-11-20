@@ -1,4 +1,5 @@
 // Cria os usuários de teste no Supabase local. Uso: npm run seed:dev
+import { createRequire } from "node:module";
 import { criarClienteAdmin } from "../src/lib/supabase/admin";
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
@@ -17,6 +18,33 @@ function dataHaAnos(anos: number): string {
 }
 
 const supabase = criarClienteAdmin();
+
+// O pg já é usado pelos testes SQL (scripts/test-db.mjs), mas não tem tipos
+// instalados; aqui basta o mínimo do cliente.
+type ClienteDoBanco = {
+  connect(): Promise<void>;
+  query(sql: string, valores: unknown[]): Promise<unknown>;
+  end(): Promise<void>;
+};
+const pg = createRequire(import.meta.url)("pg") as {
+  Client: new (opcoes: { connectionString: string }) => ClienteDoBanco;
+};
+
+// Banco do Supabase local (npx supabase status).
+const URL_DO_BANCO = "postgresql://postgres:postgres@127.0.0.1:54322/postgres";
+
+async function promoverAProfessor(id: string): Promise<void> {
+  const banco = new pg.Client({ connectionString: URL_DO_BANCO });
+  await banco.connect();
+  try {
+    await banco.query(
+      "update public.perfis set papel = 'professor' where id = $1",
+      [id],
+    );
+  } finally {
+    await banco.end();
+  }
+}
 
 const NOME_DO_ALUNO = "Ana Souza";
 // Senha do professor e do aluno de teste. Só existe no Supabase local (o
@@ -226,12 +254,9 @@ async function main() {
     true,
     SENHA_DE_TESTE,
   );
-  // O gatilho sempre cria aluno; a promoção é feita aqui, como no deploy.
-  const { error: erroPromocao } = await supabase
-    .from("perfis")
-    .update({ papel: "professor" })
-    .eq("id", idProfessor);
-  if (erroPromocao) throw erroPromocao;
+  // O gatilho sempre cria aluno, e o papel não muda pela API, nem com a chave
+  // de serviço: a promoção é feita direto no banco, como no deploy.
+  await promoverAProfessor(idProfessor);
 
   const idAluno = await garantirUsuario(
     "aluno@teste.local",

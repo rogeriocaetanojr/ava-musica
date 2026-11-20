@@ -16,14 +16,13 @@ import { calcularIdade, hojeNoBrasil } from "@/lib/idade";
 import { iniciais, nomeParaExibir } from "@/lib/nomes";
 import { ordenar } from "@/lib/ordem";
 import { resumoParaProfessor, ultimaAtividade } from "@/lib/painel";
-import { urlDoSite } from "@/lib/site";
 import { criarClienteAdmin } from "@/lib/supabase/admin";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 import { ehUuid } from "../../cursos/validacao";
 import { contagemDe, dadosDoPainel } from "../../progresso/dados";
 import { desmatricular, matricular } from "../acoes";
 import { BotaoBloqueio } from "../botao-bloqueio";
-import { BotaoCopiar } from "../botao-copiar";
+import { BotaoLinkDeAceite } from "../botao-link-de-aceite";
 import { BotaoReenviar } from "../botao-reenviar";
 import { FormularioExclusao } from "../formulario-exclusao";
 import { FormularioNome } from "../formulario-nome";
@@ -44,8 +43,8 @@ type Aluno = {
   responsaveis: {
     nome: string;
     email: string;
-    token: string;
     aceito_em: string | null;
+    expira_em: string | null;
   } | null;
   matriculas: { curso_id: string }[];
 };
@@ -92,7 +91,7 @@ async function FichaDoAluno({ params }: { params: Promise<{ id: string }> }) {
     supabase
       .from("perfis")
       .select(
-        "id, nome, email, data_nascimento, menor_de_12, bloqueado_em, liberado_em, responsaveis (nome, email, token, aceito_em), matriculas (curso_id)",
+        "id, nome, email, data_nascimento, menor_de_12, bloqueado_em, liberado_em, responsaveis (nome, email, aceito_em, expira_em), matriculas (curso_id)",
       )
       .eq("id", id)
       .eq("papel", "aluno")
@@ -245,12 +244,12 @@ async function FichaDoAluno({ params }: { params: Promise<{ id: string }> }) {
               ) : (
                 <div className="space-y-2">
                   <p className="text-sm text-texto-secundario">
-                    Ainda não autorizou. Envie este link ao responsável:
+                    {responsavel.expira_em &&
+                    new Date(responsavel.expira_em) > new Date()
+                      ? `Ainda não autorizou. O último link vale até ${formatarData(responsavel.expira_em)}; se o responsável não o tiver, gere outro e envie a ele.`
+                      : "Ainda não autorizou. Gere o link de autorização e envie ao responsável."}
                   </p>
-                  <BotaoCopiar
-                    texto={urlDoSite(`/aceite/${responsavel.token}`)}
-                    rotulo="Link de autorização do responsável"
-                  />
+                  <BotaoLinkDeAceite alunoId={aluno.id} />
                 </div>
               )}
             </section>

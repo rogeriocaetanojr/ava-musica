@@ -1,7 +1,5 @@
-import { execSync } from "node:child_process";
-import { createClient } from "@supabase/supabase-js";
 import { expect, test } from "@playwright/test";
-import { entrar, PROFESSOR } from "./apoio";
+import { clienteAdmin, entrar, PROFESSOR } from "./apoio";
 
 // B1 da auditoria: a API do Supabase devolve no máximo 1000 linhas por
 // consulta. Com mais de 1000 registros de progresso, o painel do professor
@@ -9,15 +7,6 @@ import { entrar, PROFESSOR } from "./apoio";
 // aulas de um curso, e o painel precisa mostrar 100%.
 
 const AULAS = 1100;
-
-function clienteAdmin() {
-  const status = JSON.parse(
-    execSync("npx supabase status -o json", { encoding: "utf8" }),
-  ) as { API_URL: string; SERVICE_ROLE_KEY: string };
-  return createClient(status.API_URL, status.SERVICE_ROLE_KEY, {
-    auth: { autoRefreshToken: false, persistSession: false },
-  });
-}
 
 test("painel mostra 100% com mais de 1000 registros de progresso", async ({
   page,

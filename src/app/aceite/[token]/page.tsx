@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
+import { connection } from "next/server";
 import { classesDoBotao } from "@/components/botao";
 import { Aviso } from "@/components/aviso";
 import { BotaoEnviar } from "@/components/botao-enviar";
@@ -8,7 +9,11 @@ import { CONTEINER } from "@/components/conteiner";
 import { CARTAO_DE_LEITURA, MolduraLegal } from "@/components/texto-legal";
 import { NOME_DO_AVA, tituloDaPagina } from "@/lib/site";
 import { criarClienteAdmin } from "@/lib/supabase/admin";
-import { ehTokenDeAceite } from "../validacao";
+import {
+  ehTokenDeAceite,
+  hashDoTokenDeAceite,
+  situacaoDoAceite,
+} from "../validacao";
 
 export const metadata: Metadata = {
   title: tituloDaPagina("Autorização do responsável"),
@@ -46,6 +51,8 @@ async function Autorizacao({
   params: Parametros;
   searchParams: Busca;
 }) {
+  // O prazo do link é comparado com o relógio, na hora da requisição.
+  await connection();
   const [{ token }, { erro }] = await Promise.all([params, searchParams]);
 
   const invalido = (
@@ -58,11 +65,19 @@ async function Autorizacao({
 
   const { data } = await criarClienteAdmin()
     .from("responsaveis")
-    .select("nome, aceito_em, perfis (nome)")
-    .eq("token", token)
+    .select("nome, aceito_em, expira_em, perfis (nome)")
+    .eq("token_hash", hashDoTokenDeAceite(token))
     .maybeSingle();
   if (!data) return invalido;
-  if (data.aceito_em)
+  const situacao = situacaoDoAceite(data, new Date());
+  if (situacao === "vencido")
+    return (
+      <Mensagem
+        titulo="Link vencido"
+        texto="Este link de autorização venceu. Peça ao professor um link novo."
+      />
+    );
+  if (situacao === "aceito")
     return (
       <Mensagem
         titulo="Link já usado"

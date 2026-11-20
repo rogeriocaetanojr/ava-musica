@@ -1,4 +1,4 @@
--- O aceite gravado pela página pública libera o menor de 12, e o mesmo token
+-- O aceite gravado pela página pública libera o menor de 12, e o mesmo código
 -- não grava de novo.
 
 set local role authenticated;
@@ -10,25 +10,28 @@ begin
 end;
 $$;
 
--- Mesma gravação do servidor: só onde o aceite ainda está vazio.
+-- Mesma gravação do servidor: só pelo hash do código, dentro do prazo e onde
+-- o aceite ainda está vazio.
 reset role;
+update public.responsaveis
+set token_hash = encode(sha256('codigo-do-teste'::bytea), 'hex'),
+    expira_em = now() + interval '7 days'
+where aluno_id = '00000000-0000-0000-0000-0000000000b1';
+
 do $$
 declare
-  token_do_aceite text;
+  hash_do_codigo text := encode(sha256('codigo-do-teste'::bytea), 'hex');
   gravados integer;
 begin
-  select token into token_do_aceite from public.responsaveis
-  where aluno_id = '00000000-0000-0000-0000-0000000000b1';
-
   update public.responsaveis set aceito_em = now(), versao_termos = '1-rascunho'
-  where token = token_do_aceite and aceito_em is null;
+  where token_hash = hash_do_codigo and aceito_em is null and expira_em > now();
   get diagnostics gravados = row_count;
   assert gravados = 1, 'o primeiro aceite deveria ser gravado';
 
   update public.responsaveis set aceito_em = now(), versao_termos = '1-rascunho'
-  where token = token_do_aceite and aceito_em is null;
+  where token_hash = hash_do_codigo and aceito_em is null and expira_em > now();
   get diagnostics gravados = row_count;
-  assert gravados = 0, 'o token já usado não deveria gravar de novo';
+  assert gravados = 0, 'o código já usado não deveria gravar de novo';
 end;
 $$;
 

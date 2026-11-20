@@ -1,10 +1,11 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { VERSAO_DOS_TERMOS } from "@/lib/site";
 import { criarClienteAdmin } from "@/lib/supabase/admin";
-import { ehTokenDeAceite } from "../../validacao";
+import { ehTokenDeAceite, hashDoTokenDeAceite } from "../../validacao";
 
 // Recebe o "autorizo" da página pública do aceite. Não há sessão: quem protege
-// é o token, que só vale uma vez (a gravação exige aceito_em ainda vazio).
+// é o código do link, que vale 7 dias e uma vez só (a gravação exige aceito_em
+// ainda vazio e o link dentro do prazo). O banco guarda só o hash do código.
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ token: string }> },
@@ -25,12 +26,13 @@ export async function POST(
       aceito_em: new Date().toISOString(),
       versao_termos: VERSAO_DOS_TERMOS,
     })
-    .eq("token", token)
+    .eq("token_hash", hashDoTokenDeAceite(token))
     .is("aceito_em", null)
+    .gt("expira_em", new Date().toISOString())
     .select("aluno_id")
     .maybeSingle();
   if (error) return voltar(`/aceite/${token}?erro=falhou`);
-  // Token inexistente ou já usado: a página explica o motivo.
+  // Inexistente, vencido ou já usado: a página explica o motivo.
   if (!data) return voltar(`/aceite/${token}`);
 
   // O aluno já recebeu o convite por e-mail; com o aceite, a senha que ele

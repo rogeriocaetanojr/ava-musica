@@ -18,6 +18,11 @@ import { urlDoSite } from "@/lib/site";
 import { criarClienteAdmin } from "@/lib/supabase/admin";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 import {
+  gerarTokenDeAceite,
+  hashDoTokenDeAceite,
+  vencimentoDoAceite,
+} from "../../aceite/validacao";
+import {
   ehUuid,
   type EstadoFormulario,
   valoresDigitados,
@@ -37,6 +42,22 @@ export type EstadoCadastro = EstadoFormulario & {
 };
 
 export type EstadoConvite = EstadoFormulario & { linkConvite?: string };
+
+export type EstadoAceite = EstadoFormulario & { linkAceite?: string };
+
+// Link novo de autorização do responsável: o banco recebe só o hash e o
+// vencimento (7 dias); o link inteiro só existe nesta resposta, para o
+// professor copiar e mandar ao responsável.
+function novoLinkDeAceite() {
+  const token = gerarTokenDeAceite();
+  return {
+    link: urlDoSite(`/aceite/${token}`),
+    campos: {
+      token_hash: hashDoTokenDeAceite(token),
+      expira_em: vencimentoDoAceite(Date.now()),
+    },
+  };
+}
 
 const ERRO_EMAIL_EXISTE = "Já existe uma conta com este e-mail.";
 const ERRO_EMAIL_PENDENTE =
@@ -155,21 +176,21 @@ export async function cadastrarAluno(
 
   let linkAceite: string | undefined;
   if (aluno.responsavel) {
-    const { data: responsavel, error: erroResponsavel } = await supabase
+    const aceite = novoLinkDeAceite();
+    const { error: erroResponsavel } = await supabase
       .from("responsaveis")
       .insert({
         aluno_id: alunoId,
         nome: aluno.responsavel.nome,
         email: aluno.responsavel.email,
-      })
-      .select("token")
-      .single();
-    if (erroResponsavel || !responsavel) {
+        ...aceite.campos,
+      });
+    if (erroResponsavel) {
       // Sem o responsável gravado a conta ficaria órfã; desfaz o cadastro.
       await admin.auth.admin.deleteUser(alunoId);
       return { erro: ERRO_BANCO, valores };
     }
-    linkAceite = urlDoSite(`/aceite/${responsavel.token}`);
+    linkAceite = aceite.link;
   }
 
   let aviso = "";
@@ -410,7 +431,7 @@ export async function desbloquearAluno(
 // Libera um pedido de acesso com a data de nascimento informada. O menor de 12
 // ganha o responsável antes da liberação e só acessa depois do aceite (o banco
 // confere). O banco grava a liberação e a auditoria juntos. Depois de liberar
-// o menor, o professor vai para a ficha, onde está o link de autorização.
+// o menor, o professor vai para a ficha, onde gera o link de autorização.
 export async function liberarPedido(
   alunoId: string,
   _estado: EstadoFormulario,
@@ -537,4 +558,32 @@ export async function permitirNovoPedidoPorEmail(
 
   atualizarAlunos();
   return { sucesso: `Pronto: ${email} já pode pedir acesso de novo.` };
+}
+
+// Gera um link novo de autorização para o responsável que ainda não deu o
+// aceite. O link anterior deixa de valer (o banco guarda um hash só).
+export async function gerarLinkDeAceite(
+  alunoId: string,
+): Promise<EstadoAceite> {
+  await exigirProfessor();
+  if (!ehUuid(alunoId)) return { erro: ERRO_BANCO };
+
+  const aceite = novoLinkDeAceite();
+  const supabase = await criarClienteServidor();
+  const { data, error } = await supabase
+    .from("responsaveis")
+    .update(aceite.campos)
+    .eq("aluno_id", alunoId)
+    .is("aceito_em", null)
+    .select("aluno_id");
+  if (error) return { erro: "Não foi possível gerar o link. Tente de novo." };
+  if (!data.length)
+    return { erro: "O responsável já autorizou ou não está cadastrado." };
+
+  revalidatePath("/professor/alunos/[id]", "page");
+  return {
+    sucesso:
+      "Link novo gerado, válido por 7 dias. O link anterior deixou de valer.",
+    linkAceite: aceite.link,
+  };
 }
