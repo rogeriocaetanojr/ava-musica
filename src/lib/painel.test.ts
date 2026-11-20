@@ -34,29 +34,11 @@ const modulos = [
 ];
 
 describe("resumoParaProfessor", () => {
-  it("conta aulas concluídas e provas enviadas só das aulas publicadas", () => {
-    const resumo = resumoParaProfessor(modulos, [
-      {
-        aula_id: "a1",
-        conteudo_id: null,
-        concluido_em: "2026-10-01T10:00:00Z",
-      },
-      {
-        aula_id: "a1",
-        conteudo_id: "p1",
-        concluido_em: "2026-10-01T10:05:00Z",
-      },
-      {
-        aula_id: "a3",
-        conteudo_id: null,
-        concluido_em: "2026-10-02T10:00:00Z",
-      },
-      {
-        aula_id: "a3",
-        conteudo_id: "p2",
-        concluido_em: "2026-10-02T10:00:00Z",
-      },
-    ]);
+  it("usa os totais das aulas publicadas e as contagens do banco", () => {
+    const resumo = resumoParaProfessor(modulos, {
+      aulas_concluidas: 1,
+      provas_enviadas: 1,
+    });
     expect(resumo).toEqual({
       total: 2,
       concluidas: 1,
@@ -67,11 +49,17 @@ describe("resumoParaProfessor", () => {
   });
 
   it("curso sem progresso fica zerado", () => {
-    expect(resumoParaProfessor(modulos, [])).toMatchObject({
+    expect(resumoParaProfessor(modulos, undefined)).toMatchObject({
       concluidas: 0,
       percentual: 0,
       provasEnviadas: 0,
     });
+  });
+
+  it("nunca passa de 100%, mesmo com contagem acima do total", () => {
+    expect(
+      resumoParaProfessor(modulos, { aulas_concluidas: 5, provas_enviadas: 3 }),
+    ).toMatchObject({ concluidas: 2, percentual: 100, provasEnviadas: 1 });
   });
 });
 
@@ -104,27 +92,11 @@ describe("ultimaAtividade", () => {
 });
 
 describe("aulasConcluidasNaSemana", () => {
-  it("conta só as aulas dos últimos 7 dias, sem as provas", () => {
-    const registros = [
-      {
-        aula_id: "a1",
-        conteudo_id: null,
-        concluido_em: "2026-10-20T10:00:00Z",
-      },
-      {
-        aula_id: "a1",
-        conteudo_id: "p1",
-        concluido_em: "2026-10-20T10:00:00Z",
-      },
-      {
-        aula_id: "a2",
-        conteudo_id: null,
-        concluido_em: "2026-10-01T10:00:00Z",
-      },
-    ];
+  it("soma as aulas da semana de todos os cursos", () => {
     expect(
-      aulasConcluidasNaSemana(registros, new Date("2026-10-22T00:00:00Z")),
-    ).toBe(1);
+      aulasConcluidasNaSemana([{ aulas_na_semana: 2 }, { aulas_na_semana: 3 }]),
+    ).toBe(5);
+    expect(aulasConcluidasNaSemana([])).toBe(0);
   });
 });
 

@@ -1,7 +1,7 @@
 import {
   type AulaDoCurso,
   type ModuloDoCurso,
-  resumoDoCurso,
+  percentualDeProgresso,
 } from "@/lib/progresso";
 
 export type AulaComProvas = AulaDoCurso & {
@@ -14,38 +14,54 @@ export type RegistroDeProgresso = {
   concluido_em: string;
 };
 
-// Ids das aulas concluídas e das provas marcadas como enviadas.
-export function separarProgresso(registros: readonly RegistroDeProgresso[]) {
-  const aulas = new Set<string>();
-  const provas = new Set<string>();
-  for (const r of registros) {
-    if (r.conteudo_id) provas.add(r.conteudo_id);
-    else aulas.add(r.aula_id);
-  }
-  return { aulas, provas };
-}
+// Contagem do progresso de um aluno num curso, calculada no banco pela função
+// progresso_por_curso (migração 20261120000000). O painel não lê mais os
+// registros um a um: a API do Supabase devolve no máximo 1000 linhas por
+// consulta, e o progresso de todos os alunos passa disso rápido.
+export type ContagemDoCurso = {
+  aluno_id: string;
+  curso_id: string;
+  // Só aulas publicadas, como na tela do aluno.
+  aulas_concluidas: number;
+  // Provas de aulas publicadas marcadas como enviadas.
+  provas_enviadas: number;
+  // Aula publicada concluída mais recente e quando foi.
+  ultima_aula_id: string | null;
+  ultima_aula_em: string | null;
+  // Aulas concluídas nos últimos 7 dias, publicadas ou não.
+  aulas_na_semana: number;
+};
 
 // Resumo de um curso para o painel do professor: o progresso de aulas (mesma
 // regra da tela do aluno) e quantas provas das aulas publicadas foram enviadas.
+// Os totais vêm da estrutura do curso; as quantidades feitas, do banco.
 export function resumoParaProfessor(
   modulos: readonly ModuloDoCurso<AulaComProvas>[],
-  registros: readonly RegistroDeProgresso[],
+  contagem:
+    | Pick<ContagemDoCurso, "aulas_concluidas" | "provas_enviadas">
+    | null
+    | undefined,
 ) {
-  const { aulas, provas } = separarProgresso(registros);
-  const resumo = resumoDoCurso(modulos, aulas);
-  const idsDasProvas = modulos
-    .flatMap((m) => m.aulas)
-    .filter((a) => a.publicada)
+  const publicadas = modulos.flatMap((m) => m.aulas).filter((a) => a.publicada);
+  const total = publicadas.length;
+  const provas = publicadas
     .flatMap((a) => a.conteudos)
-    .filter((c) => c.tipo === "prova")
-    .map((c) => c.id);
+    .filter((c) => c.tipo === "prova").length;
+  const concluidas = Math.min(contagem?.aulas_concluidas ?? 0, total);
   return {
-    total: resumo.total,
-    concluidas: resumo.concluidas,
-    percentual: resumo.percentual,
-    provas: idsDasProvas.length,
-    provasEnviadas: idsDasProvas.filter((id) => provas.has(id)).length,
+    total,
+    concluidas,
+    percentual: percentualDeProgresso(concluidas, total),
+    provas,
+    provasEnviadas: Math.min(contagem?.provas_enviadas ?? 0, provas),
   };
+}
+
+// Aulas concluídas nos últimos 7 dias, somando todos os cursos.
+export function aulasConcluidasNaSemana(
+  contagens: readonly Pick<ContagemDoCurso, "aulas_na_semana">[],
+): number {
+  return contagens.reduce((soma, c) => soma + c.aulas_na_semana, 0);
 }
 
 // Data do registro mais recente; nula quando o aluno ainda não fez nada.
@@ -57,19 +73,6 @@ export function ultimaAtividade(
     if (ultima === null || Date.parse(r.concluido_em) > Date.parse(ultima))
       ultima = r.concluido_em;
   return ultima;
-}
-
-const SEMANA_EM_MS = 7 * 24 * 60 * 60 * 1000;
-
-// Aulas concluídas (sem contar as provas) nos últimos 7 dias.
-export function aulasConcluidasNaSemana(
-  registros: readonly RegistroDeProgresso[],
-  agora: Date = new Date(),
-): number {
-  const desde = agora.getTime() - SEMANA_EM_MS;
-  return registros.filter(
-    (r) => !r.conteudo_id && Date.parse(r.concluido_em) >= desde,
-  ).length;
 }
 
 export type SituacaoDoAluno = "ativo" | "aguardando" | "bloqueado";

@@ -1,6 +1,10 @@
 import "server-only";
 import { nomeParaExibir } from "@/lib/nomes";
-import type { AulaComProvas, RegistroDeProgresso } from "@/lib/painel";
+import type {
+  AulaComProvas,
+  ContagemDoCurso,
+  RegistroDeProgresso,
+} from "@/lib/painel";
 import type { ModuloDoCurso } from "@/lib/progresso";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 
@@ -16,10 +20,35 @@ export type AlunoDoPainel = {
   nome: string;
   matriculas: { curso_id: string }[];
 };
-export type ProgressoDoPainel = RegistroDeProgresso & { aluno_id: string };
+export type RegistroDoAluno = RegistroDeProgresso;
+
+// A API do Supabase devolve no máximo 1000 linhas por consulta (max_rows).
+const PAGINA = 1000;
+
+// Todos os registros de progresso de um aluno, página por página, para as
+// datas de cada aula e prova na ficha.
+async function registrosDoAluno(
+  supabase: Awaited<ReturnType<typeof criarClienteServidor>>,
+  alunoId: string,
+): Promise<RegistroDoAluno[] | null> {
+  const registros: RegistroDoAluno[] = [];
+  for (let inicio = 0; ; inicio += PAGINA) {
+    const { data, error } = await supabase
+      .from("progresso")
+      .select("aula_id, conteudo_id, concluido_em")
+      .eq("aluno_id", alunoId)
+      .order("id")
+      .range(inicio, inicio + PAGINA - 1);
+    if (error) return null;
+    registros.push(...(data as RegistroDoAluno[]));
+    if (data.length < PAGINA) return registros;
+  }
+}
 
 // Tudo o que o painel precisa, lido com a sessão do professor (a RLS libera
-// tudo para ele). alunoId limita a leitura a um aluno, na tela de detalhe.
+// tudo para ele). O progresso chega já contado pelo banco, uma linha por
+// aluno e curso (progresso_por_curso). alunoId limita a leitura a um aluno,
+// na ficha, que também recebe os registros um a um.
 export async function dadosDoPainel(alunoId?: string) {
   const supabase = await criarClienteServidor();
 
@@ -29,15 +58,9 @@ export async function dadosDoPainel(alunoId?: string) {
     .eq("papel", "aluno")
     .not("liberado_em", "is", null)
     .order("nome");
-  let progresso = supabase
-    .from("progresso")
-    .select("aluno_id, aula_id, conteudo_id, concluido_em");
-  if (alunoId) {
-    alunos = alunos.eq("id", alunoId);
-    progresso = progresso.eq("aluno_id", alunoId);
-  }
+  if (alunoId) alunos = alunos.eq("id", alunoId);
 
-  const [r1, r2, r3] = await Promise.all([
+  const [r1, r2, r3, registros] = await Promise.all([
     alunos,
     supabase
       .from("cursos")
@@ -45,9 +68,10 @@ export async function dadosDoPainel(alunoId?: string) {
         "id, titulo, publicado, modulos (id, titulo, ordem, aulas (id, titulo, ordem, publicada, conteudos (id, tipo)))",
       )
       .order("titulo"),
-    progresso,
+    supabase.rpc("progresso_por_curso", alunoId ? { p_aluno: alunoId } : {}),
+    alunoId ? registrosDoAluno(supabase, alunoId) : Promise.resolve([]),
   ]);
-  if (r1.error || r2.error || r3.error) return null;
+  if (r1.error || r2.error || r3.error || !registros) return null;
 
   return {
     alunos: (r1.data as unknown as AlunoDoPainel[]).map((aluno) => ({
@@ -55,8 +79,20 @@ export async function dadosDoPainel(alunoId?: string) {
       nome: nomeParaExibir(aluno.nome),
     })),
     cursos: r2.data as unknown as CursoDoPainel[],
-    progresso: r3.data as ProgressoDoPainel[],
+    contagens: r3.data as ContagemDoCurso[],
+    registros,
   };
+}
+
+// Contagem de um aluno num curso; indefinida quando ainda não há progresso.
+export function contagemDe(
+  contagens: readonly ContagemDoCurso[],
+  alunoId: string,
+  cursoId: string,
+): ContagemDoCurso | undefined {
+  return contagens.find(
+    (c) => c.aluno_id === alunoId && c.curso_id === cursoId,
+  );
 }
 
 export type SituacaoNoPainel = {

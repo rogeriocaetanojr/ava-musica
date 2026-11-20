@@ -12,6 +12,7 @@ import { exigirProfessor } from "@/lib/auth";
 import { dataPorExtenso, quandoFoi } from "@/lib/datas";
 import { iniciais, primeiroNome } from "@/lib/nomes";
 import {
+  type ContagemDoCurso,
   type SituacaoDoAluno,
   aulasConcluidasNaSemana,
   resumoParaProfessor,
@@ -21,7 +22,7 @@ import { aulasEmOrdem } from "@/lib/progresso";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 import {
   type CursoDoPainel,
-  type ProgressoDoPainel,
+  contagemDe,
   dadosDoPainel,
   situacaoDosAlunos,
 } from "./progresso/dados";
@@ -70,24 +71,20 @@ function Icone({ caminho }: { caminho: string }) {
   );
 }
 
-// "Aula N · hoje": a aula concluída mais recente do aluno no curso, com o
-// número na ordem do curso.
+// "Aula N · hoje": a aula concluída mais recente do aluno no curso (o banco
+// já escolhe a mais recente entre as publicadas), com o número na ordem do
+// curso.
 function ultimaAulaNoCurso(
   curso: CursoDoPainel,
-  registros: ProgressoDoPainel[],
+  contagem: ContagemDoCurso | undefined,
 ): string | null {
-  const aulas = aulasEmOrdem(curso.modulos);
-  let ultima: ProgressoDoPainel | null = null;
-  for (const r of registros)
-    if (
-      !r.conteudo_id &&
-      aulas.some((a) => a.id === r.aula_id) &&
-      (!ultima || Date.parse(r.concluido_em) > Date.parse(ultima.concluido_em))
-    )
-      ultima = r;
-  if (!ultima) return null;
-  const numero = aulas.findIndex((a) => a.id === ultima.aula_id) + 1;
-  return `Aula ${numero} · ${quandoFoi(ultima.concluido_em)}`;
+  if (!contagem?.ultima_aula_id || !contagem.ultima_aula_em) return null;
+  const numero =
+    aulasEmOrdem(curso.modulos).findIndex(
+      (a) => a.id === contagem.ultima_aula_id,
+    ) + 1;
+  if (numero === 0) return null;
+  return `Aula ${numero} · ${quandoFoi(contagem.ultima_aula_em)}`;
 }
 
 function Indicador({
@@ -186,11 +183,10 @@ async function Resumo() {
     (a) => situacaoDe(a.id) === "aguardando",
   ).length;
   const publicados = dados.cursos.filter((c) => c.publicado).length;
-  const naSemana = aulasConcluidasNaSemana(dados.progresso);
+  const naSemana = aulasConcluidasNaSemana(dados.contagens);
 
   const cursoPorId = new Map(dados.cursos.map((c) => [c.id, c]));
   const linhas = dados.alunos.flatMap((aluno, indice) => {
-    const registros = dados.progresso.filter((r) => r.aluno_id === aluno.id);
     const cursos = aluno.matriculas
       .map((m) => cursoPorId.get(m.curso_id))
       .filter((c) => c !== undefined)
@@ -199,7 +195,6 @@ async function Resumo() {
       aluno,
       avatar: AVATARES[indice % AVATARES.length],
       situacao: situacaoDe(aluno.id),
-      registros,
       variosCursos: cursos.length > 1,
     };
     const comCurso: (typeof base & { curso: CursoDoPainel | null })[] =
@@ -290,16 +285,12 @@ async function Resumo() {
           ) : (
             <ul className="divide-y divide-linha border-t border-linha">
               {linhas.map(
-                ({
-                  aluno,
-                  avatar,
-                  situacao,
-                  registros,
-                  curso,
-                  variosCursos,
-                }) => {
+                ({ aluno, avatar, situacao, curso, variosCursos }) => {
                   const resumo = curso
-                    ? resumoParaProfessor(curso.modulos, registros)
+                    ? resumoParaProfessor(
+                        curso.modulos,
+                        contagemDe(dados.contagens, aluno.id, curso.id),
+                      )
                     : null;
                   return (
                     <li key={`${aluno.id}-${curso?.id ?? "sem-curso"}`}>
@@ -406,81 +397,85 @@ async function Resumo() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-linha">
-                  {linhas.map(
-                    ({ aluno, avatar, situacao, registros, curso }) => {
-                      const resumo = curso
-                        ? resumoParaProfessor(curso.modulos, registros)
-                        : null;
-                      const ultima = curso
-                        ? ultimaAulaNoCurso(curso, registros)
-                        : null;
-                      const etiqueta = ETIQUETAS[situacao];
-                      return (
-                        <tr key={`${aluno.id}-${curso?.id ?? "sem-curso"}`}>
-                          <td className="px-6 py-3">
-                            <Link
-                              href={`/professor/alunos/${aluno.id}`}
-                              className="flex min-h-12 items-center gap-3 font-bold text-texto hover:underline"
-                            >
-                              <span
-                                aria-hidden="true"
-                                className={`inline-flex size-10 shrink-0 items-center justify-center rounded-full text-xs font-bold ${avatar}`}
-                              >
-                                {iniciais(aluno.nome)}
-                              </span>
-                              <span className="break-words">{aluno.nome}</span>
-                            </Link>
-                          </td>
-                          <td className="px-3 py-3 break-words">
-                            {curso ? (
-                              <>
-                                {curso.titulo}
-                                {!curso.publicado && (
-                                  <span className="text-texto-secundario">
-                                    {" "}
-                                    (rascunho)
-                                  </span>
-                                )}
-                              </>
-                            ) : (
-                              <span className="text-texto-secundario">
-                                Sem matrículas
-                              </span>
-                            )}
-                          </td>
-                          <td className="px-3 py-3">
-                            {curso && resumo ? (
-                              <div className="flex min-w-36 items-center gap-3">
-                                <div className="flex-1">
-                                  <BarraProgresso
-                                    percentual={resumo.percentual}
-                                    rotulo={`Progresso de ${aluno.nome} em ${curso.titulo}`}
-                                    cor="bordo"
-                                    comTexto={false}
-                                  />
-                                </div>
-                                <span>{resumo.percentual}%</span>
-                              </div>
-                            ) : (
-                              <span aria-label="Sem progresso">—</span>
-                            )}
-                          </td>
-                          <td className="px-3 py-3">
-                            {ultima ?? (
-                              <span aria-label="Nenhuma aula concluída">—</span>
-                            )}
-                          </td>
-                          <td className="px-6 py-3">
+                  {linhas.map(({ aluno, avatar, situacao, curso }) => {
+                    const resumo = curso
+                      ? resumoParaProfessor(
+                          curso.modulos,
+                          contagemDe(dados.contagens, aluno.id, curso.id),
+                        )
+                      : null;
+                    const ultima = curso
+                      ? ultimaAulaNoCurso(
+                          curso,
+                          contagemDe(dados.contagens, aluno.id, curso.id),
+                        )
+                      : null;
+                    const etiqueta = ETIQUETAS[situacao];
+                    return (
+                      <tr key={`${aluno.id}-${curso?.id ?? "sem-curso"}`}>
+                        <td className="px-6 py-3">
+                          <Link
+                            href={`/professor/alunos/${aluno.id}`}
+                            className="flex min-h-12 items-center gap-3 font-bold text-texto hover:underline"
+                          >
                             <span
-                              className={`inline-block rounded-full px-3 py-1 text-xs font-bold ${etiqueta.classe}`}
+                              aria-hidden="true"
+                              className={`inline-flex size-10 shrink-0 items-center justify-center rounded-full text-xs font-bold ${avatar}`}
                             >
-                              {etiqueta.texto}
+                              {iniciais(aluno.nome)}
                             </span>
-                          </td>
-                        </tr>
-                      );
-                    },
-                  )}
+                            <span className="break-words">{aluno.nome}</span>
+                          </Link>
+                        </td>
+                        <td className="px-3 py-3 break-words">
+                          {curso ? (
+                            <>
+                              {curso.titulo}
+                              {!curso.publicado && (
+                                <span className="text-texto-secundario">
+                                  {" "}
+                                  (rascunho)
+                                </span>
+                              )}
+                            </>
+                          ) : (
+                            <span className="text-texto-secundario">
+                              Sem matrículas
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-3 py-3">
+                          {curso && resumo ? (
+                            <div className="flex min-w-36 items-center gap-3">
+                              <div className="flex-1">
+                                <BarraProgresso
+                                  percentual={resumo.percentual}
+                                  rotulo={`Progresso de ${aluno.nome} em ${curso.titulo}`}
+                                  cor="bordo"
+                                  comTexto={false}
+                                />
+                              </div>
+                              <span>{resumo.percentual}%</span>
+                            </div>
+                          ) : (
+                            <span aria-label="Sem progresso">—</span>
+                          )}
+                        </td>
+                        <td className="px-3 py-3">
+                          {ultima ?? (
+                            <span aria-label="Nenhuma aula concluída">—</span>
+                          )}
+                        </td>
+                        <td className="px-6 py-3">
+                          <span
+                            className={`inline-block rounded-full px-3 py-1 text-xs font-bold ${etiqueta.classe}`}
+                          >
+                            {etiqueta.texto}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

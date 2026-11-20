@@ -8,7 +8,7 @@ import { nomeParaExibir } from "@/lib/nomes";
 import { resumoParaProfessor } from "@/lib/painel";
 import { criarClienteAdmin } from "@/lib/supabase/admin";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
-import { dadosDoPainel } from "../progresso/dados";
+import { contagemDe, dadosDoPainel } from "../progresso/dados";
 import { GavetaDePedidos } from "./gaveta-de-pedidos";
 import { PedidosDeAcesso } from "./pedidos-de-acesso";
 import { RecusadosRecentes } from "./recusados-recentes";
@@ -77,9 +77,6 @@ async function ListaDeAlunos({ pedidos }: { pedidos: React.ReactNode }) {
       ultimo_acesso: acessos.get(aluno.id),
     });
     if (status === "pendente") return [];
-    const registros = (painel?.progresso ?? []).filter(
-      (r) => r.aluno_id === aluno.id,
-    );
     return [
       {
         id: aluno.id,
@@ -98,7 +95,10 @@ async function ListaDeAlunos({ pedidos }: { pedidos: React.ReactNode }) {
               id: curso.id,
               titulo: curso.titulo,
               percentual: painel
-                ? resumoParaProfessor(curso.modulos, registros).percentual
+                ? resumoParaProfessor(
+                    curso.modulos,
+                    contagemDe(painel.contagens, aluno.id, curso.id),
+                  ).percentual
                 : null,
             },
           ];

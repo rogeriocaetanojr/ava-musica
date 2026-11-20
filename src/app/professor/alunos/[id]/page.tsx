@@ -20,7 +20,7 @@ import { urlDoSite } from "@/lib/site";
 import { criarClienteAdmin } from "@/lib/supabase/admin";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 import { ehUuid } from "../../cursos/validacao";
-import { dadosDoPainel } from "../../progresso/dados";
+import { contagemDe, dadosDoPainel } from "../../progresso/dados";
 import { desmatricular, matricular } from "../acoes";
 import { BotaoBloqueio } from "../botao-bloqueio";
 import { BotaoCopiar } from "../botao-copiar";
@@ -124,10 +124,13 @@ async function FichaDoAluno({ params }: { params: Promise<{ id: string }> }) {
   const progressoDoCurso = new Map(
     (painel?.cursos ?? []).map((curso) => [
       curso.id,
-      resumoParaProfessor(curso.modulos, painel?.progresso ?? []).percentual,
+      resumoParaProfessor(
+        curso.modulos,
+        painel && contagemDe(painel.contagens, id, curso.id),
+      ).percentual,
     ]),
   );
-  const registros = painel?.progresso ?? [];
+  const registros = painel?.registros ?? [];
   const ultima = ultimaAtividade(registros);
   // Quando cada aula foi concluída e cada prova marcada como enviada.
   const aulaConcluidaEm = new Map<string, string>();

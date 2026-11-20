@@ -37,6 +37,7 @@
 - [ ] Teste de ações sem permissão
 - [ ] Teste automático de acessibilidade
 - [ ] Testes de ponta a ponta no CI e CI nos pull requests
+- [ ] Corrigir testes de ponta a ponta que já falhavam antes da correção B1: "o avatar do professor abre o perfil" procura o link "Perfil: conectado como", que virou o botão "Menu da conta"; "professor cria curso…" para por tempo esgotado no computador e no celular
 
 ### Revisão
 
@@ -116,7 +117,13 @@
 - [x] Tema escuro no celular, com a barra do navegador na cor de cada tema e o botão de tema também no perfil e no cabeçalho do professor no celular
 - [x] Tema escuro no computador, com um botão de lua (no claro) e sol (no escuro) no cabeçalho do aluno e do professor; sem escolha feita, vale o tema do sistema
 
+### Correções da auditoria
+
+- [x] B1: painel do professor com o progresso contado no banco (função `progresso_por_curso`), sem o corte de 1000 linhas da API; a ficha do aluno lê os registros em páginas
+
 ## Decisões
+
+- O painel recebe uma linha por aluno e curso de `progresso_por_curso`. Essa resposta também tem o limite de 1000 linhas da API, o que só pesa com mais de 1000 matrículas com progresso; até lá não é preciso paginar.
 
 - O arquivo que protege as páginas que exigem login (`src/proxy.ts`) só será criado junto com o login, porque vazio ele impede o site de ser gerado.
 - Os tipos do Node estão na versão 24, a mesma usada no computador e nas verificações automáticas; a versão 20 é incompatível com a ferramenta de testes.
