@@ -4,6 +4,7 @@ import { type ReactNode, useEffect, useRef, useState } from "react";
 import { Aviso as CaixaDeAviso } from "@/components/aviso";
 import { Botao, classesDoBotao } from "@/components/botao";
 import type { EstadoFormulario } from "../cursos/validacao";
+import type { ResultadoDaAcao } from "@/lib/acoes";
 import { BotaoApagar } from "./botao-apagar";
 import { FormularioAviso } from "./formulario-aviso";
 
@@ -20,7 +21,7 @@ export type RecadoDaLista = {
   // "Alunos de Violão · 26/10/2026, 14:15", montado na página.
   destinoEData: string;
   editar: Acao;
-  apagar: () => Promise<void>;
+  apagar: () => Promise<ResultadoDaAcao>;
 };
 
 type Props = {

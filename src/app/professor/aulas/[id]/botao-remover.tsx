@@ -1,7 +1,10 @@
 "use client";
 
+import { FormularioDeAcao } from "@/components/formulario-de-acao";
+import type { ResultadoDaAcao } from "@/lib/acoes";
+
 type Props = {
-  remover: () => Promise<void>;
+  remover: () => Promise<ResultadoDaAcao>;
   nome: string;
   className: string;
 };
@@ -9,12 +12,9 @@ type Props = {
 // Pede confirmação antes de enviar, porque a remoção não tem volta.
 export function BotaoRemover({ remover, nome, className }: Props) {
   return (
-    <form
-      action={remover}
-      onSubmit={(e) => {
-        if (!window.confirm("Remover este bloco? Isso não pode ser desfeito."))
-          e.preventDefault();
-      }}
+    <FormularioDeAcao
+      acao={remover}
+      confirmar="Remover este bloco? Isso não pode ser desfeito."
     >
       <button
         type="submit"
@@ -34,6 +34,6 @@ export function BotaoRemover({ remover, nome, className }: Props) {
           <path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3" />
         </svg>
       </button>
-    </form>
+    </FormularioDeAcao>
   );
 }

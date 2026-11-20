@@ -9,6 +9,11 @@ export const MENSAGEM_PEDIDO_BARRADO =
 // Texto devolvido pelo hook antes_de_criar_usuario (migração 20261023000000).
 const MENSAGEM_DO_HOOK = "Não foi possível pedir acesso agora.";
 
+// O pedido de acesso não foi gravado no banco (confirmarPedido em
+// lib/pedidos.ts). Entrar de novo tenta outra vez.
+export const MENSAGEM_PEDIDO_NAO_REGISTRADO =
+  "Não foi possível registrar o seu pedido de acesso. Entre de novo para tentar outra vez.";
+
 export const MENSAGEM_CAPTCHA =
   "Não foi possível confirmar que você não é um robô. Espere a verificação terminar e tente de novo.";
 

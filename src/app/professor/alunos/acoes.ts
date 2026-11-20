@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import type { ResultadoDaAcao } from "@/lib/acoes";
 import { exigirProfessor } from "@/lib/auth";
 import { registrarAcesso } from "@/lib/auditoria";
 import { hojeNoBrasil } from "@/lib/idade";
@@ -187,7 +188,13 @@ export async function cadastrarAluno(
       });
     if (erroResponsavel) {
       // Sem o responsável gravado a conta ficaria órfã; desfaz o cadastro.
-      await admin.auth.admin.deleteUser(alunoId);
+      const { error: erroDesfazer } =
+        await admin.auth.admin.deleteUser(alunoId);
+      if (erroDesfazer)
+        return {
+          erro: "Não foi possível salvar o responsável, e a conta do aluno ficou criada sem ele. Exclua o aluno na lista e cadastre de novo.",
+          valores,
+        };
       return { erro: ERRO_BANCO, valores };
     }
     linkAceite = aceite.link;
@@ -233,38 +240,42 @@ export async function cadastrarAluno(
 export async function matricular(
   alunoId: string,
   cursoId: string,
-): Promise<void> {
+): Promise<ResultadoDaAcao> {
   await exigirProfessor();
-  if (!ehUuid(alunoId) || !ehUuid(cursoId)) return;
+  if (!ehUuid(alunoId) || !ehUuid(cursoId)) return { erro: ERRO_BANCO };
   if (!(await registrarAcesso("matricular", alunoId)))
-    throw new Error(ERRO_AUDITORIA);
+    return { erro: ERRO_AUDITORIA };
 
   const supabase = await criarClienteServidor();
-  await supabase
+  const { error } = await supabase
     .from("matriculas")
     .upsert(
       { aluno_id: alunoId, curso_id: cursoId },
       { onConflict: "aluno_id,curso_id", ignoreDuplicates: true },
     );
+  if (error) return { erro: "Não foi possível matricular. Tente de novo." };
   atualizarTelas();
+  return {};
 }
 
 export async function desmatricular(
   alunoId: string,
   cursoId: string,
-): Promise<void> {
+): Promise<ResultadoDaAcao> {
   await exigirProfessor();
-  if (!ehUuid(alunoId) || !ehUuid(cursoId)) return;
+  if (!ehUuid(alunoId) || !ehUuid(cursoId)) return { erro: ERRO_BANCO };
   if (!(await registrarAcesso("desmatricular", alunoId)))
-    throw new Error(ERRO_AUDITORIA);
+    return { erro: ERRO_AUDITORIA };
 
   const supabase = await criarClienteServidor();
-  await supabase
+  const { error } = await supabase
     .from("matriculas")
     .delete()
     .eq("aluno_id", alunoId)
     .eq("curso_id", cursoId);
+  if (error) return { erro: "Não foi possível desmatricular. Tente de novo." };
   atualizarTelas();
+  return {};
 }
 
 // Apaga a conta do aluno no login; o banco apaga em cascata o perfil, o
@@ -348,7 +359,12 @@ export async function reenviarConvite(alunoId: string): Promise<EstadoConvite> {
     return { erro: "O acesso deste aluno está bloqueado; desbloqueie antes." };
 
   const admin = criarClienteAdmin();
-  const { data: usuario } = await admin.auth.admin.getUserById(alunoId);
+  // Sem saber se o aluno já entrou, não reenvia: um link novo serviria para
+  // trocar a senha de quem já usa a conta.
+  const { data: usuario, error: erroUsuario } =
+    await admin.auth.admin.getUserById(alunoId);
+  if (erroUsuario)
+    return { erro: "Não foi possível conferir o aluno. Tente de novo." };
   if (usuario?.user?.last_sign_in_at)
     return {
       erro: `${nomeParaExibir(aluno.nome)} já entrou no site; não é preciso reenviar.`,
@@ -471,8 +487,17 @@ export async function liberarPedido(
     nascimento: data_nascimento,
   });
   if (erroLiberacao) {
-    if (responsavel)
-      await supabase.from("responsaveis").delete().eq("aluno_id", alunoId);
+    if (responsavel) {
+      // Desfaz o responsável gravado acima. Se nem isso der certo, ele fica
+      // sem efeito (o pedido continua pendente) e é sobrescrito na próxima
+      // tentativa de liberar.
+      const { error: erroDesfazer } = await supabase
+        .from("responsaveis")
+        .delete()
+        .eq("aluno_id", alunoId);
+      if (erroDesfazer)
+        console.error("Falha ao desfazer o responsável:", erroDesfazer.code);
+    }
     return { erro: "Não foi possível liberar. Tente de novo.", valores };
   }
 

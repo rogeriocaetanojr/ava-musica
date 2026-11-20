@@ -9,6 +9,7 @@ import { BarraProgresso } from "@/components/barra-progresso";
 import { type Bloco } from "@/components/bloco-conteudo";
 import { classesDoBotao } from "@/components/botao";
 import { BotaoEnviar } from "@/components/botao-enviar";
+import { FormularioDeAcao } from "@/components/formulario-de-acao";
 import { Cordas } from "@/components/cordas";
 import { Seta } from "@/components/seta";
 import {
@@ -63,7 +64,9 @@ function BotaoProva({
   enviada: boolean;
 }) {
   return (
-    <form action={marcarProva.bind(null, aulaId, conteudoId, !enviada)}>
+    <FormularioDeAcao
+      acao={marcarProva.bind(null, aulaId, conteudoId, !enviada)}
+    >
       {enviada && (
         <p className="mb-2 text-base font-semibold text-sucesso">
           ✓ Prova enviada
@@ -77,7 +80,7 @@ function BotaoProva({
       >
         {enviada ? "Desfazer envio" : "Enviei a prova"}
       </BotaoEnviar>
-    </form>
+    </FormularioDeAcao>
   );
 }
 
@@ -243,8 +246,8 @@ async function PaginaDaAula({ params }: { params: Promise<{ id: string }> }) {
               )}
             </div>
             {aluno && (
-              <form
-                action={marcarAula.bind(null, aula.id, !concluida)}
+              <FormularioDeAcao
+                acao={marcarAula.bind(null, aula.id, !concluida)}
                 className="max-md:fixed max-md:inset-x-0 max-md:bottom-0 max-md:z-10 max-md:border-t max-md:border-linha max-md:bg-superficie max-md:px-4 max-md:pt-3 max-md:pb-[calc(0.75rem+env(safe-area-inset-bottom))]"
               >
                 <BotaoEnviar
@@ -270,7 +273,7 @@ async function PaginaDaAula({ params }: { params: Promise<{ id: string }> }) {
                     </>
                   )}
                 </BotaoEnviar>
-              </form>
+              </FormularioDeAcao>
             )}
           </div>
 

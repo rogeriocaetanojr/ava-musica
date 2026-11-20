@@ -28,7 +28,15 @@ export async function concluirLogin(origin: string): Promise<NextResponse> {
   // confirma o pedido aqui: só agora ele aparece para o professor, que é
   // avisado.
   if (sessao.pendente) {
-    await confirmarPedido({ ...sessao, nome: sessao.nome });
+    // Sem o pedido gravado, o professor não vê a pessoa: ela sai e entra de
+    // novo, o que tenta registrar outra vez.
+    if (!(await confirmarPedido({ ...sessao, nome: sessao.nome }))) {
+      const supabase = await criarClienteServidor();
+      await supabase.auth.signOut();
+      return NextResponse.redirect(
+        `${origin}/login?erro=pedido-nao-registrado`,
+      );
+    }
     return NextResponse.redirect(`${origin}/aguardando`);
   }
 

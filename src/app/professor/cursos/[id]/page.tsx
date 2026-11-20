@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { FormularioDeAcao } from "@/components/formulario-de-acao";
+import type { ResultadoDaAcao } from "@/lib/acoes";
 import { TelaDoProfessor } from "@/components/tela-do-professor";
 import { LinhaDeVoltar } from "@/components/linha-de-voltar";
 import { CONTEINER } from "@/components/conteiner";
@@ -96,14 +98,14 @@ function BotoesDeOrdem({
   ultimo,
   nome,
 }: {
-  mover: (direcao: Direcao) => Promise<void>;
+  mover: (direcao: Direcao) => Promise<ResultadoDaAcao>;
   primeiro: boolean;
   ultimo: boolean;
   nome: string;
 }) {
   return (
     <div className="flex gap-2">
-      <form action={mover.bind(null, "subir")}>
+      <FormularioDeAcao acao={mover.bind(null, "subir")}>
         <button
           type="submit"
           disabled={primeiro}
@@ -112,8 +114,8 @@ function BotoesDeOrdem({
         >
           <Seta direcao="subir" />
         </button>
-      </form>
-      <form action={mover.bind(null, "descer")}>
+      </FormularioDeAcao>
+      <FormularioDeAcao acao={mover.bind(null, "descer")}>
         <button
           type="submit"
           disabled={ultimo}
@@ -122,7 +124,7 @@ function BotoesDeOrdem({
         >
           <Seta direcao="descer" />
         </button>
-      </form>
+      </FormularioDeAcao>
     </div>
   );
 }
@@ -159,11 +161,13 @@ function ItemAula({
         </TituloEditavel>
         <div className="flex flex-wrap items-center gap-2">
           <div className="contents">
-            <form action={publicarAula.bind(null, aula.id, !aula.publicada)}>
+            <FormularioDeAcao
+              acao={publicarAula.bind(null, aula.id, !aula.publicada)}
+            >
               <button type="submit" className={botaoPequeno}>
                 {aula.publicada ? "Despublicar" : "Publicar"}
               </button>
-            </form>
+            </FormularioDeAcao>
             <Link href={`/professor/aulas/${aula.id}`} className={botaoPequeno}>
               Conteúdo
             </Link>

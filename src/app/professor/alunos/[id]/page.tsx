@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { FormularioDeAcao } from "@/components/formulario-de-acao";
 import { classesDoBotao } from "@/components/botao";
 import { LinhaDeVoltar } from "@/components/linha-de-voltar";
 import { TelaDoProfessor } from "@/components/tela-do-professor";
@@ -312,8 +313,8 @@ async function FichaDoAluno({ params }: { params: Promise<{ id: string }> }) {
                           </p>
                         )}
                       </div>
-                      <form
-                        action={(matriculado ? desmatricular : matricular).bind(
+                      <FormularioDeAcao
+                        acao={(matriculado ? desmatricular : matricular).bind(
                           null,
                           aluno.id,
                           curso.id,
@@ -326,7 +327,7 @@ async function FichaDoAluno({ params }: { params: Promise<{ id: string }> }) {
                         >
                           {matriculado ? "Desmatricular" : "Matricular"}
                         </button>
-                      </form>
+                      </FormularioDeAcao>
                     </li>
                   );
                 })}

@@ -35,8 +35,17 @@ export async function salvarMeuNome(
       nome: resultado.nome,
     };
 
-  if (!error && sessao.pendente)
-    await confirmarPedido({ ...sessao, nome: resultado.nome });
+  // Sem o pedido gravado, o professor não vê a pessoa. Com o nome já salvo,
+  // esta tela não abre mais; quem tenta de novo é o próximo login
+  // (auth/concluir-login.ts), então a pessoa sai e vê o aviso no login.
+  if (
+    !error &&
+    sessao.pendente &&
+    !(await confirmarPedido({ ...sessao, nome: resultado.nome }))
+  ) {
+    await supabase.auth.signOut();
+    redirect("/login?erro=pedido-nao-registrado");
+  }
 
   // O aluno pendente vai direto para a espera, sem passar pelos cursos.
   redirect(sessao.pendente ? "/aguardando" : destinoDoPapel(sessao.papel));

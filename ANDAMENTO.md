@@ -37,7 +37,7 @@
 - [ ] Teste de ações sem permissão
 - [ ] Teste automático de acessibilidade
 - [ ] Testes de ponta a ponta no CI e CI nos pull requests
-- [ ] B5: liberar sem aceite quem completa 12 anos (calcular a idade pela data de nascimento em `aluno_liberado()`), aguardando decisão sobre a regra de LGPD
+- [ ] Telas que leem dados e ignoram o erro do Supabase, mostrando a página vazia em vez de um aviso: `src/app/(aluno)/dados.ts` (aulas concluídas, última aula, recados), a aula do aluno, a página do convite e a do aceite, Convidar aluno (lista de cursos), a lista de alunos (último acesso), o conteúdo da aula e o curso do professor, e `obterSessao` em `src/lib/auth.ts`
 - [ ] Atualizar o Next.js para uma versão sem as vulnerabilidades apontadas pelo `npm audit` (16.0.0 a 16.4.4, gravidade moderada); no `npm run dev`, o Next mostra o aviso "1 Insight" e às vezes encerra o servidor ao exibi-lo
 
 ### Revisão
@@ -125,8 +125,13 @@
 - [x] S1: link de autorização do responsável guardado só como hash, válido por 7 dias e uma vez só; os links antigos deixaram de valer, e o professor gera um novo na ficha do aluno
 - [x] S3: idade, faixa de menor de 12 e papel do perfil não mudam pela API, nem pelo professor nem com a chave de serviço; só pela função que grava a auditoria
 - [x] S8: um perfil por e-mail, sem diferença de maiúsculas
+- [x] B2 e B6: as server actions e o registro do pedido de acesso conferem o erro do Supabase e mostram uma mensagem na tela; concluir a aula ou marcar a prova que falha não fica marcado e avisa o aluno
 
 ## Decisões
+
+- O CI roda os testes SQL num Postgres puro, com `supabase/tests/_stubs.sql` no lugar do que o Supabase traz; o stub imita também as permissões padrão do schema public (anon, authenticated e service_role). Para rodar igual ao CI no computador, use `npm run test:db:ci`; o `npm run test:db` usa o banco do Supabase local, que já tem essas permissões e por isso não mostra diferenças do stub.
+
+- B5 da auditoria não aplicado: quem foi cadastrado antes dos 12 anos continua precisando do aceite do responsável, mesmo depois de completar 12 (`menor_de_12` é gravado na liberação e não é recalculado pela idade). A validar na revisão jurídica.
 
 - A conta do professor é promovida direto no banco (papel = professor), nunca pela API: o gatilho `dados_protegidos_so_pela_funcao` barra a mudança de papel até com a chave de serviço. O `seed:dev` faz isso pela conexão direta com o banco local.
 - Não existe e-mail de autorização para o responsável: o professor copia o link (no cadastro ou em "Gerar link de autorização", na ficha) e envia por outro meio.

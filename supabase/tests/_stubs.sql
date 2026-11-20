@@ -18,6 +18,19 @@ begin
 end;
 $$;
 
+-- Mesmas permissões padrão do Supabase no schema public: toda tabela, função e
+-- sequência criada depois vale para anon, authenticated e service_role. As
+-- migrações tiram o que não deve valer (revoke). Sem isto, a service_role não
+-- teria nem permissão de tabela no CI, e os testes não chegariam aos gatilhos
+-- que a barram de verdade no Supabase.
+grant usage on schema public to anon, authenticated, service_role;
+alter default privileges in schema public
+  grant all on tables to anon, authenticated, service_role;
+alter default privileges in schema public
+  grant all on functions to anon, authenticated, service_role;
+alter default privileges in schema public
+  grant all on sequences to anon, authenticated, service_role;
+
 create schema if not exists auth;
 grant usage on schema auth to anon, authenticated, service_role;
 

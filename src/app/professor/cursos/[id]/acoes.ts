@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import type { ResultadoDaAcao } from "@/lib/acoes";
 import { exigirProfessor } from "@/lib/auth";
 import {
   type Direcao,
@@ -20,6 +21,7 @@ import {
 
 const ERRO_ID = "Item não encontrado. Recarregue a página.";
 const ERRO_BANCO = "Não foi possível salvar. Tente de novo.";
+const ERRO_MOVER = "Não foi possível mudar a ordem. Tente de novo.";
 
 function atualizarTelas() {
   revalidatePath("/professor/cursos");
@@ -160,76 +162,104 @@ export async function renomearAula(
 export async function publicarAula(
   aulaId: string,
   publicada: boolean,
-): Promise<void> {
+): Promise<ResultadoDaAcao> {
   await exigirProfessor();
-  if (!ehUuid(aulaId) || typeof publicada !== "boolean") return;
+  if (!ehUuid(aulaId) || typeof publicada !== "boolean")
+    return { erro: ERRO_ID };
 
   const supabase = await criarClienteServidor();
-  await supabase.from("aulas").update({ publicada }).eq("id", aulaId);
+  const { error } = await supabase
+    .from("aulas")
+    .update({ publicada })
+    .eq("id", aulaId);
+  if (error)
+    return {
+      erro: publicada
+        ? "Não foi possível publicar a aula. Tente de novo."
+        : "Não foi possível despublicar a aula. Tente de novo.",
+    };
   atualizarTelas();
+  return {};
 }
 
 // Grava as ordens calculadas por reordenar(). Não há transação: se uma gravação
 // falhar no meio, o próximo clique renumera a lista inteira e corrige a ordem.
+// Para no primeiro erro, para a tela avisar.
 async function gravarOrdem(
   tabela: "modulos" | "aulas",
   itens: ItemOrdenado[],
   id: string,
   direcao: Direcao,
-) {
+): Promise<ResultadoDaAcao> {
   const supabase = await criarClienteServidor();
   for (const item of reordenar(itens, id, direcao)) {
-    await supabase.from(tabela).update({ ordem: item.ordem }).eq("id", item.id);
+    const { error } = await supabase
+      .from(tabela)
+      .update({ ordem: item.ordem })
+      .eq("id", item.id);
+    if (error) return { erro: ERRO_MOVER };
   }
+  return {};
 }
 
 export async function moverModulo(
   moduloId: string,
   direcao: Direcao,
-): Promise<void> {
+): Promise<ResultadoDaAcao> {
   await exigirProfessor();
-  if (!ehUuid(moduloId) || !ehDirecao(direcao)) return;
+  if (!ehUuid(moduloId) || !ehDirecao(direcao)) return { erro: ERRO_ID };
 
   const supabase = await criarClienteServidor();
-  const { data: modulo } = await supabase
+  const { data: modulo, error: erroModulo } = await supabase
     .from("modulos")
     .select("curso_id")
     .eq("id", moduloId)
-    .single();
-  if (!modulo) return;
+    .maybeSingle();
+  if (erroModulo) return { erro: ERRO_MOVER };
+  if (!modulo) return { erro: ERRO_ID };
 
-  const { data: irmaos } = await supabase
+  const { data: irmaos, error: erroIrmaos } = await supabase
     .from("modulos")
     .select("id, ordem")
     .eq("curso_id", modulo.curso_id);
-  await gravarOrdem(
+  if (erroIrmaos) return { erro: ERRO_MOVER };
+  const resultado = await gravarOrdem(
     "modulos",
     (irmaos ?? []) as ItemOrdenado[],
     moduloId,
     direcao,
   );
   atualizarTelas();
+  return resultado;
 }
 
 export async function moverAula(
   aulaId: string,
   direcao: Direcao,
-): Promise<void> {
+): Promise<ResultadoDaAcao> {
   await exigirProfessor();
-  if (!ehUuid(aulaId) || !ehDirecao(direcao)) return;
+  if (!ehUuid(aulaId) || !ehDirecao(direcao)) return { erro: ERRO_ID };
 
   const supabase = await criarClienteServidor();
-  const { data: aula } = await supabase
+  const { data: aula, error: erroAula } = await supabase
     .from("aulas")
     .select("modulo_id")
     .eq("id", aulaId)
-    .single();
-  if (!aula) return;
+    .maybeSingle();
+  if (erroAula) return { erro: ERRO_MOVER };
+  if (!aula) return { erro: ERRO_ID };
 
-  const { data: irmas } = await supabase
+  const { data: irmas, error: erroIrmas } = await supabase
     .from("aulas")
     .select("id, ordem")
     .eq("modulo_id", aula.modulo_id);
-  await gravarOrdem("aulas", (irmas ?? []) as ItemOrdenado[], aulaId, direcao);
+  if (erroIrmas) return { erro: ERRO_MOVER };
+  const resultado = await gravarOrdem(
+    "aulas",
+    (irmas ?? []) as ItemOrdenado[],
+    aulaId,
+    direcao,
+  );
   atualizarTelas();
+  return resultado;
 }

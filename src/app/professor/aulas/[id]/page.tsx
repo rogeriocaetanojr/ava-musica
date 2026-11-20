@@ -19,6 +19,8 @@ import {
 import { ehUuid } from "../../cursos/validacao";
 import { criarBloco, editarBloco, moverBloco, removerBloco } from "./acoes";
 import { BotaoRemover } from "./botao-remover";
+import { FormularioDeAcao } from "@/components/formulario-de-acao";
+import type { ResultadoDaAcao } from "@/lib/acoes";
 import { FormularioBloco } from "./formulario-bloco";
 import { NovoBloco } from "./novo-bloco";
 import { FormularioDados } from "./formulario-dados";
@@ -99,14 +101,14 @@ function BotoesDeOrdem({
   ultimo,
   nome,
 }: {
-  mover: (direcao: Direcao) => Promise<void>;
+  mover: (direcao: Direcao) => Promise<ResultadoDaAcao>;
   primeiro: boolean;
   ultimo: boolean;
   nome: string;
 }) {
   return (
     <>
-      <form action={mover.bind(null, "subir")}>
+      <FormularioDeAcao acao={mover.bind(null, "subir")}>
         <button
           type="submit"
           disabled={primeiro}
@@ -115,8 +117,8 @@ function BotoesDeOrdem({
         >
           <Icone d="M12 19V5M6 11l6-6 6 6" />
         </button>
-      </form>
-      <form action={mover.bind(null, "descer")}>
+      </FormularioDeAcao>
+      <FormularioDeAcao acao={mover.bind(null, "descer")}>
         <button
           type="submit"
           disabled={ultimo}
@@ -125,7 +127,7 @@ function BotoesDeOrdem({
         >
           <Icone d="M12 5v14M6 13l6 6 6-6" />
         </button>
-      </form>
+      </FormularioDeAcao>
     </>
   );
 }
@@ -241,8 +243,8 @@ async function EditorDaAula({ params }: { params: Promise<{ id: string }> }) {
             {blocos.length === 1 ? "bloco" : "blocos"}
           </p>
         </div>
-        <form
-          action={publicarAula.bind(null, aula.id, !aula.publicada)}
+        <FormularioDeAcao
+          acao={publicarAula.bind(null, aula.id, !aula.publicada)}
           className="hidden md:block"
         >
           <button
@@ -254,7 +256,7 @@ async function EditorDaAula({ params }: { params: Promise<{ id: string }> }) {
           >
             {aula.publicada ? "Despublicar" : "Publicar"}
           </button>
-        </form>
+        </FormularioDeAcao>
       </div>
 
       <div className="flex flex-col gap-6 md:gap-8 lg:grid lg:grid-cols-12 lg:items-start lg:gap-6">
@@ -265,7 +267,9 @@ async function EditorDaAula({ params }: { params: Promise<{ id: string }> }) {
             className={cartao}
             classeDoTitulo={tituloDeSecao}
             publicar={
-              <form action={publicarAula.bind(null, aula.id, !aula.publicada)}>
+              <FormularioDeAcao
+                acao={publicarAula.bind(null, aula.id, !aula.publicada)}
+              >
                 <button
                   type="submit"
                   className={classesDoBotao(
@@ -275,7 +279,7 @@ async function EditorDaAula({ params }: { params: Promise<{ id: string }> }) {
                 >
                   {aula.publicada ? "Despublicar" : "Publicar"}
                 </button>
-              </form>
+              </FormularioDeAcao>
             }
           />
 

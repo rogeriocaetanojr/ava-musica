@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import type { ResultadoDaAcao } from "@/lib/acoes";
 import { exigirProfessor } from "@/lib/auth";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 import {
@@ -60,11 +61,14 @@ export async function editarAviso(
   return { sucesso: "Recado salvo.", valores: valoresDigitados(formData) };
 }
 
-export async function apagarAviso(avisoId: string): Promise<void> {
+export async function apagarAviso(avisoId: string): Promise<ResultadoDaAcao> {
   await exigirProfessor();
-  if (!ehUuid(avisoId)) return;
+  if (!ehUuid(avisoId)) return { erro: ERRO_ID };
 
   const supabase = await criarClienteServidor();
-  await supabase.from("avisos").delete().eq("id", avisoId);
+  const { error } = await supabase.from("avisos").delete().eq("id", avisoId);
+  if (error)
+    return { erro: "Não foi possível apagar o recado. Tente de novo." };
   atualizarTelas();
+  return {};
 }
