@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
-import { TelaDeEntrada } from "@/components/tela-de-entrada";
+import { TelaDeLogin } from "@/components/tela-de-login";
 import { destinoDaSessao, obterSessao } from "@/lib/auth";
 import { tituloDaPagina } from "@/lib/site";
 import { FormularioEsqueciSenha } from "./formulario-esqueci-senha";
@@ -19,12 +19,7 @@ async function RedirecionarLogado() {
 
 export default function PaginaEsqueciSenha() {
   return (
-    <TelaDeEntrada
-      chamada="Esqueceu a senha?"
-      destaque="A gente resolve."
-      apoio="Informe o seu e-mail e abra o link que enviamos para criar uma senha nova."
-      titulo="Esqueci minha senha"
-    >
+    <TelaDeLogin titulo="Esqueci minha senha">
       <p className="text-sm leading-normal text-texto-secundario">
         Informe o e-mail da sua conta. Enviamos um link para você criar uma
         senha nova.
@@ -33,6 +28,6 @@ export default function PaginaEsqueciSenha() {
         <RedirecionarLogado />
       </Suspense>
       <FormularioEsqueciSenha />
-    </TelaDeEntrada>
+    </TelaDeLogin>
   );
 }

@@ -207,9 +207,11 @@ async function PaginaDaAula({ params }: { params: Promise<{ id: string }> }) {
       folgaDoRodape={aluno ? "barra" : undefined}
     >
       <main
-        className={`${CONTEINER} grid max-w-6xl flex-1 gap-8 pt-4 pb-8 md:pt-8 lg:grid-cols-[minmax(0,1fr)_20rem]`}
+        className={`${CONTEINER} grid max-w-6xl flex-1 content-start gap-6 pt-4 pb-8 md:gap-8 md:pt-8 lg:grid-cols-[minmax(0,1fr)_20rem]`}
       >
-        <div className="min-w-0 space-y-6 md:space-y-8">
+        {/* O título ocupa as duas colunas: o cartão da direita começa na
+            altura do vídeo, alinhado com o conteúdo. */}
+        <div className="min-w-0 space-y-6 md:space-y-8 lg:col-span-2">
           <LinhaDeVoltar href={linkDoCurso} rotulo={`Voltar para ${curso}`}>
             <h1 className="font-titulo text-3xl font-bold break-words text-texto sm:text-4xl">
               {aula.titulo}
@@ -221,7 +223,9 @@ async function PaginaDaAula({ params }: { params: Promise<{ id: string }> }) {
               você.
             </Aviso>
           )}
+        </div>
 
+        <div className="min-w-0 space-y-6 md:space-y-8">
           {video && embedDoVideo && (
             <div className="relative aspect-video w-full overflow-hidden rounded-3xl bg-vinho">
               <Cordas className="absolute inset-y-0 left-1/2 w-48 -translate-x-1/2" />
@@ -251,26 +255,19 @@ async function PaginaDaAula({ params }: { params: Promise<{ id: string }> }) {
                 className="max-md:fixed max-md:inset-x-0 max-md:bottom-0 max-md:z-10 max-md:border-t max-md:border-linha max-md:bg-superficie max-md:px-4 max-md:pt-3 max-md:pb-[calc(0.75rem+env(safe-area-inset-bottom))]"
               >
                 <BotaoEnviar
-                  className={classesDoBotao(
-                    concluida ? "secundario" : "primario",
-                    "md:w-auto",
-                  )}
+                  className={
+                    concluida
+                      ? "inline-flex min-h-13 w-full items-center justify-center rounded-xl border border-sucesso bg-bloco-sucesso px-5 py-3 text-base font-bold text-texto-sobre-bloco-sucesso transition-colors disabled:opacity-60 md:w-auto"
+                      : classesDoBotao("secundario", "md:w-auto")
+                  }
                 >
                   {concluida ? (
                     <>
-                      <span aria-hidden="true" className="text-sucesso">
-                        ✓
-                      </span>{" "}
                       Aula concluída
                       <span className="sr-only"> (toque para desmarcar)</span>
                     </>
                   ) : (
-                    <>
-                      <span aria-hidden="true" className="text-amarelo">
-                        ✓
-                      </span>{" "}
-                      Marcar como concluída
-                    </>
+                    "Marcar como concluída"
                   )}
                 </BotaoEnviar>
               </FormularioDeAcao>
@@ -400,7 +397,7 @@ async function PaginaDaAula({ params }: { params: Promise<{ id: string }> }) {
 
           <Link
             href={linkDoCurso}
-            className="inline-flex min-h-12 items-center font-semibold text-destaque underline"
+            className="flex min-h-12 items-center justify-end text-sm font-semibold text-destaque"
           >
             Ver todos os módulos
           </Link>

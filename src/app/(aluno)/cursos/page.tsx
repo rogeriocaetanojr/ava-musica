@@ -78,41 +78,46 @@ function ContinueDeOndeParou({
   return (
     <section
       aria-labelledby="continuar"
-      className="relative overflow-hidden rounded-3xl border border-borda-cartao bg-bordo p-6 text-sobre-bordo md:p-8 md:pr-56"
+      className="relative flex flex-col justify-center overflow-hidden rounded-3xl border border-borda-cartao bg-bordo p-6 text-sobre-bordo md:min-h-[34dvh] 2xl:min-h-[40dvh] md:px-10 md:py-7 md:pr-48 2xl:py-9 2xl:pr-56"
     >
-      <Cordas className="absolute inset-y-0 right-4 w-16 md:right-14 md:w-26" />
-      <BocaDoViolao className="absolute top-1/2 right-10 hidden size-32 -translate-y-1/2 md:block" />
+      {/* No computador, a altura acompanha a tela para preencher o espaço
+          sem passar dela em 1366×768. */}
+      <Cordas className="absolute inset-y-0 right-4 w-16 md:right-16 md:w-28" />
+      <BocaDoViolao className="absolute top-1/2 right-10 hidden size-32 -translate-y-1/2 md:block 2xl:right-12 2xl:size-36" />
 
-      <div className="relative space-y-4">
-        <h2 id="continuar" className="text-sm font-bold text-amarelo">
-          {proxima ? "Continue de onde parou" : "Curso concluído"}
-        </h2>
-        <p className="pr-14 font-titulo text-3xl break-words md:pr-0 md:text-4xl">
-          {proxima ? proxima.titulo : curso.titulo}
-        </p>
-        <p className="pr-14 text-base text-amarelo-claro md:pr-0">
-          {proxima ? (
-            <>
-              {curso.titulo} ·{" "}
-              <span className="hidden md:inline">
-                {modulo?.titulo ?? ""} ·{" "}
-              </span>
-              Aula {numero} de {resumo.total}
-            </>
-          ) : (
-            "Você concluiu todas as aulas deste curso. Pode rever quando quiser."
-          )}
-        </p>
-        <div className="flex max-w-md items-center gap-3 pr-14 md:pr-0">
+      <div className="relative space-y-4 md:space-y-5">
+        <div className="space-y-2">
+          <h2 id="continuar" className="text-sm font-bold text-amarelo">
+            {proxima ? "Continue de onde parou" : "Curso concluído"}
+          </h2>
+          <p className="pr-14 font-titulo text-3xl break-words md:pr-0 md:text-3xl 2xl:text-5xl">
+            {proxima ? proxima.titulo : curso.titulo}
+          </p>
+          <p className="pr-14 text-base text-amarelo-claro md:pr-0 md:text-lg">
+            {proxima ? (
+              <>
+                {curso.titulo} ·{" "}
+                <span className="hidden md:inline">
+                  {modulo?.titulo ?? ""} ·{" "}
+                </span>
+                Aula {numero} de {resumo.total}
+              </>
+            ) : (
+              "Você concluiu todas as aulas. Pode rever quando quiser."
+            )}
+          </p>
+        </div>
+        <div className="flex max-w-xl items-center gap-4 pr-14 md:pr-0">
           <div className="flex-1">
             <BarraProgresso
               percentual={resumo.percentual}
               rotulo={`Andamento de ${curso.titulo}`}
               cor="amarelo"
               comTexto={false}
+              grossa
             />
           </div>
-          <span className="text-sm font-bold">{resumo.percentual}%</span>
+          <span className="text-base font-bold">{resumo.percentual}%</span>
         </div>
         <Link
           href={proxima ? `/aulas/${proxima.id}` : `/cursos/${curso.id}`}
@@ -147,7 +152,7 @@ function RecadosDoProfessor({ avisos }: { avisos: Aviso[] }) {
     <section
       aria-labelledby="recados-recentes"
       className={`hidden flex-col gap-5 rounded-3xl bg-bloco p-7 text-texto-sobre-bloco ${
-        vazio ? "lg:flex lg:self-start" : "md:flex"
+        vazio ? "lg:flex" : "md:flex"
       }`}
     >
       <h2 id="recados-recentes" className="text-sm font-bold">
@@ -235,14 +240,16 @@ function CartaoDoCurso({
   return (
     <li className="overflow-hidden rounded-2xl border border-linha bg-superficie">
       <Link href={`/cursos/${curso.id}`} className="block">
-        <div className={`relative h-24 md:h-36 ${capa.fundo}`}>
+        <div
+          className={`relative h-16 md:h-[9dvh] 2xl:h-[12dvh] ${capa.fundo}`}
+        >
           <Cordas
             cor={capa.cordas}
             className="absolute inset-y-0 left-1/3 w-16 md:w-20"
           />
         </div>
-        <div className="space-y-3 p-4 md:p-5">
-          <h3 className="font-titulo text-lg break-words text-texto md:text-xl">
+        <div className="space-y-3 p-4 md:p-5 2xl:space-y-4 2xl:p-6">
+          <h3 className="font-titulo text-lg break-words text-texto md:truncate">
             {curso.titulo}
           </h3>
           <BarraProgresso
@@ -303,15 +310,16 @@ async function MeusCursosDoAluno() {
       />
 
       <main
-        className={`${CONTEINER} flex max-w-6xl flex-1 flex-col gap-6 py-6 md:gap-8 md:py-10`}
+        className={`${CONTEINER} flex max-w-6xl flex-1 flex-col gap-5 py-5 md:py-5 2xl:gap-8 2xl:py-8`}
       >
         <header className="flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <p className={rotuloDeSecao}>{saudacao()}</p>
-            <h1 className="font-titulo text-4xl break-words md:text-5xl">
-              {sessao.nome}
-            </h1>
-          </div>
+          <h1 className="font-titulo text-3xl break-words">
+            <span className="block text-sm font-bold text-destaque md:inline md:font-titulo md:text-3xl md:font-normal">
+              {saudacao()}
+              <span className="hidden md:inline">, </span>
+            </span>
+            {sessao.nome}
+          </h1>
         </header>
 
         {professor && (
@@ -322,7 +330,7 @@ async function MeusCursosDoAluno() {
         )}
 
         {(continuar || avisos.length > 0) && (
-          <div className="grid gap-5 lg:grid-cols-[minmax(0,1.8fr)_minmax(0,1fr)]">
+          <div className="grid gap-5 lg:grid-cols-[minmax(0,2.2fr)_minmax(0,1fr)]">
             {continuar && (
               <ContinueDeOndeParou curso={continuar} concluidas={concluidas} />
             )}
@@ -331,7 +339,7 @@ async function MeusCursosDoAluno() {
           </div>
         )}
 
-        <section aria-labelledby="meus-cursos" className="space-y-5">
+        <section aria-labelledby="meus-cursos" className="space-y-3">
           <h2 id="meus-cursos" className={rotuloDeSecao}>
             Meus cursos
           </h2>
@@ -341,7 +349,7 @@ async function MeusCursosDoAluno() {
               seus cursos, eles aparecem nesta página.
             </p>
           ) : (
-            <ul className="grid grid-cols-2 gap-3 md:gap-5 lg:grid-cols-3">
+            <ul className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-6 2xl:gap-8">
               {cursos.map((curso, posicao) => (
                 <CartaoDoCurso
                   key={curso.id}

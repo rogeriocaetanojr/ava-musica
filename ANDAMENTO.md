@@ -120,6 +120,7 @@
 - [x] Conteúdo da aula do professor no celular, com o rodapé fixo para adicionar bloco e publicar
 - [x] Tema escuro no celular, com a barra do navegador na cor de cada tema e o botão de tema também no perfil e no cabeçalho do professor no celular
 - [x] Tema escuro no computador, com um botão de lua (no claro) e sol (no escuro) no cabeçalho do aluno e do professor; sem escolha feita, vale o tema do sistema
+- [x] Ajustes da revisão das telas: Meus cursos reorganizado, sem rolagem no computador com até 3 cursos (saudação numa linha, "Continue de onde parou" e recados em destaque com a altura acompanhando a tela, e os cursos lado a lado); card da direita da aula alinhado ao conteúdo e "Ver todos os módulos" menor, à direita e sem sublinhado; botão de concluir a aula sem ícone, neutro e verde quando concluída; login redesenhado (logo grande à esquerda, formulário no centro, violão à direita; no celular, só o logo e o formulário), com o mesmo layout em Criar conta, Esqueci minha senha e Nova senha, sem rolagem
 
 ### Correções da auditoria
 

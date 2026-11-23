@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import Link from "next/link";
 import { Aviso } from "@/components/aviso";
-import { Botao, classesDoBotao } from "@/components/botao";
+import { Botao } from "@/components/botao";
 import { Campo } from "@/components/campo";
 import { CampoSenha } from "@/components/campo-senha";
 import { SENHA_MINIMA } from "@/lib/senha";
@@ -135,14 +135,12 @@ export function FormularioCriarConta() {
         </Aviso>
       )}
 
-      <div className="flex items-center gap-4 text-sm text-texto-secundario">
-        <span aria-hidden="true" className="h-px flex-1 bg-linha" />
+      <p className="flex flex-wrap items-center justify-center gap-x-2 text-sm text-texto-secundario">
         Já tem conta?
-        <span aria-hidden="true" className="h-px flex-1 bg-linha" />
-      </div>
-      <Link href="/login" className={classesDoBotao("destaque")}>
-        Entrar
-      </Link>
+        <Link href="/login" className={link}>
+          Entrar
+        </Link>
+      </p>
     </div>
   );
 }

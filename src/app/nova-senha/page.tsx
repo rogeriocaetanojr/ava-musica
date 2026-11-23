@@ -3,7 +3,7 @@ import { Suspense } from "react";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { Aviso } from "@/components/aviso";
-import { TelaDeEntrada } from "@/components/tela-de-entrada";
+import { TelaDeLogin } from "@/components/tela-de-login";
 import { obterSessao } from "@/lib/auth";
 import { COOKIE_NOVA_SENHA } from "@/lib/senha";
 import { tituloDaPagina } from "@/lib/site";
@@ -55,15 +55,10 @@ export default function PaginaNovaSenha({
   searchParams: Busca;
 }) {
   return (
-    <TelaDeEntrada
-      chamada="Senha nova,"
-      destaque="mesma música."
-      apoio="Depois de salvar, entre com o seu e-mail e a senha nova."
-      titulo="Nova senha"
-    >
+    <TelaDeLogin titulo="Nova senha">
       <Suspense>
         <NovaSenha searchParams={searchParams} />
       </Suspense>
-    </TelaDeEntrada>
+    </TelaDeLogin>
   );
 }

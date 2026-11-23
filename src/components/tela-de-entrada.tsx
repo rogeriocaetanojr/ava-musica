@@ -34,15 +34,15 @@ export function TelaDeEntrada({
       data-tela-cheia
       className="flex min-h-dvh flex-1 flex-col md:grid md:grid-cols-[13fr_11fr]"
     >
-      <section className="relative flex h-44 shrink-0 flex-col justify-end overflow-hidden bg-bordo px-6 pb-5 text-sobre-bordo md:h-auto md:justify-start md:px-15 md:py-10">
+      <section className="relative flex h-32 shrink-0 flex-col justify-end overflow-hidden bg-bordo px-6 pb-4 text-sobre-bordo md:h-auto md:justify-start md:px-15 md:py-10">
         {/* No celular, os enfeites ficam no canto direito do topo. */}
         <Cordas className="absolute inset-y-0 right-12 flex w-24 md:hidden" />
-        <BocaDoViolao className="absolute top-6 right-6 size-28 md:hidden" />
+        <BocaDoViolao className="absolute top-4 right-6 size-24 md:hidden" />
         <Cordas className="absolute inset-y-0 left-[76%] hidden w-28 -translate-x-1/2 md:flex" />
         <BocaDoViolao className="absolute top-1/2 left-[76%] hidden size-44 -translate-x-1/2 -translate-y-1/2 md:block lg:size-52 2xl:size-56" />
 
         <div className="relative flex items-center">
-          <LogoDoAva className="[--altura:64px] md:[--altura:88px]" />
+          <LogoDoAva className="[--altura:56px] md:[--altura:88px]" />
         </div>
 
         <div className="relative my-auto hidden max-w-[22rem] space-y-5 2xl:max-w-[26rem] md:block">
@@ -56,9 +56,9 @@ export function TelaDeEntrada({
         <p className="relative hidden text-sm md:block">Aulas de música</p>
       </section>
 
-      <section className="flex flex-1 flex-col px-6 pt-6 pb-4 md:items-center md:justify-center md:px-16 md:py-8">
-        <div className="flex w-full flex-1 flex-col gap-5 md:max-w-88 md:flex-none">
-          <div className="space-y-3">
+      <section className="flex flex-1 flex-col px-6 pt-5 pb-4 md:items-center md:justify-center md:px-16 md:py-6">
+        <div className="flex w-full flex-1 flex-col gap-4 md:max-w-88 md:flex-none">
+          <div className="space-y-2">
             <h1 className="font-titulo text-4xl leading-tight text-texto">
               {titulo}
             </h1>

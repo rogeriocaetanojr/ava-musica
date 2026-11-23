@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { Aviso } from "@/components/aviso";
-import { TelaDeEntrada } from "@/components/tela-de-entrada";
+import { TelaDeLogin } from "@/components/tela-de-login";
 import { destinoDaSessao, obterSessao } from "@/lib/auth";
 import { tituloDaPagina } from "@/lib/site";
 import { FormularioLogin } from "./formulario-login";
@@ -63,10 +63,7 @@ export default function PaginaLogin({
   searchParams: Parametros;
 }) {
   return (
-    <TelaDeEntrada
-      chamada="Afine e entre."
-      destaque="A aula de hoje te espera."
-      apoio="Vídeos, cifras, playbacks e provas das suas aulas de música, num só lugar."
+    <TelaDeLogin
       titulo="Entrar"
       subtitulo="Entre com o seu e-mail e a sua senha."
       nota="Acesso liberado pelo professor. Para menores de 12 anos, o responsável autoriza primeiro."
@@ -76,6 +73,6 @@ export default function PaginaLogin({
         <AvisoDeErro searchParams={searchParams} />
       </Suspense>
       <FormularioLogin />
-    </TelaDeEntrada>
+    </TelaDeLogin>
   );
 }

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
-import { TelaDeEntrada } from "@/components/tela-de-entrada";
+import { TelaDeLogin } from "@/components/tela-de-login";
 import { destinoDaSessao, obterSessao } from "@/lib/auth";
 import { tituloDaPagina } from "@/lib/site";
 import { FormularioCriarConta } from "./formulario-criar-conta";
@@ -17,20 +17,15 @@ async function RedirecionarLogado() {
 
 export default function PaginaCriarConta() {
   return (
-    <TelaDeEntrada
-      chamada="Primeira aula?"
-      destaque="Crie a sua conta."
-      apoio="Crie a conta, confirme o e-mail e espere o professor liberar o acesso."
-      titulo="Criar conta"
-    >
+    <TelaDeLogin titulo="Criar conta">
       <p className="text-sm leading-normal text-texto-secundario">
-        Depois de confirmar o e-mail, o professor libera o seu acesso. Para
-        menores de 12 anos, o responsável autoriza primeiro.
+        Confirme o e-mail e espere o professor liberar o acesso. Menores de 12
+        anos precisam da autorização do responsável.
       </p>
       <Suspense>
         <RedirecionarLogado />
       </Suspense>
       <FormularioCriarConta />
-    </TelaDeEntrada>
+    </TelaDeLogin>
   );
 }

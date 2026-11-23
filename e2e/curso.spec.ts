@@ -122,7 +122,9 @@ test("aluno conclui a aula e o professor vê o progresso", async ({
   ).toBeVisible();
 
   await page.getByRole("button", { name: "Marcar como concluída" }).click();
-  await expect(page.getByText("✓ Aula concluída")).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: /Aula concluída/ }),
+  ).toBeVisible();
 
   await page.getByRole("link", { name: `Voltar para ${curso}` }).click();
   await expect(progressoDoAluno).toHaveAttribute("aria-valuenow", "100");
