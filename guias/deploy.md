@@ -111,6 +111,8 @@ Os workflows de `.github/workflows` usam três **environments** do repositório 
 | `producao`         | só a branch `main` e **Required reviewers** (o professor) | `SUPABASE_DB_URL` (banco de produção)                  | —                                                   |
 | `producao-leitura` | só a branch `main`, sem revisor (roda sozinho na agenda)  | `SUPABASE_DB_URL` (banco de produção) e `BACKUP_SENHA` | `SUPABASE_URL` e `SUPABASE_ANON_KEY` da produção    |
 
+A `SUPABASE_ANON_KEY` pode ser a chave publishable (`sb_publishable_...`) ou a anon antiga; o keep-alive a manda só no cabeçalho `apikey` e chama a função `eh_professor`, porque a anon não lê nenhuma tabela.
+
 O `SUPABASE_DB_URL` é o endereço do **Session pooler** (porta 5432), em **Connect → Connection string** no painel do Supabase, com a senha do banco no lugar de `[YOUR-PASSWORD]`. O endereço direto (`db.<projeto>.supabase.co`) só funciona por IPv6, que os runners do GitHub não têm.
 
 - **Migrações** (`migracoes.yml`): quando o CI passa num push na `main`, aplica as migrações novas na homologação; a produção espera a aprovação de um revisor em **Actions → Migrações do banco → Review deployments**. Antes de aplicar, mostra o que falta (`--dry-run`). Também dá para rodar à mão (**Run workflow**).

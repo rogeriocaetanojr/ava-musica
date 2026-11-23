@@ -50,7 +50,7 @@
 
 - [ ] Contas dos serviços criadas e com acesso de duas pessoas
 - [ ] Banco de dados na nuvem, com ambientes de teste e de uso real
-  - Projetos criados em São Paulo: `ava-staging` (homologação) e `ava-prod` (produção); environments `homologacao`, `producao` (com revisor) e `producao-leitura` cadastrados no GitHub. Falta o primeiro `db push`.
+  - Projetos criados em São Paulo: `ava-staging` (homologação) e `ava-prod` (produção); environments `homologacao`, `producao` (com revisor) e `producao-leitura` cadastrados no GitHub. Migrações aplicadas nos dois.
   - **Secure password change** ligado à mão nos dois projetos (Authentication → Sign In / Providers → Email), como no `config.toml`, que vale só para o Supabase local: é a proteção do S6 no site publicado (veja `guias/deploy.md`).
 - [ ] Chaves e configurações secretas guardadas com segurança
 - [ ] Site publicado na Netlify, com versão de teste e versão oficial
@@ -59,18 +59,18 @@
   - Ligar na nuvem o captcha (Cloudflare Turnstile) e o hook que barra recusados por 7 dias, nos dois projetos (veja `guias/deploy.md`).
   - A política de privacidade (versão 3-rascunho) cita o Supabase, o Google, a Cloudflare, o Resend e a Netlify e a transferência internacional; confirmar com cada serviço onde os dados ficam e se o contrato tem cláusulas de proteção de dados antes da revisão jurídica.
 - [ ] Verificações automáticas completas a cada mudança no código
-  - O CI roda em push e pull request, com e2e, e o workflow `migracoes.yml` aplica as migrações na homologação e, com aprovação, na produção. Falta cadastrar os environments e os segredos no GitHub (ver `guias/deploy.md`, "Automação no GitHub").
+  - O CI roda em push e pull request, com e2e, e o workflow `migracoes.yml` aplica as migrações na homologação e, com aprovação, na produção; a primeira aplicação passou nos dois projetos.
 - [ ] Pull requests do Dependabot: conferir no diff do `package-lock.json` que os binários opcionais de plataforma (`@rolldown/binding-*` e `lightningcss-*`) continuam lá antes de aceitar (ver a armadilha nas regras do projeto)
 - [ ] Publicação automática da versão de teste e promoção para a oficial
 - [x] Conferir que os dois projetos da nuvem assinam o JWT com chave assimétrica (conferido: ECC P-256 nos dois) (Project Settings → JWT Keys, ES256 ou RS256), como o Supabase local. Com a chave antiga (HS256), o `getClaims()` do proxy (P1) volta a perguntar ao Auth a cada página: continua correto, só sem a economia
 - [ ] Endereço próprio do site
   - Os cabeçalhos de segurança e a CSP já saem do próprio site (S2). Com o endereço próprio, conferir no site publicado que eles chegam iguais e, depois de um tempo no ar sem problemas, avaliar o `preload` do HSTS.
 - [ ] Cópias de segurança do banco de dados
-  - O workflow `backup.yml` e o `guias/backup.md` estão prontos e a restauração foi testada no banco local. Falta cadastrar `SUPABASE_DB_URL` e `BACKUP_SENHA` no environment `producao-leitura` e guardar a `BACKUP_SENHA` fora do GitHub.
+  - O workflow `backup.yml` roda na nuvem (primeira execução verde) e a restauração foi testada no banco local (`guias/backup.md`). A `BACKUP_SENHA` fica no environment `producao-leitura` e no gerenciador de senhas.
 - [ ] Rotinas automáticas do banco
-  - A remoção das contas de Criar conta não confirmadas em 48 horas (D3) é agendada pela própria migração (pg_cron), e o keep-alive (D2) é o workflow `keep-alive.yml`. Falta conferir o agendamento em **Integrations → Cron** de cada projeto depois do primeiro `db push` e cadastrar as variáveis do keep-alive nos environments.
+  - A remoção das contas de Criar conta não confirmadas em 48 horas (D3) é agendada pela própria migração (pg_cron), e o keep-alive (D2) é o workflow `keep-alive.yml`. Conferido: o job do pg_cron está ativo nos dois projetos, e o keep-alive passa nos dois (com a publishable key só no cabeçalho `apikey` e a consulta pela função `eh_professor`, porque a anon não lê tabelas).
 - [ ] Alertas quando o site cair ou apresentar erros
-  - O envio dos erros do servidor ao Sentry, sem dados pessoais, está pronto (`src/instrumentation.ts`). Falta criar o projeto no Sentry, ligar as opções de privacidade, pôr `SENTRY_DSN` e `SENTRY_AMBIENTE` na Netlify e criar o monitor de uptime (ver `guias/deploy.md`, "Monitoramento").
+  - O envio dos erros do servidor ao Sentry, sem dados pessoais, está pronto (`src/instrumentation.ts`). O projeto do Sentry está criado, com o Data Scrubber e o Prevent Storing of IP Addresses ligados. Quando o site for publicado: pôr `SENTRY_DSN` e `SENTRY_AMBIENTE` na Netlify e criar o monitor de uptime em `<endereço do site>/login` (ver `guias/deploy.md`, "Monitoramento").
 - [ ] Cuidados com os dados pessoais no dia a dia, conforme a LGPD
 - [ ] Manual do professor e documentação do projeto
 - [ ] Lançamento com um primeiro grupo de alunos
