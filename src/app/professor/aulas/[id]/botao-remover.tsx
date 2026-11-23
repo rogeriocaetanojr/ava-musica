@@ -7,15 +7,18 @@ type Props = {
   remover: () => Promise<ResultadoDaAcao>;
   nome: string;
   className: string;
+  confirmar?: string;
 };
 
 // Pede confirmação antes de enviar, porque a remoção não tem volta.
-export function BotaoRemover({ remover, nome, className }: Props) {
+export function BotaoRemover({
+  remover,
+  nome,
+  className,
+  confirmar = "Remover este bloco? Isso não pode ser desfeito.",
+}: Props) {
   return (
-    <FormularioDeAcao
-      acao={remover}
-      confirmar="Remover este bloco? Isso não pode ser desfeito."
-    >
+    <FormularioDeAcao acao={remover} confirmar={confirmar}>
       <button
         type="submit"
         aria-label={`Excluir ${nome}`}

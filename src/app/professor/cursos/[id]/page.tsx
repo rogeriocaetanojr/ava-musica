@@ -9,12 +9,17 @@ import { Suspense } from "react";
 import { exigirProfessor } from "@/lib/auth";
 import { type Direcao, ordenar } from "@/lib/ordem";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
+import { BotaoRemover } from "../../aulas/[id]/botao-remover";
+import { type ResumoDaExclusao, textoDaExclusao } from "../exclusao";
 import { FormularioCurso } from "../formulario-curso";
 import { ehUuid } from "../validacao";
 import {
   criarAula,
   criarModulo,
   editarCurso,
+  excluirAula,
+  excluirCurso,
+  excluirModulo,
   moverAula,
   moverModulo,
   publicarAula,
@@ -129,14 +134,18 @@ function BotoesDeOrdem({
   );
 }
 
+type Resumos = Map<string, ResumoDaExclusao>;
+
 function ItemAula({
   aula,
   primeira,
   ultima,
+  resumos,
 }: {
   aula: Aula;
   primeira: boolean;
   ultima: boolean;
+  resumos: Resumos;
 }) {
   return (
     <li className="space-y-3 border-t border-linha py-3 first:border-t-0">
@@ -179,6 +188,16 @@ function ItemAula({
             ultimo={ultima}
             nome={`a aula ${aula.titulo}`}
           />
+          <BotaoRemover
+            remover={excluirAula.bind(null, aula.id)}
+            nome={`a aula ${aula.titulo}`}
+            className={botaoDeIcone}
+            confirmar={textoDaExclusao(
+              "aula",
+              aula.titulo,
+              resumos.get(aula.id),
+            )}
+          />
         </div>
       </EdicaoDoTitulo>
     </li>
@@ -190,11 +209,13 @@ function ItemModulo({
   posicao,
   primeiro,
   ultimo,
+  resumos,
 }: {
   modulo: Modulo;
   posicao: number;
   primeiro: boolean;
   ultimo: boolean;
+  resumos: Resumos;
 }) {
   const aulas = ordenar(modulo.aulas);
 
@@ -229,6 +250,16 @@ function ItemModulo({
                   ultimo={ultimo}
                   nome={`o módulo ${modulo.titulo}`}
                 />
+                <BotaoRemover
+                  remover={excluirModulo.bind(null, modulo.id)}
+                  nome={`o módulo ${modulo.titulo}`}
+                  className={botaoDeIcone}
+                  confirmar={textoDaExclusao(
+                    "modulo",
+                    modulo.titulo,
+                    resumos.get(modulo.id),
+                  )}
+                />
               </div>
             </div>
             <TituloEditavel
@@ -257,6 +288,7 @@ function ItemModulo({
                 aula={aula}
                 primeira={indice === 0}
                 ultima={indice === aulas.length - 1}
+                resumos={resumos}
               />
             ))}
           </ol>
@@ -292,6 +324,15 @@ async function EditorDoCurso({ params }: { params: Promise<{ id: string }> }) {
 
   const curso = data as Curso;
   const modulos = ordenar(curso.modulos);
+
+  // O que vai junto em cada exclusão, para a confirmação. Sem o resumo, a
+  // confirmação avisa que vai tudo junto, sem os números.
+  const { data: listaDeResumos } = await supabase.rpc("resumo_da_exclusao", {
+    curso: curso.id,
+  });
+  const resumos: Resumos = new Map(
+    ((listaDeResumos ?? []) as ResumoDaExclusao[]).map((r) => [r.id, r]),
+  );
 
   return (
     <>
@@ -329,6 +370,20 @@ async function EditorDoCurso({ params }: { params: Promise<{ id: string }> }) {
                 publicado: curso.publicado ? "on" : "",
               }}
             />
+            <div className="mt-6 border-t border-linha pt-4">
+              <FormularioDeAcao
+                acao={excluirCurso.bind(null, curso.id)}
+                confirmar={textoDaExclusao(
+                  "curso",
+                  curso.titulo,
+                  resumos.get(curso.id),
+                )}
+              >
+                <button type="submit" className={botaoPequeno}>
+                  Excluir curso
+                </button>
+              </FormularioDeAcao>
+            </div>
           </Recolhivel>
         </section>
 
@@ -345,6 +400,7 @@ async function EditorDoCurso({ params }: { params: Promise<{ id: string }> }) {
                   posicao={indice + 1}
                   primeiro={indice === 0}
                   ultimo={indice === modulos.length - 1}
+                  resumos={resumos}
                 />
               ))}
             </ol>

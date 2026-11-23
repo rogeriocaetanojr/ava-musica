@@ -50,9 +50,11 @@ function paraLogin(request: NextRequest, erro?: string): NextResponse {
   return NextResponse.redirect(url);
 }
 
-// Renova a sessão a cada requisição e manda para /login quem não está logado.
-// A conta bloqueada pelo professor tem a sessão recusada pelo Supabase
-// (user_banned): os cookies são apagados e o aluno vê o aviso no login.
+// Renova a sessão quando vence e manda para /login quem não está logado.
+// A conta bloqueada pelo professor tem a renovação recusada pelo Supabase
+// (user_banned): os cookies são apagados e o aluno vê o aviso no login. Com o
+// JWT ainda válido, quem percebe o ban é obterSessao (getUser), que manda
+// para o mesmo aviso.
 // Depois de 2 horas sem uso (ver lib/sessao.ts), a sessão é encerrada.
 // Toda resposta leva a CSP com um nonce novo; o Next lê o nonce do cabeçalho
 // da requisição e o aplica nos próprios scripts.
@@ -93,11 +95,33 @@ async function tratarSessao(request: NextRequest): Promise<NextResponse> {
     },
   );
 
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser();
+  // getClaims() confere a assinatura do JWT localmente, com a chave pública do
+  // projeto (JWKS, guardada em memória por 10 minutos), sem ir ao Supabase
+  // Auth a cada requisição. Só vai à rede para renovar a sessão vencida, e é
+  // aí que a conta bloqueada (user_banned) é recusada. Quem valida o usuário
+  // de verdade é obterSessao (getUser), nas páginas e ações que leem dados.
+  const { data, error } = await supabase.auth.getClaims();
+  const user = data?.claims.sub ? data.claims : null;
   const publica = ehPublica(request.nextUrl.pathname);
+
+  // obterSessao manda para cá quem foi bloqueado com o JWT ainda válido. Só
+  // neste caminho o proxy pergunta ao Auth (getUser) e, confirmado o ban,
+  // apaga os cookies; um link para esta URL não desconecta quem não está
+  // bloqueado.
+  if (
+    user &&
+    request.nextUrl.pathname === "/login" &&
+    request.nextUrl.searchParams.get("erro") === "bloqueado"
+  ) {
+    const { error: erroDoAuth } = await supabase.auth.getUser();
+    if (ehBloqueado(erroDoAuth)) {
+      const nomes = cookiesDaSessao(request);
+      nomes.forEach((nome) => request.cookies.delete(nome));
+      const saida = NextResponse.next({ request });
+      nomes.forEach((nome) => saida.cookies.delete(nome));
+      return saida;
+    }
+  }
 
   if (
     user &&

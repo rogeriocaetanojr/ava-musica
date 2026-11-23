@@ -26,6 +26,7 @@
 - [ ] Lista de aulas do professor com o título inteiro
 - [ ] Acabamento visual da revisão das telas
 - [ ] Rodapés e páginas públicas num só padrão
+- [ ] Botão "Entrar com Google" de volta na tela de login: saiu sem querer no commit 2812b27 (que deixou a tela de entrar compacta e também tirou o Google do teste do login); será restaurado depois
 
 ### Testes
 
@@ -57,6 +58,7 @@
   - A política de privacidade (versão 3-rascunho) cita o Supabase, o Google, a Cloudflare, o Resend e a Netlify e a transferência internacional; confirmar com cada serviço onde os dados ficam e se o contrato tem cláusulas de proteção de dados antes da revisão jurídica.
 - [ ] Verificações automáticas completas a cada mudança no código
 - [ ] Publicação automática da versão de teste e promoção para a oficial
+- [ ] Conferir que os dois projetos da nuvem assinam o JWT com chave assimétrica (Project Settings → JWT Keys, ES256 ou RS256), como o Supabase local. Com a chave antiga (HS256), o `getClaims()` do proxy (P1) volta a perguntar ao Auth a cada página: continua correto, só sem a economia
 - [ ] Endereço próprio do site
   - Os cabeçalhos de segurança e a CSP já saem do próprio site (S2). Com o endereço próprio, conferir no site publicado que eles chegam iguais e, depois de um tempo no ar sem problemas, avaliar o `preload` do HSTS.
 - [ ] Cópias de segurança do banco de dados
@@ -66,10 +68,6 @@
 - [ ] Cuidados com os dados pessoais no dia a dia, conforme a LGPD
 - [ ] Manual do professor e documentação do projeto
 - [ ] Lançamento com um primeiro grupo de alunos
-
-### Melhorias futuras
-
-- [ ] Professor poder excluir cursos, módulos e aulas
 
 ## Concluído
 
@@ -131,6 +129,9 @@
 - [x] S7: as rotas POST (`/auth/sair`, `/convite/<código>/definir`, `/aceite/<token>/autorizar` e `/nova-senha/salvar`) recusam com 403 o pedido vindo de outro site
 - [x] O teste do painel com mais de 1000 registros apaga o aluno e o curso que criou, mesmo se falhar no meio
 - [x] B2 e B6: as server actions e o registro do pedido de acesso conferem o erro do Supabase e mostram uma mensagem na tela; concluir a aula ou marcar a prova que falha não fica marcado e avisa o aluno
+- [x] B3: a troca de ordem de módulos, aulas e blocos é feita pela função `mover_item` do banco, numa transação só, com a lista travada: dois cliques rápidos seguidos esperam um pelo outro e a ordem nunca fica pela metade. Roda com as permissões de quem chama (RLS): só o professor muda a ordem
+- [x] B8: o professor exclui curso, módulo e aula (função `excluir_item`). A confirmação diz o que vai junto, com os números do banco (`resumo_da_exclusao`): módulos, aulas, blocos, o progresso dos alunos e, no curso, as matrículas e os recados dele. A exclusão fica na auditoria, com o id e o título do item, na mesma transação
+- [x] P1: o proxy confere a sessão com `getClaims()` (JWT validado localmente com a chave pública do projeto), e `obterSessao` e `alunoLiberado` são memoizados por requisição (`React.cache`). Idas ao Supabase para a sessão, por página: professor de 3 para 2 (Auth e perfil); aluno de 7 para 3 (Auth, perfil e `aluno_liberado`). O aluno bloqueado com o JWT ainda válido é barrado pelo `getUser` da página e cai no login com o aviso e os cookies apagados; na renovação da sessão, o próprio proxy recusa
 
 ### Dependências
 

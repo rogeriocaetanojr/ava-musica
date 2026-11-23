@@ -1,5 +1,7 @@
 import { redirect } from "next/navigation";
+import { cache } from "react";
 import { connection } from "next/server";
+import { ehBloqueado } from "@/app/login/mensagens";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 
 export type Papel = "professor" | "aluno";
@@ -39,12 +41,18 @@ function comNome(sessao: Sessao): SessaoComNome {
 // Usuário logado com o perfil lido do banco (o papel nunca vem dos metadados).
 // Só roda na hora da requisição: o Supabase compara a validade da sessão com
 // o relógio (Date.now()), o que não pode acontecer na pré-renderização.
-export async function obterSessao(): Promise<Sessao | null> {
+// Memoizada por requisição (React.cache): o layout, a página e os componentes
+// que pedem a sessão dividem uma ida só ao Auth e uma leitura do perfil.
+export const obterSessao = cache(async (): Promise<Sessao | null> => {
   await connection();
   const supabase = await criarClienteServidor();
   const {
     data: { user },
+    error,
   } = await supabase.auth.getUser();
+  // Conta bloqueada com o JWT ainda válido: o proxy (getClaims) não vê o ban,
+  // mas o Auth recusa aqui. O login com o aviso apaga os cookies (proxy).
+  if (ehBloqueado(error)) redirect("/login?erro=bloqueado");
   if (!user) return null;
 
   const { data: perfil } = await supabase
@@ -62,7 +70,7 @@ export async function obterSessao(): Promise<Sessao | null> {
     bloqueado: perfil.bloqueado_em !== null,
     pendente: perfil.papel === "aluno" && perfil.liberado_em === null,
   };
-}
+});
 
 export async function exigirProfessor(): Promise<SessaoComNome> {
   const sessao = await obterSessao();
@@ -73,12 +81,12 @@ export async function exigirProfessor(): Promise<SessaoComNome> {
 
 // Pergunta ao banco se o aluno logado já pode acessar (liberado pelo professor
 // e com 12 anos ou mais, ou menor com aceite do responsável). Em caso de erro,
-// trata como bloqueado.
-export async function alunoLiberado(): Promise<boolean> {
+// trata como bloqueado. Memoizada por requisição, como obterSessao.
+export const alunoLiberado = cache(async (): Promise<boolean> => {
   const supabase = await criarClienteServidor();
   const { data, error } = await supabase.rpc("aluno_liberado");
   return !error && data === true;
-}
+});
 
 // O aluno bloqueado vai para o aviso de bloqueio; quem não informou o nome,
 // para a tela do nome; o pedido pendente e o menor de 12 sem aceite, para a

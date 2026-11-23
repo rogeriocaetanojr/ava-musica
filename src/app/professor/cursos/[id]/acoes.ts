@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import type { ResultadoDaAcao } from "@/lib/acoes";
 import { exigirProfessor } from "@/lib/auth";
 import {
@@ -8,7 +9,6 @@ import {
   ehDirecao,
   type ItemOrdenado,
   proximaOrdem,
-  reordenar,
 } from "@/lib/ordem";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 import {
@@ -182,23 +182,22 @@ export async function publicarAula(
   return {};
 }
 
-// Grava as ordens calculadas por reordenar(). Não há transação: se uma gravação
-// falhar no meio, o próximo clique renumera a lista inteira e corrige a ordem.
-// Para no primeiro erro, para a tela avisar.
-async function gravarOrdem(
+// A troca de ordem é feita pelo banco (mover_item), numa transação só: dois
+// cliques seguidos esperam um pelo outro e a lista nunca fica pela metade.
+async function moverNoBanco(
   tabela: "modulos" | "aulas",
-  itens: ItemOrdenado[],
   id: string,
   direcao: Direcao,
 ): Promise<ResultadoDaAcao> {
+  if (!ehUuid(id) || !ehDirecao(direcao)) return { erro: ERRO_ID };
   const supabase = await criarClienteServidor();
-  for (const item of reordenar(itens, id, direcao)) {
-    const { error } = await supabase
-      .from(tabela)
-      .update({ ordem: item.ordem })
-      .eq("id", item.id);
-    if (error) return { erro: ERRO_MOVER };
-  }
+  const { error } = await supabase.rpc("mover_item", {
+    tabela,
+    item: id,
+    direcao,
+  });
+  atualizarTelas();
+  if (error) return { erro: error.code === "P0002" ? ERRO_ID : ERRO_MOVER };
   return {};
 }
 
@@ -207,30 +206,7 @@ export async function moverModulo(
   direcao: Direcao,
 ): Promise<ResultadoDaAcao> {
   await exigirProfessor();
-  if (!ehUuid(moduloId) || !ehDirecao(direcao)) return { erro: ERRO_ID };
-
-  const supabase = await criarClienteServidor();
-  const { data: modulo, error: erroModulo } = await supabase
-    .from("modulos")
-    .select("curso_id")
-    .eq("id", moduloId)
-    .maybeSingle();
-  if (erroModulo) return { erro: ERRO_MOVER };
-  if (!modulo) return { erro: ERRO_ID };
-
-  const { data: irmaos, error: erroIrmaos } = await supabase
-    .from("modulos")
-    .select("id, ordem")
-    .eq("curso_id", modulo.curso_id);
-  if (erroIrmaos) return { erro: ERRO_MOVER };
-  const resultado = await gravarOrdem(
-    "modulos",
-    (irmaos ?? []) as ItemOrdenado[],
-    moduloId,
-    direcao,
-  );
-  atualizarTelas();
-  return resultado;
+  return moverNoBanco("modulos", moduloId, direcao);
 }
 
 export async function moverAula(
@@ -238,28 +214,50 @@ export async function moverAula(
   direcao: Direcao,
 ): Promise<ResultadoDaAcao> {
   await exigirProfessor();
-  if (!ehUuid(aulaId) || !ehDirecao(direcao)) return { erro: ERRO_ID };
+  return moverNoBanco("aulas", aulaId, direcao);
+}
 
+// O banco (excluir_item) apaga e grava a auditoria juntos; a cascata leva
+// módulos, aulas, blocos e o progresso dos alunos, e no curso também as
+// matrículas e os recados dele.
+async function excluirNoBanco(
+  tabela: "cursos" | "modulos" | "aulas",
+  id: string,
+): Promise<ResultadoDaAcao> {
+  if (!ehUuid(id)) return { erro: ERRO_ID };
   const supabase = await criarClienteServidor();
-  const { data: aula, error: erroAula } = await supabase
-    .from("aulas")
-    .select("modulo_id")
-    .eq("id", aulaId)
-    .maybeSingle();
-  if (erroAula) return { erro: ERRO_MOVER };
-  if (!aula) return { erro: ERRO_ID };
+  const { error } = await supabase.rpc("excluir_item", { tabela, item: id });
+  if (error)
+    return {
+      erro:
+        error.code === "P0002"
+          ? ERRO_ID
+          : "Não foi possível excluir. Tente de novo.",
+    };
+  return {};
+}
 
-  const { data: irmas, error: erroIrmas } = await supabase
-    .from("aulas")
-    .select("id, ordem")
-    .eq("modulo_id", aula.modulo_id);
-  if (erroIrmas) return { erro: ERRO_MOVER };
-  const resultado = await gravarOrdem(
-    "aulas",
-    (irmas ?? []) as ItemOrdenado[],
-    aulaId,
-    direcao,
-  );
+export async function excluirModulo(
+  moduloId: string,
+): Promise<ResultadoDaAcao> {
+  await exigirProfessor();
+  const resultado = await excluirNoBanco("modulos", moduloId);
   atualizarTelas();
   return resultado;
+}
+
+export async function excluirAula(aulaId: string): Promise<ResultadoDaAcao> {
+  await exigirProfessor();
+  const resultado = await excluirNoBanco("aulas", aulaId);
+  atualizarTelas();
+  return resultado;
+}
+
+export async function excluirCurso(cursoId: string): Promise<ResultadoDaAcao> {
+  await exigirProfessor();
+  const resultado = await excluirNoBanco("cursos", cursoId);
+  if (resultado.erro) return resultado;
+  revalidatePath("/professor/cursos");
+  revalidatePath("/professor");
+  redirect("/professor/cursos");
 }

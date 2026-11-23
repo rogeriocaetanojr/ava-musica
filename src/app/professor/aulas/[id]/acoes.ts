@@ -8,7 +8,6 @@ import {
   ehDirecao,
   type ItemOrdenado,
   proximaOrdem,
-  reordenar,
 } from "@/lib/ordem";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 import {
@@ -92,8 +91,8 @@ export async function removerBloco(blocoId: string): Promise<ResultadoDaAcao> {
   return {};
 }
 
-// Mesma estratégia dos módulos e aulas: sem transação, o próximo clique
-// renumera a lista inteira se uma gravação falhar no meio.
+// Mesma troca dos módulos e aulas: o banco (mover_item) faz tudo numa
+// transação só, e dois cliques seguidos esperam um pelo outro.
 export async function moverBloco(
   blocoId: string,
   direcao: Direcao,
@@ -102,34 +101,12 @@ export async function moverBloco(
   if (!ehUuid(blocoId) || !ehDirecao(direcao)) return { erro: ERRO_ID };
 
   const supabase = await criarClienteServidor();
-  const { data: bloco, error: erroBloco } = await supabase
-    .from("conteudos")
-    .select("aula_id")
-    .eq("id", blocoId)
-    .maybeSingle();
-  if (erroBloco) return { erro: ERRO_MOVER };
-  if (!bloco) return { erro: ERRO_ID };
-
-  const { data: irmaos, error: erroIrmaos } = await supabase
-    .from("conteudos")
-    .select("id, ordem")
-    .eq("aula_id", bloco.aula_id);
-  if (erroIrmaos) return { erro: ERRO_MOVER };
-  for (const item of reordenar(
-    (irmaos ?? []) as ItemOrdenado[],
-    blocoId,
+  const { error } = await supabase.rpc("mover_item", {
+    tabela: "conteudos",
+    item: blocoId,
     direcao,
-  )) {
-    const { error } = await supabase
-      .from("conteudos")
-      .update({ ordem: item.ordem })
-      .eq("id", item.id);
-    if (error) {
-      // A ordem pode ter ficado pela metade: a tela mostra o que foi gravado.
-      atualizarTela();
-      return { erro: ERRO_MOVER };
-    }
-  }
+  });
   atualizarTela();
+  if (error) return { erro: error.code === "P0002" ? ERRO_ID : ERRO_MOVER };
   return {};
 }

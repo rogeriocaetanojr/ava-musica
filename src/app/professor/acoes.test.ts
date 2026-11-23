@@ -96,31 +96,21 @@ describe("blocos da aula", () => {
     expect(falso.revalidatePath).not.toHaveBeenCalled();
   });
 
-  it("moverBloco avisa quando a leitura falha", async () => {
+  it("moverBloco troca a ordem pelo banco, numa chamada só", async () => {
+    const { chamadas } = usar([{ data: true }]);
+    expect(await aulas.moverBloco(ID, "subir")).toEqual({});
+    expect(chamadas).toEqual(["rpc:mover_item"]);
+  });
+
+  it("moverBloco avisa quando o banco recusa", async () => {
     usar([{ error: FALHA }]);
     expect(await aulas.moverBloco(ID, "subir")).toEqual({
       erro: "Não foi possível mudar a ordem. Tente de novo.",
     });
   });
 
-  it("moverBloco avisa quando uma gravação da ordem falha", async () => {
-    usar([
-      { data: { aula_id: OUTRO } },
-      {
-        data: [
-          { id: OUTRO, ordem: 1 },
-          { id: ID, ordem: 2 },
-        ],
-      },
-      { error: FALHA },
-    ]);
-    expect(await aulas.moverBloco(ID, "subir")).toEqual({
-      erro: "Não foi possível mudar a ordem. Tente de novo.",
-    });
-  });
-
   it("moverBloco de um bloco que não existe mais", async () => {
-    usar([{ data: null }]);
+    usar([{ error: { code: "P0002" } }]);
     expect((await aulas.moverBloco(ID, "subir")).erro).toMatch(
       /não encontrado/,
     );
@@ -142,27 +132,53 @@ describe("aulas e módulos do curso", () => {
     });
   });
 
-  it("moverModulo avisa quando uma gravação da ordem falha", async () => {
-    usar([
-      { data: { curso_id: OUTRO } },
-      {
-        data: [
-          { id: OUTRO, ordem: 1 },
-          { id: ID, ordem: 2 },
-        ],
-      },
-      { error: FALHA },
-    ]);
+  it("moverModulo e moverAula trocam a ordem pelo banco", async () => {
+    const { chamadas } = usar([{ data: true }, { data: true }]);
+    expect(await cursos.moverModulo(ID, "subir")).toEqual({});
+    expect(await cursos.moverAula(ID, "descer")).toEqual({});
+    expect(chamadas).toEqual(["rpc:mover_item", "rpc:mover_item"]);
+  });
+
+  it("moverModulo avisa quando o banco recusa", async () => {
+    usar([{ error: FALHA }]);
     expect(await cursos.moverModulo(ID, "subir")).toEqual({
       erro: "Não foi possível mudar a ordem. Tente de novo.",
     });
   });
 
-  it("moverAula avisa quando a leitura das aulas falha", async () => {
-    usar([{ data: { modulo_id: OUTRO } }, { error: FALHA }]);
-    expect(await cursos.moverAula(ID, "descer")).toEqual({
-      erro: "Não foi possível mudar a ordem. Tente de novo.",
+  it("moverAula com direção inválida não chama o banco", async () => {
+    const { chamadas } = usar([]);
+    expect((await cursos.moverAula(ID, "lado" as "subir")).erro).toMatch(
+      /não encontrado/,
+    );
+    expect(chamadas).toEqual([]);
+  });
+});
+
+describe("excluir curso, módulo e aula", () => {
+  it("excluirAula e excluirModulo apagam pelo banco, que grava a auditoria", async () => {
+    const { chamadas } = usar([{}, {}]);
+    expect(await cursos.excluirAula(ID)).toEqual({});
+    expect(await cursos.excluirModulo(ID)).toEqual({});
+    expect(chamadas).toEqual(["rpc:excluir_item", "rpc:excluir_item"]);
+  });
+
+  it("excluirCurso devolve o erro do banco e fica na página", async () => {
+    usar([{ error: FALHA }]);
+    expect(await cursos.excluirCurso(ID)).toEqual({
+      erro: "Não foi possível excluir. Tente de novo.",
     });
+  });
+
+  it("excluir item que não existe mais", async () => {
+    usar([{ error: { code: "P0002" } }]);
+    expect((await cursos.excluirAula(ID)).erro).toMatch(/não encontrado/);
+  });
+
+  it("id inválido não chama o banco", async () => {
+    const { chamadas } = usar([]);
+    expect((await cursos.excluirModulo("x")).erro).toMatch(/não encontrado/);
+    expect(chamadas).toEqual([]);
   });
 });
 
