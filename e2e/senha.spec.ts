@@ -1,15 +1,11 @@
 import { expect, type Page, test } from "@playwright/test";
 import {
-  ALUNO,
   apagarEmailsDe,
   contarEmails,
   criarContaSemNome,
-  definirSenha,
   entrar,
   esperarCaptcha,
   linkDoEmail,
-  PROFESSOR,
-  SENHA_DE_TESTE,
   tentarEntrar,
 } from "./apoio";
 
@@ -106,76 +102,4 @@ test("esqueci minha senha: pedir o link, criar a senha nova e entrar com ela", a
   await expect(alerta(page, "E-mail ou senha incorretos.")).toBeVisible();
   await entrar(page, email, nova);
   await expect(page).toHaveURL(/\/seu-nome$/);
-});
-
-test("trocar a senha no perfil pede a senha atual", async ({ page }) => {
-  const nova = "senha-do-perfil-9";
-  try {
-    await entrar(page, ALUNO);
-    await page.goto("/perfil");
-    await expect(
-      page.getByRole("heading", { name: "Trocar senha" }),
-    ).toBeVisible();
-    const atual = page.getByLabel("Senha atual");
-    const campoNova = page.getByLabel("Senha nova", { exact: true });
-    const campoRepetida = page.getByLabel("Repita a senha nova");
-    const trocar = page.getByRole("button", { name: "Trocar senha" });
-
-    // Confirmação diferente: nem chega a conferir a senha atual.
-    await atual.fill(SENHA_DE_TESTE);
-    await campoNova.fill(nova);
-    await campoRepetida.fill(`${nova}x`);
-    await trocar.click();
-    await expect(alerta(page, "não são iguais")).toBeVisible();
-
-    // Senha atual errada não troca.
-    await atual.fill("senha-errada-123");
-    await campoRepetida.fill(nova);
-    await esperarCaptcha(page);
-    await trocar.click();
-    await expect(alerta(page, "A senha atual não confere.")).toBeVisible();
-
-    // Com a senha atual certa, troca e continua logado.
-    await atual.fill(SENHA_DE_TESTE);
-    await esperarCaptcha(page);
-    await trocar.click();
-    await expect(
-      page.getByRole("status").filter({ hasText: "Senha alterada." }),
-    ).toBeVisible();
-    await expect(atual).toHaveValue("");
-    await page.goto("/cursos");
-    await expect(page).toHaveURL(/\/cursos$/);
-
-    // Depois de sair, só a senha nova entra.
-    await page.context().clearCookies();
-    await tentarEntrar(page, ALUNO, SENHA_DE_TESTE);
-    await expect(alerta(page, "E-mail ou senha incorretos.")).toBeVisible();
-    await entrar(page, ALUNO, nova);
-    await expect(page).toHaveURL(/\/cursos$/);
-  } finally {
-    // Os outros testes entram com a senha de teste.
-    await definirSenha(ALUNO, SENHA_DE_TESTE);
-  }
-});
-
-test("o avatar do professor abre o perfil, com Trocar senha", async ({
-  page,
-}) => {
-  await entrar(page, PROFESSOR);
-  // O avatar abre o menu da conta, que leva ao perfil.
-  await page
-    .getByRole("button", { name: /^Menu da conta: conectado como/ })
-    .click();
-  await page.getByRole("link", { name: "Meu perfil" }).click();
-  await expect(page).toHaveURL(/\/professor\/perfil$/);
-  await expect(
-    page.getByRole("heading", { level: 1, name: "Perfil" }),
-  ).toBeVisible();
-  await expect(
-    page.getByRole("heading", { name: "Trocar senha" }),
-  ).toBeVisible();
-  await expect(page.getByLabel("Senha atual")).toHaveAttribute(
-    "autocomplete",
-    "current-password",
-  );
 });

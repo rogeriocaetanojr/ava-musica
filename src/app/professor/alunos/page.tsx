@@ -7,6 +7,7 @@ import { exigirProfessor } from "@/lib/auth";
 import { nomeParaExibir } from "@/lib/nomes";
 import { resumoParaProfessor } from "@/lib/painel";
 import { criarClienteAdmin } from "@/lib/supabase/admin";
+import { fotosDe } from "@/lib/fotos";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 import { contagemDe, dadosDoPainel } from "../progresso/dados";
 import { GavetaDePedidos } from "./gaveta-de-pedidos";
@@ -65,6 +66,7 @@ async function ListaDeAlunos({ pedidos }: { pedidos: React.ReactNode }) {
     dadosDoPainel(),
   ]);
   const lista = (alunos ?? []) as unknown as Aluno[];
+  const fotos = await fotosDe(lista.map((aluno) => aluno.id));
   const cursos = new Map((painel?.cursos ?? []).map((c) => [c.id, c]));
 
   // Quem está pendente já aparece em Pedidos de acesso, então fica fora da turma.
@@ -83,6 +85,7 @@ async function ListaDeAlunos({ pedidos }: { pedidos: React.ReactNode }) {
         nome: nomeParaExibir(aluno.nome),
         email: aluno.email,
         avatar: AVATARES[indice % AVATARES.length],
+        foto: fotos.get(aluno.id) ?? null,
         etiqueta: {
           texto: NOMES_DOS_STATUS[status],
           classe: CORES_DOS_STATUS[status],

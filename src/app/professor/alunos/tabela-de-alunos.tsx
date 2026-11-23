@@ -5,13 +5,15 @@ import { type ReactNode, useState } from "react";
 import { classesDoBotao } from "@/components/botao";
 import { classesDoCampo } from "@/components/campo";
 import { BarraProgresso } from "@/components/barra-progresso";
-import { iniciais } from "@/lib/nomes";
+import { Avatar } from "@/components/avatar";
 
 export type LinhaDaTurma = {
   id: string;
   nome: string;
   email: string;
   avatar: string;
+  // Link assinado da foto de perfil; sem foto, a silhueta.
+  foto: string | null;
   etiqueta: { texto: string; classe: string };
   cursos: { id: string; titulo: string; percentual: number | null }[];
 };
@@ -92,12 +94,10 @@ export function TabelaDeAlunos({
                       className="block min-h-12 space-y-3 px-5 py-4 hover:bg-fundo"
                     >
                       <span className="flex items-center gap-3">
-                        <span
-                          aria-hidden="true"
-                          className={`inline-flex size-10 shrink-0 items-center justify-center rounded-full text-xs font-bold ${linha.avatar}`}
-                        >
-                          {iniciais(linha.nome)}
-                        </span>
+                        <Avatar
+                          foto={linha.foto}
+                          className={`size-10 ${linha.avatar}`}
+                        />
                         <span className="min-w-0 flex-1">
                           <span className="block font-bold break-words text-texto">
                             {linha.nome}
@@ -179,12 +179,10 @@ export function TabelaDeAlunos({
                             href={`/professor/alunos/${linha.id}`}
                             className="flex min-h-12 items-center gap-3 font-bold text-texto hover:underline"
                           >
-                            <span
-                              aria-hidden="true"
-                              className={`inline-flex size-10 shrink-0 items-center justify-center rounded-full text-xs font-bold ${linha.avatar}`}
-                            >
-                              {iniciais(linha.nome)}
-                            </span>
+                            <Avatar
+                              foto={linha.foto}
+                              className={`size-10 ${linha.avatar}`}
+                            />
                             <span className="min-w-0">
                               <span className="block break-words">
                                 {linha.nome}

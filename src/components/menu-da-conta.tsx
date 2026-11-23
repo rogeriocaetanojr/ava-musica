@@ -1,6 +1,9 @@
 import Link from "next/link";
+import { Suspense } from "react";
+import { Avatar } from "@/components/avatar";
 import { BotaoDoTema } from "@/components/seletor-de-tema";
-import { iniciais } from "@/lib/nomes";
+import { obterSessao } from "@/lib/auth";
+import { fotoDe } from "@/lib/fotos";
 
 // Pílula arredondada que agrupa os ícones do cabeçalho (sino e avatar) e a
 // navegação do professor.
@@ -10,9 +13,16 @@ export const PILULA =
 const opcao =
   "flex min-h-12 w-full items-center rounded-xl px-4 text-left text-base font-bold text-texto hover:bg-bloco hover:text-texto-sobre-bloco";
 
-// Avatar com as iniciais que abre um menu pequeno da conta (botão de tema,
+// Avatar (foto de perfil ou silhueta) que abre um menu pequeno da conta (botão de tema,
 // perfil e sair; e o atalho de troca de área do professor), no mesmo estilo do painel de recados: popover nativo, que fecha com
 // Esc ou com clique fora. Igual nas áreas do aluno e do professor.
+// Foto de quem está logado; a sessão e a foto são memoizadas por requisição.
+async function FotoDaSessao({ classes }: { classes: string }) {
+  const sessao = await obterSessao();
+  const foto = sessao ? await fotoDe(sessao.id) : null;
+  return <Avatar foto={foto} className={classes} />;
+}
+
 export function MenuDaConta({
   nome,
   perfil,
@@ -38,9 +48,11 @@ export function MenuDaConta({
         type="button"
         popoverTarget={id}
         title={nome}
-        className={`inline-flex size-12 shrink-0 cursor-pointer items-center justify-center rounded-full text-base font-bold ${cores}`}
+        className="inline-flex size-12 shrink-0 cursor-pointer items-center justify-center rounded-full"
       >
-        <span aria-hidden="true">{iniciais(nome)}</span>
+        <Suspense fallback={<Avatar className={`size-12 ${cores}`} />}>
+          <FotoDaSessao classes={`size-12 ${cores}`} />
+        </Suspense>
         <span className="sr-only">Menu da conta: conectado como {nome}</span>
       </button>
 

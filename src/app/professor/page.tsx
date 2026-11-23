@@ -10,7 +10,9 @@ import { CabecalhoDoProfessor } from "@/components/cabecalho-do-professor";
 import { Cordas } from "@/components/cordas";
 import { exigirProfessor } from "@/lib/auth";
 import { dataPorExtenso, quandoFoi } from "@/lib/datas";
-import { iniciais, primeiroNome } from "@/lib/nomes";
+import { primeiroNome } from "@/lib/nomes";
+import { Avatar } from "@/components/avatar";
+import { fotosDe } from "@/lib/fotos";
 import {
   type ContagemDoCurso,
   type SituacaoDoAluno,
@@ -186,6 +188,7 @@ async function Resumo() {
   const naSemana = aulasConcluidasNaSemana(dados.contagens);
 
   const cursoPorId = new Map(dados.cursos.map((c) => [c.id, c]));
+  const fotos = await fotosDe(dados.alunos.map((a) => a.id));
   const linhas = dados.alunos.flatMap((aluno, indice) => {
     const cursos = aluno.matriculas
       .map((m) => cursoPorId.get(m.curso_id))
@@ -194,6 +197,7 @@ async function Resumo() {
     const base = {
       aluno,
       avatar: AVATARES[indice % AVATARES.length],
+      foto: fotos.get(aluno.id) ?? null,
       situacao: situacaoDe(aluno.id),
       variosCursos: cursos.length > 1,
     };
@@ -285,7 +289,7 @@ async function Resumo() {
           ) : (
             <ul className="divide-y divide-linha border-t border-linha">
               {linhas.map(
-                ({ aluno, avatar, situacao, curso, variosCursos }) => {
+                ({ aluno, avatar, foto, situacao, curso, variosCursos }) => {
                   const resumo = curso
                     ? resumoParaProfessor(
                         curso.modulos,
@@ -298,12 +302,7 @@ async function Resumo() {
                         href={`/professor/alunos/${aluno.id}`}
                         className="flex min-h-12 items-center gap-4 py-3"
                       >
-                        <span
-                          aria-hidden="true"
-                          className={`inline-flex size-12 shrink-0 items-center justify-center rounded-full text-sm font-bold ${avatar}`}
-                        >
-                          {iniciais(aluno.nome)}
-                        </span>
+                        <Avatar foto={foto} className={`size-12 ${avatar}`} />
                         <span className="flex min-w-0 flex-1 flex-col gap-1">
                           <span className="font-bold break-words text-texto">
                             {aluno.nome}
@@ -397,7 +396,7 @@ async function Resumo() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-linha">
-                  {linhas.map(({ aluno, avatar, situacao, curso }) => {
+                  {linhas.map(({ aluno, avatar, foto, situacao, curso }) => {
                     const resumo = curso
                       ? resumoParaProfessor(
                           curso.modulos,
@@ -418,12 +417,10 @@ async function Resumo() {
                             href={`/professor/alunos/${aluno.id}`}
                             className="flex min-h-12 items-center gap-3 font-bold text-texto hover:underline"
                           >
-                            <span
-                              aria-hidden="true"
-                              className={`inline-flex size-10 shrink-0 items-center justify-center rounded-full text-xs font-bold ${avatar}`}
-                            >
-                              {iniciais(aluno.nome)}
-                            </span>
+                            <Avatar
+                              foto={foto}
+                              className={`size-10 ${avatar}`}
+                            />
                             <span className="break-words">{aluno.nome}</span>
                           </Link>
                         </td>

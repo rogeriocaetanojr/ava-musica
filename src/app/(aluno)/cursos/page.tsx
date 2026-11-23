@@ -9,35 +9,19 @@ import { AbasDoAluno } from "@/components/abas-do-aluno";
 import { CabecalhoDoAluno } from "@/components/cabecalho-do-aluno";
 import { ID_DOS_RECADOS, type Recado } from "@/components/sino-de-recados";
 import { BocaDoViolao, Cordas } from "@/components/cordas";
+import {
+  CartaoDoCurso,
+  type CursoDoAluno as Curso,
+  SELECT_DOS_CURSOS,
+} from "../cartao-do-curso";
 import { exigirAlunoOuProfessor } from "@/lib/auth";
 import { formatarDataHora, saudacao } from "@/lib/datas";
 import { ordenar } from "@/lib/ordem";
-import {
-  type AulaDoCurso,
-  type ModuloDoCurso,
-  aulasEmOrdem,
-  resumoDoCurso,
-} from "@/lib/progresso";
+import { aulasEmOrdem, resumoDoCurso } from "@/lib/progresso";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 import { aulasConcluidas, recadosDoAluno, ultimaAulaEstudada } from "../dados";
 
-type Aula = AulaDoCurso & { titulo: string };
-type Modulo = ModuloDoCurso<Aula> & { titulo: string };
-type Curso = {
-  id: string;
-  titulo: string;
-  instrumento: string;
-  nivel: string | null;
-  modulos: Modulo[];
-};
 type Aviso = Recado;
-
-// Capas alternadas pela ordem da lista; as cordas mudam de cor no amarelo.
-const CAPAS = [
-  { fundo: "bg-bordo", cordas: "amarelo" },
-  { fundo: "bg-amarelo", cordas: "vinho" },
-  { fundo: "bg-vinho", cordas: "amarelo" },
-] as const;
 
 const rotuloDeSecao = "text-sm font-bold text-destaque";
 
@@ -224,59 +208,6 @@ function RecadoMaisRecente({ aviso }: { aviso: Aviso }) {
   );
 }
 
-function CartaoDoCurso({
-  curso,
-  posicao,
-  concluidas,
-}: {
-  curso: Curso;
-  posicao: number;
-  concluidas: Set<string>;
-}) {
-  const resumo = resumoDoCurso(curso.modulos, concluidas);
-  const capa = CAPAS[posicao % CAPAS.length];
-  const terminou = resumo.total > 0 && resumo.proxima === null;
-
-  return (
-    <li className="overflow-hidden rounded-2xl border border-linha bg-superficie">
-      <Link href={`/cursos/${curso.id}`} className="block">
-        <div
-          className={`relative h-16 md:h-[9dvh] 2xl:h-[12dvh] ${capa.fundo}`}
-        >
-          <Cordas
-            cor={capa.cordas}
-            className="absolute inset-y-0 left-1/3 w-16 md:w-20"
-          />
-        </div>
-        <div className="space-y-3 p-4 md:p-5 2xl:space-y-4 2xl:p-6">
-          <h3 className="font-titulo text-lg break-words text-texto md:truncate">
-            {curso.titulo}
-          </h3>
-          <BarraProgresso
-            percentual={resumo.percentual}
-            rotulo={`Progresso em ${curso.titulo}`}
-            cor="bordo"
-            comTexto={false}
-          />
-          <p className="text-sm text-texto-secundario">
-            {terminou ? (
-              "Concluído"
-            ) : (
-              <>
-                <span className="hidden md:inline">
-                  {resumo.concluidas} de {resumo.total}{" "}
-                  {resumo.total === 1 ? "aula" : "aulas"} ·{" "}
-                </span>
-                {resumo.percentual}%
-              </>
-            )}
-          </p>
-        </div>
-      </Link>
-    </li>
-  );
-}
-
 async function MeusCursosDoAluno() {
   const sessao = await exigirAlunoOuProfessor();
   const professor = sessao.papel === "professor";
@@ -288,9 +219,7 @@ async function MeusCursosDoAluno() {
   const [{ data }, concluidas, ultimaAula, avisos] = await Promise.all([
     supabase
       .from("cursos")
-      .select(
-        "id, titulo, instrumento, nivel, modulos (id, titulo, ordem, aulas (id, titulo, ordem, publicada))",
-      )
+      .select(SELECT_DOS_CURSOS)
       .eq("publicado", true)
       .order("titulo"),
     aulasConcluidas(sessao.id),

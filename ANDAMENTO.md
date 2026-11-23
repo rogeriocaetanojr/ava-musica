@@ -20,7 +20,7 @@
 - [ ] Botões e campos usando os componentes padrão
 - [ ] Arquivos e provas abrindo em nova guia
 - [ ] Login com e-mail e senha, criar conta e convite por link
-- [ ] Esqueci minha senha, nova senha pelo link do e-mail e Trocar senha no perfil do aluno e do professor
+- [ ] Esqueci minha senha e nova senha pelo link do e-mail (a troca de senha saiu do perfil)
 - [ ] Cabeçalho, seta de voltar e trilha iguais nas telas internas
 - [ ] Botões e links com pelo menos 48 px para o toque
 - [ ] Lista de aulas do professor com o título inteiro
@@ -121,6 +121,10 @@
 - [x] Tema escuro no celular, com a barra do navegador na cor de cada tema e o botão de tema também no perfil e no cabeçalho do professor no celular
 - [x] Tema escuro no computador, com um botão de lua (no claro) e sol (no escuro) no cabeçalho do aluno e do professor; sem escolha feita, vale o tema do sistema
 - [x] Ajustes da revisão das telas: Meus cursos reorganizado, sem rolagem no computador com até 3 cursos (saudação numa linha, "Continue de onde parou" e recados em destaque com a altura acompanhando a tela, e os cursos lado a lado); card da direita da aula alinhado ao conteúdo e "Ver todos os módulos" menor, à direita e sem sublinhado; botão de concluir a aula sem ícone, neutro e verde quando concluída; login redesenhado (logo grande à esquerda, formulário no centro, violão à direita; no celular, só o logo e o formulário), com o mesmo layout em Criar conta, Esqueci minha senha e Nova senha, sem rolagem
+- [x] Avatar sem iniciais: quem não tem foto aparece com a silhueta de uma pessoa, no cabeçalho, no painel, na turma e na ficha do aluno (componente `Avatar`)
+- [x] Foto de perfil: enviar e trocar pelo lápis da foto no Meu perfil, direto do navegador para o bucket privado `fotos-de-perfil` (migração `20261124000000_fotos_de_perfil.sql`), em `<id>/foto`, só JPG, PNG ou WebP de até 2 MB; a RLS do Storage deixa cada um enviar, trocar e apagar só a própria foto, e o professor ver as dos alunos. As telas mostram a foto por link assinado de 1 hora, gerado no servidor (`src/lib/fotos.ts`), e a CSP aceita imagem do Supabase
+- [x] Meu perfil do aluno e do professor refeito: no computador, um card compacto à esquerda (foto com o botão de editar, nome e e-mail) e, à direita, os cursos matriculados com os mesmos cards da home (faixa colorida, título e barra de progresso), as duas colunas com a mesma altura, sem rolagem com até 3 cursos; no celular, um embaixo do outro. O professor vê só o card do perfil. Saíram da tela a troca de senha (fica o "Esqueci minha senha" do login), o botão de tema e o Sair, que ficam no menu da conta do cabeçalho; os testes de ponta a ponta da troca de senha no perfil saíram junto
+- [x] Nome editável no Meu perfil: o lápis ao lado do nome abre o campo com Salvar e Cancelar, com a validação da tela do nome (sem vazio, até 120 caracteres); grava pela função `alterar_meu_nome` (migração `20261125000000_alterar_meu_nome.sql`), com as mesmas regras de `definir_meu_nome` para quem já tem nome, e o nome novo aparece no site todo
 
 ### Correções da auditoria
 

@@ -73,7 +73,7 @@ export function montarCsp({
       ],
     ],
     ["style-src", ["'self'", "'unsafe-inline'"]],
-    ["img-src", ["'self'", "data:", "blob:"]],
+    ["img-src", ["'self'", "data:", "blob:", ...deSupabase]],
     ["font-src", ["'self'"]],
     ["connect-src", ["'self'", ...deSupabase]],
     ["media-src", ["'self'", ...deSupabase]],

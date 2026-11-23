@@ -1,62 +1,41 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { classesDoBotao } from "@/components/botao";
+import { CartaoDoPerfil } from "@/components/cartao-do-perfil";
 import { CONTEINER } from "@/components/conteiner";
-import { BotaoDoTema } from "@/components/seletor-de-tema";
 import { TelaDoProfessor } from "@/components/tela-do-professor";
-import { TrocarSenha } from "@/components/trocar-senha";
 import { exigirProfessor } from "@/lib/auth";
-import { iniciais } from "@/lib/nomes";
 import { tituloDaPagina } from "@/lib/site";
+import { salvarNomeDoProfessor } from "./acoes";
 
-export const metadata: Metadata = { title: tituloDaPagina("Perfil") };
+export const metadata: Metadata = { title: tituloDaPagina("Meu perfil") };
 
 async function DadosDoProfessor() {
   const sessao = await exigirProfessor();
-
   return (
-    <>
-      <section className="flex items-center gap-4 rounded-3xl border border-linha bg-superficie p-5">
-        <span
-          aria-hidden="true"
-          className="inline-flex size-14 shrink-0 items-center justify-center rounded-full bg-amarelo text-lg font-bold text-texto-sobre-amarelo"
-        >
-          {iniciais(sessao.nome)}
-        </span>
-        <div className="min-w-0">
-          <p className="text-lg font-bold break-words">{sessao.nome}</p>
-          <p className="text-base break-words text-texto-secundario">
-            {sessao.email}
-          </p>
-        </div>
-      </section>
-
-      <TrocarSenha email={sessao.email} />
-    </>
+    <CartaoDoPerfil
+      sessao={sessao}
+      cores="bg-amarelo text-texto-sobre-amarelo"
+      acaoDoNome={salvarNomeDoProfessor}
+    />
   );
 }
 
-// Dados da conta do professor, troca de senha, tema e saída. Chega-se aqui
-// pelo avatar do cabeçalho.
+// Meu perfil do professor: só o card do perfil (foto, nome editável e
+// e-mail), na mesma coluna do card do aluno. Chega-se aqui pelo avatar do
+// cabeçalho, cujo menu traz o tema e o Sair.
 export default function PerfilDoProfessor() {
   return (
     <TelaDoProfessor atual="perfil">
       <main
-        className={`${CONTEINER} flex max-w-xl flex-1 flex-col gap-6 py-6 md:py-10`}
+        className={`${CONTEINER} flex max-w-6xl flex-1 flex-col gap-4 py-6 md:gap-6 md:py-8`}
       >
-        <h1 className="font-titulo text-4xl text-texto">Perfil</h1>
+        <h1 className="font-titulo text-4xl text-texto">Meu perfil</h1>
 
-        <Suspense fallback={<p>Carregando…</p>}>
-          <DadosDoProfessor />
-        </Suspense>
-
-        <BotaoDoTema comTexto />
-
-        <form action="/auth/sair" method="post">
-          <button type="submit" className={classesDoBotao("secundario")}>
-            Sair
-          </button>
-        </form>
+        <div className="w-full md:w-[18rem]">
+          <Suspense fallback={<p>Carregando…</p>}>
+            <DadosDoProfessor />
+          </Suspense>
+        </div>
       </main>
     </TelaDoProfessor>
   );

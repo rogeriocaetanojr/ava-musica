@@ -15,7 +15,9 @@ import {
   registrarAcesso,
 } from "@/lib/auditoria";
 import { calcularIdade, hojeNoBrasil } from "@/lib/idade";
-import { iniciais, nomeParaExibir } from "@/lib/nomes";
+import { nomeParaExibir } from "@/lib/nomes";
+import { Avatar } from "@/components/avatar";
+import { fotoDe } from "@/lib/fotos";
 import { ordenar } from "@/lib/ordem";
 import { resumoParaProfessor, ultimaAtividade } from "@/lib/painel";
 import { criarClienteAdmin } from "@/lib/supabase/admin";
@@ -89,6 +91,7 @@ async function FichaDoAluno({ params }: { params: Promise<{ id: string }> }) {
     { data: usuario },
     { data: acessos },
     painel,
+    foto,
   ] = await Promise.all([
     supabase
       .from("perfis")
@@ -108,6 +111,7 @@ async function FichaDoAluno({ params }: { params: Promise<{ id: string }> }) {
       .limit(10),
     // Só leitura, para o progresso de cada matrícula.
     dadosDoPainel(id),
+    fotoDe(id),
   ]);
   if (!data) notFound();
 
@@ -154,12 +158,7 @@ async function FichaDoAluno({ params }: { params: Promise<{ id: string }> }) {
         <div className="flex flex-col gap-6">
           <header className={`${cartao} space-y-4`}>
             <div className="flex items-center gap-4">
-              <span
-                aria-hidden="true"
-                className="inline-flex size-16 shrink-0 items-center justify-center rounded-full bg-bordo font-titulo text-xl text-amarelo"
-              >
-                {iniciais(nome)}
-              </span>
+              <Avatar foto={foto} className="size-16 bg-bordo text-amarelo" />
               <div className="min-w-0 space-y-2">
                 <p className="font-titulo text-xl break-all text-texto md:break-words">
                   {nome}
