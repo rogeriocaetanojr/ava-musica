@@ -1,9 +1,12 @@
 name: Manter o Supabase ativo
 
 # O plano gratuito do Supabase pausa o projeto depois de 7 dias sem uso (D2 da
-# auditoria). Uma consulta por semana em cada ambiente conta como uso. A chave
-# anon é pública (vai no navegador); a RLS devolve lista vazia, e basta a
-# consulta chegar ao banco.
+# auditoria). Uma consulta por semana em cada ambiente conta como uso.
+# A chave é a publishable (sb_publishable_...), pública, que vai no navegador:
+# só no cabeçalho apikey, porque ela não é um JWT e não vale como Bearer.
+# As tabelas não são legíveis sem login (a migração inicial tira o acesso da
+# anon), então a consulta é a função eh_professor, que roda um SELECT de
+# verdade no banco e, sem login, sempre responde false, sem expor nada.
 on:
   schedule:
     # Segunda e quinta às 9h de Brasília (12h UTC): duas vezes por semana, para
@@ -28,9 +31,12 @@ jobs:
           SUPABASE_ANON_KEY: ${{ vars.SUPABASE_ANON_KEY }}
         run: |
           test -n "$SUPABASE_URL" || { echo "Falta a variável SUPABASE_URL do environment"; exit 1; }
-          curl --fail --silent --show-error --max-time 30 \
-            "$SUPABASE_URL/rest/v1/cursos?select=id&limit=1" \
+          test -n "$SUPABASE_ANON_KEY" || { echo "Falta a variável SUPABASE_ANON_KEY do environment"; exit 1; }
+          resposta="$(curl --fail-with-body --silent --show-error --max-time 30 \
+            -X POST "$SUPABASE_URL/rest/v1/rpc/eh_professor" \
             -H "apikey: $SUPABASE_ANON_KEY" \
-            -H "Authorization: Bearer $SUPABASE_ANON_KEY"
-          echo
+            -H "Content-Type: application/json" \
+            -d '{}')"
+          echo "Resposta: $resposta"
+          test "$resposta" = "false" || { echo "Resposta inesperada do banco"; exit 1; }
           echo "Banco respondeu."
