@@ -62,7 +62,7 @@ function Coluna({ coluna }: { coluna: ColunaDoCurso }) {
         className="flex min-w-0 flex-col gap-3 self-stretch rounded-3xl border border-linha bg-superficie p-4"
       >
         {cabecalho}
-        <p className="flex flex-1 items-center justify-center py-4 text-center text-sm text-texto-secundario/70">
+        <p className="flex flex-1 items-center justify-center py-4 text-center text-sm text-texto-secundario">
           Nenhum aluno matriculado
         </p>
       </section>

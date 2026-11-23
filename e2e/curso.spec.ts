@@ -87,8 +87,11 @@ test("professor cria curso, módulo e aula com texto e YouTube e publica", async
   await expect(page.getByRole("button", { name: "Despublicar" })).toBeVisible();
 
   // O curso é publicado pelo botão do cabeçalho.
+  // O selo da lista de cursos também diz "Publicado": vale o do cabeçalho.
   await page.getByRole("button", { name: "Publicar", exact: true }).click();
-  await expect(page.getByText("Publicado", { exact: true })).toBeVisible();
+  await expect(
+    page.getByRole("main").getByText("Publicado", { exact: true }),
+  ).toBeVisible();
 
   // Matricula o aluno de teste no curso novo.
   await page.goto("/professor/alunos");

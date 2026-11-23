@@ -101,10 +101,13 @@ test("painel mostra 100% com mais de 1000 registros de progresso", async ({
     }),
   ).toHaveAttribute("aria-valuenow", "100");
 
+  // Na tabela de alunos, quem está em um curso só tem a barra sem o nome do
+  // curso ("Progresso de <aluno>").
   await page.goto("/professor/alunos");
   await expect(
     page.getByRole("progressbar", {
-      name: `Progresso de ${nome} em ${titulo}`,
+      name: `Progresso de ${nome}`,
+      exact: true,
     }),
   ).toHaveAttribute("aria-valuenow", "100");
 });

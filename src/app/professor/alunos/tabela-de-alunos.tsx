@@ -65,8 +65,8 @@ function resumoDosCursos(cursos: LinhaDaTurma["cursos"]): {
   return { texto, percentual };
 }
 
-// Cinza mais apagado para "Sem matrículas".
-const apagado = "text-texto-secundario/70";
+// Cinza secundário (sem opacidade, pelo contraste) para "Sem matrículas".
+const apagado = "text-texto-secundario";
 // Avatar sem foto: todos na mesma cor neutra.
 const AVATAR_NEUTRO = "bg-linha text-texto-secundario";
 
@@ -148,7 +148,7 @@ function NomeEEmail({ linha }: { linha: LinhaDaTurma }) {
           {linha.nome}
         </span>
         <span
-          className="block truncate text-xs text-texto-secundario/80"
+          className="block truncate text-xs text-texto-secundario"
           title={linha.email}
         >
           {linha.email}

@@ -51,7 +51,12 @@ test("aluno que reenvia a ação de publicar aula do professor não publica nada
     const pedido = page.waitForRequest(
       (r) => r.method() === "POST" && !!r.headers()["next-action"],
     );
-    await page.getByRole("button", { name: "Publicar", exact: true }).click();
+    // O cabeçalho tem o Publicar do curso; aqui vale o da linha da aula.
+    await page
+      .getByRole("listitem")
+      .filter({ hasText: `Aula ${sufixo}` })
+      .getByRole("button", { name: "Publicar", exact: true })
+      .click();
     const acao = await pedido;
     await expect.poll(publicada).toBe(true);
     await admin.from("aulas").update({ publicada: false }).eq("id", aula!.id);
