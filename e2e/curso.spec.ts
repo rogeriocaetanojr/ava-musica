@@ -73,7 +73,13 @@ test("professor cria curso, módulo e aula com texto e YouTube e publica", async
   await expect(page.getByText("Rascunho · 2 blocos")).toBeVisible();
 
   await page.getByRole("link", { name: "Voltar ao curso" }).click();
-  await page.getByRole("button", { name: "Publicar", exact: true }).click();
+  // No build de produção, a tela da aula continua no DOM depois de voltar
+  // (com o botão Publicar dela): vale o botão da linha da aula no curso.
+  await page
+    .getByRole("listitem")
+    .filter({ has: page.getByLabel("Título da aula") })
+    .getByRole("button", { name: "Publicar", exact: true })
+    .click();
   await expect(page.getByRole("button", { name: "Despublicar" })).toBeVisible();
 
   await page.getByRole("checkbox", { name: /^Publicado/ }).check();

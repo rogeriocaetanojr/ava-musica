@@ -1,0 +1,30 @@
+# Atualizações semanais das dependências do npm e das ações do GitHub. Cada
+# pull request do Dependabot passa pelo CI (lint, testes, SQL e ponta a ponta).
+# Atenção: o lock que o Dependabot gera pode perder os binários opcionais de
+# plataforma (ver "Armadilhas conhecidas" no REGRAS-DO-PROJETO.md); confira o
+# diff do package-lock.json antes de aceitar.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      timezone: America/Sao_Paulo
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: chore(deps)
+    groups:
+      # Pacotes de desenvolvimento juntos, num pull request só.
+      desenvolvimento:
+        dependency-type: development
+        update-types: [minor, patch]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      timezone: America/Sao_Paulo
+    commit-message:
+      prefix: ci

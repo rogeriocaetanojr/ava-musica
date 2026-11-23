@@ -5,6 +5,11 @@ import { defineConfig, devices } from "@playwright/test";
 const PORTA = 3100;
 const ENDERECO = `http://localhost:${PORTA}`;
 
+// Com E2E_PRODUCAO=1 (o CI usa), os testes rodam contra o build de produção
+// (next build + next start), como o site publicado; sem ela, contra o
+// npm run dev, mais rápido para o dia a dia.
+const PRODUCAO = process.env.E2E_PRODUCAO === "1";
+
 // Testes de ponta a ponta contra o site local e o Supabase local.
 // Uso: npm run test:e2e (o Supabase local precisa estar rodando).
 export default defineConfig({
@@ -29,7 +34,9 @@ export default defineConfig({
     { name: "celular", use: { ...devices["Pixel 7"] } },
   ],
   webServer: {
-    command: `npm run dev -- --port ${PORTA}`,
+    command: PRODUCAO
+      ? `npm run build && npm run start -- --port ${PORTA}`
+      : `npm run dev -- --port ${PORTA}`,
     url: `${ENDERECO}/login`,
     reuseExistingServer: false,
     // Aviso de pedido novo ao professor pela porta SMTP do Mailpit local.
@@ -43,6 +50,6 @@ export default defineConfig({
       // Chave de site de teste da Cloudflare: o captcha aprova sozinho.
       NEXT_PUBLIC_TURNSTILE_SITE_KEY: "1x00000000000000000000AA",
     },
-    timeout: 180_000,
+    timeout: PRODUCAO ? 600_000 : 180_000,
   },
 });

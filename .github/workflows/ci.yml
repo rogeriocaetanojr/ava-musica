@@ -1,8 +1,11 @@
 name: CI
 
+# Roda a cada push na main e em todo pull request (inclusive os do Dependabot),
+# para o código quebrado aparecer antes de chegar à main.
 on:
   push:
     branches: [main]
+  pull_request:
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -10,13 +13,20 @@ concurrency:
 
 jobs:
   app:
-    name: Lint, tipos, testes e build
+    name: Lint, tipos, testes, auditoria e build
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # Valores de exemplo: o build confere que todas existem (src/env.ts).
     env:
       NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:54321
       NEXT_PUBLIC_SUPABASE_ANON_KEY: chave-anon-de-exemplo
       SUPABASE_SERVICE_ROLE_KEY: chave-service-role-de-exemplo
       NEXT_PUBLIC_SITE_URL: http://localhost:3000
+      NEXT_PUBLIC_TURNSTILE_SITE_KEY: 1x00000000000000000000AA
+      SMTP_HOST: 127.0.0.1
+      SMTP_PORT: "54325"
+      SMTP_REMETENTE: Escola de Música <avisos@exemplo.local>
+      EMAIL_PROFESSOR: professor@exemplo.local
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -24,6 +34,9 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
+      # Só as dependências que vão para o site; falha em falha alta ou crítica.
+      - name: Auditoria das dependências
+        run: npm audit --omit=dev --audit-level=high
       - run: npm run format:check
       - run: npm run lint
       - run: npm run typecheck
@@ -33,6 +46,7 @@ jobs:
   banco:
     name: Testes SQL das regras de acesso
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     services:
       postgres:
         image: postgres:17
@@ -63,3 +77,46 @@ jobs:
             psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -q -f "$arquivo"
           done
       - run: npm run test:db
+
+  e2e:
+    name: Ponta a ponta (Playwright, build de produção)
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      # Supabase local no runner (Docker), com as migrações do repositório.
+      # Os serviços que os testes não usam ficam de fora, para subir mais rápido.
+      - name: Supabase local
+        run: npx supabase start -x studio,imgproxy,edge-runtime,logflare,vector,supavisor
+      # O site e o seed leem o endereço e as chaves do Supabase local; o resto
+      # das variáveis vem do playwright.config.ts.
+      - name: Variáveis do Supabase local
+        run: |
+          eval "$(npx supabase status -o env)"
+          {
+            echo "NEXT_PUBLIC_SUPABASE_URL=$API_URL"
+            echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=$ANON_KEY"
+            echo "SUPABASE_SERVICE_ROLE_KEY=$SERVICE_ROLE_KEY"
+          } > .env.local
+      - name: Navegador do Playwright
+        run: npx playwright install --with-deps chromium
+      # O globalSetup recria o banco e roda o seed; o Playwright faz o build de
+      # produção e sobe o next start (E2E_PRODUCAO=1).
+      - name: Testes de ponta a ponta
+        run: npm run test:e2e
+        env:
+          E2E_PRODUCAO: "1"
+      - name: Relatório do Playwright
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: relatorio-playwright
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7

@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
 import { PHASE_PRODUCTION_BUILD } from "next/constants";
+import { validarAmbiente } from "./src/env";
 import { CABECALHOS_DE_SEGURANCA } from "./src/lib/seguranca";
 
 const nextConfig: NextConfig = {
@@ -34,12 +35,9 @@ const nextConfig: NextConfig = {
 };
 
 export default function config(fase: string): NextConfig {
-  // Sem o endereço do site, os convites e links de aceite apontariam para
-  // localhost (ver urlDoSite em src/lib/site.ts).
-  if (fase === PHASE_PRODUCTION_BUILD && !process.env.NEXT_PUBLIC_SITE_URL) {
-    throw new Error(
-      "NEXT_PUBLIC_SITE_URL não está definida. Configure o endereço do site antes do build (ver guias/deploy.md).",
-    );
-  }
+  // No build de produção, todas as variáveis precisam existir (src/env.ts).
+  // Sem o endereço do site, por exemplo, os convites e links de aceite
+  // apontariam para localhost (ver urlDoSite em src/lib/site.ts).
+  if (fase === PHASE_PRODUCTION_BUILD) validarAmbiente();
   return nextConfig;
 }
