@@ -1,0 +1,40 @@
+name: Backup do banco
+
+# D1 da auditoria: backup semanal dos dados de produção (o plano gratuito do
+# Supabase não tem recuperação a um ponto no tempo). O arquivo sai cifrado
+# com BACKUP_SENHA e fica 90 dias nos artefatos desta execução. Como restaurar:
+# guias/backup.md.
+on:
+  schedule:
+    # Domingo às 3h de Brasília (6h UTC).
+    - cron: "0 6 * * 0"
+  workflow_dispatch:
+
+jobs:
+  backup:
+    name: pg_dump da produção
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # Environment sem revisor (o "producao" pede aprovação e travaria o
+    # agendamento), restrito à main em Settings → Environments.
+    environment: producao-leitura
+    steps:
+      - uses: actions/checkout@v4
+      # O pg_dump precisa ser da mesma versão do Postgres do Supabase (17).
+      - name: Cliente do Postgres 17
+        run: |
+          sudo apt-get install -y postgresql-common
+          sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
+          sudo apt-get install -y postgresql-client-17
+          echo "/usr/lib/postgresql/17/bin" >> "$GITHUB_PATH"
+      - name: Backup
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          BACKUP_SENHA: ${{ secrets.BACKUP_SENHA }}
+        run: bash scripts/backup/fazer-backup.sh backup
+      - uses: actions/upload-artifact@v4
+        with:
+          name: backup-${{ github.run_id }}
+          path: backup/
+          retention-days: 90
+          if-no-files-found: error

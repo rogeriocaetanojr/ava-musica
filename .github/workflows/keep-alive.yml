@@ -1,0 +1,36 @@
+name: Manter o Supabase ativo
+
+# O plano gratuito do Supabase pausa o projeto depois de 7 dias sem uso (D2 da
+# auditoria). Uma consulta por semana em cada ambiente conta como uso. A chave
+# anon é pública (vai no navegador); a RLS devolve lista vazia, e basta a
+# consulta chegar ao banco.
+on:
+  schedule:
+    # Segunda e quinta às 9h de Brasília (12h UTC): duas vezes por semana, para
+    # uma falha isolada não deixar passar 7 dias.
+    - cron: "0 12 * * 1,4"
+  workflow_dispatch:
+
+jobs:
+  consultar:
+    name: Consulta em ${{ matrix.ambiente }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    strategy:
+      fail-fast: false
+      matrix:
+        ambiente: [homologacao, producao-leitura]
+    environment: ${{ matrix.ambiente }}
+    steps:
+      - name: Consultar o banco pela API
+        env:
+          SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ vars.SUPABASE_ANON_KEY }}
+        run: |
+          test -n "$SUPABASE_URL" || { echo "Falta a variável SUPABASE_URL do environment"; exit 1; }
+          curl --fail --silent --show-error --max-time 30 \
+            "$SUPABASE_URL/rest/v1/cursos?select=id&limit=1" \
+            -H "apikey: $SUPABASE_ANON_KEY" \
+            -H "Authorization: Bearer $SUPABASE_ANON_KEY"
+          echo
+          echo "Banco respondeu."

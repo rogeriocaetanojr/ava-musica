@@ -11,7 +11,7 @@ Os endereços enviados por e-mail ou copiados pelo professor (o link do convite,
 | Homologação | endereço da versão de teste na Netlify |
 | Produção    | endereço oficial do site               |
 
-Sem ela, o `npm run build` para com o erro "NEXT_PUBLIC_SITE_URL não está definida", para evitar e-mails com links apontando para `localhost`. No computador, ela fica no `.env.local` (`http://localhost:3000`).
+Sem ela, o `npm run build` para com o erro "NEXT_PUBLIC_SITE_URL não está definida", para evitar e-mails com links apontando para `localhost`. O build confere também as outras variáveis obrigatórias (`src/env.ts` e `.env.example`). No computador, ela fica no `.env.local` (`http://localhost:3000`).
 
 ## Senha e confirmação do e-mail
 
@@ -100,3 +100,25 @@ O site manda um e-mail ao professor a cada pedido novo e o convite ao aluno cada
 - o limite de 30 e-mails por hora do Supabase vale para as confirmações de Criar conta; os avisos de pedido e os convites saem pelo site, fora desse limite (os convites têm o limite de 20 por hora do site);
 - com o cadastro aberto, alguém pode criar muitas contas pelo Google ou em Criar conta para gastar a cota. Cada conta gera um e-mail de confirmação e só um aviso, e o aviso só sai depois de a pessoa abrir o link; o captcha, o limite de 30 e-mails por hora e o limite do Supabase de 15 cadastros a cada 5 minutos por IP seguram o ritmo. Se isso acontecer, recuse os pedidos e considere desligar o cadastro por um tempo;
 - acompanhe o uso no painel do Resend. Se passar de 100 por dia, os e-mails do dia param, inclusive as confirmações de conta e os convites.
+
+## Automação no GitHub (migrações, backup, keep-alive)
+
+Os workflows de `.github/workflows` usam três **environments** do repositório (**Settings → Environments**). As chaves ficam só neles, nunca em arquivo:
+
+| Environment        | Proteção                                                  | Segredos (Secrets)                                     | Variáveis (Variables)                               |
+| ------------------ | --------------------------------------------------------- | ------------------------------------------------------ | --------------------------------------------------- |
+| `homologacao`      | só a branch `main`                                        | `SUPABASE_DB_URL` (banco de homologação)               | `SUPABASE_URL` e `SUPABASE_ANON_KEY` da homologação |
+| `producao`         | só a branch `main` e **Required reviewers** (o professor) | `SUPABASE_DB_URL` (banco de produção)                  | —                                                   |
+| `producao-leitura` | só a branch `main`, sem revisor (roda sozinho na agenda)  | `SUPABASE_DB_URL` (banco de produção) e `BACKUP_SENHA` | `SUPABASE_URL` e `SUPABASE_ANON_KEY` da produção    |
+
+O `SUPABASE_DB_URL` é o endereço do **Session pooler** (porta 5432), em **Connect → Connection string** no painel do Supabase, com a senha do banco no lugar de `[YOUR-PASSWORD]`. O endereço direto (`db.<projeto>.supabase.co`) só funciona por IPv6, que os runners do GitHub não têm.
+
+- **Migrações** (`migracoes.yml`): quando o CI passa num push na `main`, aplica as migrações novas na homologação; a produção espera a aprovação de um revisor em **Actions → Migrações do banco → Review deployments**. Antes de aplicar, mostra o que falta (`--dry-run`). Também dá para rodar à mão (**Run workflow**).
+- **Backup** (`backup.yml`): domingo às 3h; veja `guias/backup.md`.
+- **Keep-alive** (`keep-alive.yml`): segunda e quinta às 9h, uma consulta em cada ambiente para o plano gratuito não pausar o projeto (ele pausa depois de 7 dias sem uso).
+- **Contas não confirmadas:** não é workflow. A migração `20261123000000_limpeza_de_contas.sql` agenda no próprio banco (pg_cron), todo dia às 3h, a remoção das contas de Criar conta que ninguém confirmou em 48 horas. Confira em **Integrations → Cron** no painel.
+
+## Monitoramento
+
+- **Uptime:** um monitor HTTP gratuito (UptimeRobot) em `<endereço do site>/login`, a cada 5 minutos, com alerta por e-mail para o professor e para quem cuida do site.
+- **Erros (Sentry):** os erros do servidor vão para o Sentry pelo `src/instrumentation.ts`, sem o SDK, com só o tipo do erro, a mensagem sem e-mail, IP, ids e códigos de link, a pilha e o modelo da rota (`/aulas/[id]`). Não vão endereço completo, cookies, cabeçalhos, usuário nem IP. Na Netlify, defina `SENTRY_DSN` (o DSN do projeto no Sentry) e `SENTRY_AMBIENTE` (`homologacao` ou `producao`) em cada ambiente. No projeto do Sentry, em **Settings → Security & Privacy**, ligue **Prevent Storing of IP Addresses** e **Data Scrubber**, por garantia. Os erros que acontecem só no navegador não são enviados; os da página aparecem pelo servidor, com o mesmo código (`digest`) que a tela de erro mostra no console.

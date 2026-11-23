@@ -50,7 +50,8 @@
 
 - [ ] Contas dos serviços criadas e com acesso de duas pessoas
 - [ ] Banco de dados na nuvem, com ambientes de teste e de uso real
-  - Ligar à mão o **Secure password change** do Auth nos dois projetos da nuvem (Authentication → Sign In / Providers → Email), como no `config.toml`: o `config.toml` vale só para o Supabase local, e sem essa opção a proteção do S6 não existe no site publicado (veja `guias/deploy.md`).
+  - Projetos criados em São Paulo: `ava-staging` (homologação) e `ava-prod` (produção); environments `homologacao`, `producao` (com revisor) e `producao-leitura` cadastrados no GitHub. Falta o primeiro `db push`.
+  - **Secure password change** ligado à mão nos dois projetos (Authentication → Sign In / Providers → Email), como no `config.toml`, que vale só para o Supabase local: é a proteção do S6 no site publicado (veja `guias/deploy.md`).
 - [ ] Chaves e configurações secretas guardadas com segurança
 - [ ] Site publicado na Netlify, com versão de teste e versão oficial
 - [ ] Login com Google e envio de e-mails funcionando de verdade
@@ -58,16 +59,18 @@
   - Ligar na nuvem o captcha (Cloudflare Turnstile) e o hook que barra recusados por 7 dias, nos dois projetos (veja `guias/deploy.md`).
   - A política de privacidade (versão 3-rascunho) cita o Supabase, o Google, a Cloudflare, o Resend e a Netlify e a transferência internacional; confirmar com cada serviço onde os dados ficam e se o contrato tem cláusulas de proteção de dados antes da revisão jurídica.
 - [ ] Verificações automáticas completas a cada mudança no código
-  - O CI já roda em push e pull request, com e2e. Falta o resto do O2 da auditoria: o job de `supabase db push` para homologação e, com aprovação manual, para produção.
+  - O CI roda em push e pull request, com e2e, e o workflow `migracoes.yml` aplica as migrações na homologação e, com aprovação, na produção. Falta cadastrar os environments e os segredos no GitHub (ver `guias/deploy.md`, "Automação no GitHub").
 - [ ] Pull requests do Dependabot: conferir no diff do `package-lock.json` que os binários opcionais de plataforma (`@rolldown/binding-*` e `lightningcss-*`) continuam lá antes de aceitar (ver a armadilha nas regras do projeto)
 - [ ] Publicação automática da versão de teste e promoção para a oficial
-- [ ] Conferir que os dois projetos da nuvem assinam o JWT com chave assimétrica (Project Settings → JWT Keys, ES256 ou RS256), como o Supabase local. Com a chave antiga (HS256), o `getClaims()` do proxy (P1) volta a perguntar ao Auth a cada página: continua correto, só sem a economia
+- [x] Conferir que os dois projetos da nuvem assinam o JWT com chave assimétrica (conferido: ECC P-256 nos dois) (Project Settings → JWT Keys, ES256 ou RS256), como o Supabase local. Com a chave antiga (HS256), o `getClaims()` do proxy (P1) volta a perguntar ao Auth a cada página: continua correto, só sem a economia
 - [ ] Endereço próprio do site
   - Os cabeçalhos de segurança e a CSP já saem do próprio site (S2). Com o endereço próprio, conferir no site publicado que eles chegam iguais e, depois de um tempo no ar sem problemas, avaliar o `preload` do HSTS.
 - [ ] Cópias de segurança do banco de dados
+  - O workflow `backup.yml` e o `guias/backup.md` estão prontos e a restauração foi testada no banco local. Falta cadastrar `SUPABASE_DB_URL` e `BACKUP_SENHA` no environment `producao-leitura` e guardar a `BACKUP_SENHA` fora do GitHub.
 - [ ] Rotinas automáticas do banco
-  - Apagar as contas criadas em Criar conta e nunca confirmadas (ninguém abriu o link de confirmação) depois de 48 horas. Hoje elas só ficam fora da lista do professor e dão lugar ao cadastro feito por ele.
+  - A remoção das contas de Criar conta não confirmadas em 48 horas (D3) é agendada pela própria migração (pg_cron), e o keep-alive (D2) é o workflow `keep-alive.yml`. Falta conferir o agendamento em **Integrations → Cron** de cada projeto depois do primeiro `db push` e cadastrar as variáveis do keep-alive nos environments.
 - [ ] Alertas quando o site cair ou apresentar erros
+  - O envio dos erros do servidor ao Sentry, sem dados pessoais, está pronto (`src/instrumentation.ts`). Falta criar o projeto no Sentry, ligar as opções de privacidade, pôr `SENTRY_DSN` e `SENTRY_AMBIENTE` na Netlify e criar o monitor de uptime (ver `guias/deploy.md`, "Monitoramento").
 - [ ] Cuidados com os dados pessoais no dia a dia, conforme a LGPD
 - [ ] Manual do professor e documentação do projeto
 - [ ] Lançamento com um primeiro grupo de alunos
@@ -139,3 +142,8 @@
 - [x] O4: Dependabot semanal para o npm e para as ações do GitHub, e `npm audit --omit=dev --audit-level=high` no CI
 - [x] O7: `src/env.ts` confere todas as variáveis no build de produção e para dizendo qual falta ou está em formato errado; o `.env.example` diz quais são obrigatórias. O `.env.local` de cada computador precisa ter também as do SMTP (`SMTP_HOST`, `SMTP_PORT`, `SMTP_REMETENTE` e `EMAIL_PROFESSOR`) para o `npm run build` passar
 - [x] Testes de ponta a ponta novos: aluno reenviando a ação de professor (recusada), recados para todos e por curso, convite vencido e com envio duplo, aceite com envio duplo, nova senha com link inválido, janela vencida e envio duplo, axe-core nas telas principais no computador e no celular e title em todo iframe
+- [x] O2 (resto): workflow `migracoes.yml` com `supabase db push` na homologação depois do CI na `main` e na produção só com aprovação (environment `producao` com revisor)
+- [x] D1: backup semanal dos dados com `pg_dump`, cifrado, nos artefatos do GitHub por 90 dias (`backup.yml` e `scripts/backup`); `guias/backup.md` explica a restauração, testada no banco local (mesmas contagens, mesma chave das recusas e login funcionando)
+- [x] D2: keep-alive duas vezes por semana nos dois ambientes (`keep-alive.yml`)
+- [x] D3: as contas de Criar conta não confirmadas em 48 horas são apagadas todo dia às 3h (função `privado.apagar_contas_nao_confirmadas`, agendada pelo pg_cron)
+- [x] O3 (código): erros do servidor para o Sentry sem o SDK e sem dados pessoais (`src/lib/monitoramento.ts`); o monitor de uptime e o projeto do Sentry ficam na Publicação do site
