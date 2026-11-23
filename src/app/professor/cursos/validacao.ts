@@ -13,7 +13,6 @@ export type DadosCurso = {
   instrumento: string;
   nivel: string | null;
   descricao: string | null;
-  capa_url: string | null;
   publicado: boolean;
 };
 
@@ -42,22 +41,14 @@ export function valoresDigitados(formData: FormData): Record<string, string> {
   return valores;
 }
 
-function urlValida(valor: string): boolean {
-  try {
-    const url = new URL(valor);
-    return url.protocol === "https:" || url.protocol === "http:";
-  } catch {
-    return false;
-  }
-}
-
+// A coluna capa_url continua no banco, mas a tela não a usa mais: sem ela
+// aqui, salvar o curso não apaga a capa que já estava gravada.
 export function validarCurso(formData: FormData): Resultado<DadosCurso> {
   const valores = {
     titulo: texto(formData, "titulo"),
     instrumento: texto(formData, "instrumento"),
     nivel: texto(formData, "nivel"),
     descricao: texto(formData, "descricao"),
-    capa_url: texto(formData, "capa_url"),
     publicado: formData.get("publicado") === "on" ? "on" : "",
   };
   const falha = (erro: string) => ({ ok: false as const, erro, valores });
@@ -72,10 +63,6 @@ export function validarCurso(formData: FormData): Resultado<DadosCurso> {
     return falha("Escolha um nível da lista.");
   if (valores.descricao.length > 2000)
     return falha("A descrição pode ter no máximo 2000 caracteres.");
-  if (valores.capa_url && !urlValida(valores.capa_url))
-    return falha(
-      "O endereço da capa precisa ser um link completo, começando com https://.",
-    );
 
   return {
     ok: true,
@@ -84,7 +71,6 @@ export function validarCurso(formData: FormData): Resultado<DadosCurso> {
       instrumento: valores.instrumento,
       nivel: valores.nivel || null,
       descricao: valores.descricao || null,
-      capa_url: valores.capa_url || null,
       publicado: valores.publicado === "on",
     },
   };

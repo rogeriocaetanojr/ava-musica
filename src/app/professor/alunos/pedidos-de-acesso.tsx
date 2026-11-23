@@ -1,11 +1,15 @@
 "use client";
 
-import Link from "next/link";
 import { useActionState, useState } from "react";
 import { Botao } from "@/components/botao";
 import { classesDoCampo } from "@/components/campo";
 import { formatarDataHora } from "@/lib/datas";
-import { ehDataValida, hojeNoBrasil, precisaDeAceite } from "@/lib/idade";
+import {
+  calcularIdade,
+  ehDataValida,
+  hojeNoBrasil,
+  precisaDeAceite,
+} from "@/lib/idade";
 import { liberarPedido, recusarPedido } from "./acoes";
 
 export type Pedido = {
@@ -13,50 +17,47 @@ export type Pedido = {
   nome: string;
   email: string;
   pedido_em: string;
+  // Quase sempre nula: a data de nascimento costuma vir na liberação.
+  data_nascimento?: string | null;
 };
 
 const campo = classesDoCampo();
 const alerta = "rounded-xl bg-bloco p-4 text-sm text-texto-sobre-bloco";
 
-// O aviso fica aqui, fora de cada pedido: depois de liberar ou recusar o
-// pedido sai da lista, mas a confirmação continua na tela. Sem pedidos e sem
-// confirmação, a seção só aparece no celular, dentro do painel de pedidos,
-// com a mensagem de vazio.
+// Conteúdo do painel "Pedidos de acesso". O aviso fica aqui, fora de cada
+// pedido: depois de liberar ou recusar, o pedido sai da lista, mas a
+// confirmação continua na tela.
 export function PedidosDeAcesso({ pedidos }: { pedidos: Pedido[] }) {
   const [aviso, setAviso] = useState("");
-  const vazia = pedidos.length === 0 && !aviso;
 
   return (
-    <section
-      aria-labelledby="pedidos-de-acesso"
-      className={`space-y-4 rounded-3xl border border-amarelo bg-superficie p-5 ${vazia ? "md:hidden" : ""}`}
-    >
-      <h2 id="pedidos-de-acesso" className="font-titulo text-2xl text-texto">
-        Pedidos de acesso
-      </h2>
+    <div className="space-y-3">
       {aviso && (
         <p
           role="status"
-          className="rounded-xl border border-linha bg-fundo p-4 text-sm font-bold text-sucesso"
+          className="rounded-xl border border-linha bg-fundo p-3 text-sm font-bold text-sucesso"
         >
           {aviso}
         </p>
       )}
       {pedidos.length === 0 ? (
-        <p>Nenhum pedido aguardando.</p>
+        <p className="text-texto-secundario">Nenhum pedido aguardando.</p>
       ) : (
-        <ul className="space-y-3">
+        <ul className="divide-y divide-linha rounded-2xl border border-linha">
           {pedidos.map((pedido) => (
-            <li key={pedido.id}>
+            <li key={pedido.id} className="p-3">
               <CartaoDoPedido pedido={pedido} aoResolver={setAviso} />
             </li>
           ))}
         </ul>
       )}
-    </section>
+    </div>
   );
 }
 
+// Linha compacta do pedido: nome, e-mail e data em texto pequeno e os
+// botões Liberar (verde) e Recusar (vermelho), que abrem a
+// confirmação logo abaixo.
 function CartaoDoPedido({
   pedido,
   aoResolver,
@@ -65,59 +66,54 @@ function CartaoDoPedido({
   aoResolver: (aviso: string) => void;
 }) {
   const [abrindo, setAbrindo] = useState<"liberar" | "recusar" | null>(null);
+  const idade = pedido.data_nascimento
+    ? ` · ${calcularIdade(pedido.data_nascimento, hojeNoBrasil())} anos`
+    : "";
 
   return (
-    <div className="space-y-2 rounded-2xl border border-linha bg-fundo p-3">
-      <div className="space-y-0.5">
-        <p className="text-sm font-bold text-texto break-words">
-          {pedido.nome}
-        </p>
-        <p className="text-xs break-all text-texto-secundario">
-          {pedido.email}
-        </p>
-        <p className="text-xs text-texto-secundario">
-          Pediu acesso em {formatarDataHora(pedido.pedido_em)}
-        </p>
+    <div className="space-y-3">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+        <div className="min-w-0 flex-1 basis-48">
+          <p className="font-bold break-words text-texto">{pedido.nome}</p>
+          <p className="text-sm break-all text-texto">{pedido.email}</p>
+          <p className="text-xs text-texto-secundario">
+            Pediu em {formatarDataHora(pedido.pedido_em)}
+            {idade}
+          </p>
+        </div>
+        {abrindo === null && (
+          <div className="flex gap-2">
+            <Botao
+              onClick={() => setAbrindo("liberar")}
+              variante="sucesso"
+              tamanho="pequeno"
+            >
+              Liberar
+            </Botao>
+            <Botao
+              onClick={() => setAbrindo("recusar")}
+              variante="perigo"
+              tamanho="pequeno"
+            >
+              Recusar
+            </Botao>
+          </div>
+        )}
       </div>
-      <Link
-        href={`/professor/alunos/${pedido.id}`}
-        aria-label={`Ver ficha de ${pedido.nome}`}
-        className="inline-flex min-h-12 items-center text-sm font-bold text-destaque underline"
-      >
-        Ver ficha
-      </Link>
 
-      {abrindo === "liberar" ? (
+      {abrindo === "liberar" && (
         <FormularioLiberacao
           pedido={pedido}
           aoCancelar={() => setAbrindo(null)}
           aoResolver={aoResolver}
         />
-      ) : abrindo === "recusar" ? (
+      )}
+      {abrindo === "recusar" && (
         <ConfirmacaoRecusa
           pedido={pedido}
           aoCancelar={() => setAbrindo(null)}
           aoResolver={aoResolver}
         />
-      ) : (
-        <div className="flex gap-2">
-          <Botao
-            onClick={() => setAbrindo("liberar")}
-            variante="secundario"
-            tamanho="pequeno"
-            className="flex-1"
-          >
-            Liberar
-          </Botao>
-          <Botao
-            onClick={() => setAbrindo("recusar")}
-            variante="secundario"
-            tamanho="pequeno"
-            className="flex-1"
-          >
-            Recusar
-          </Botao>
-        </div>
       )}
     </div>
   );
@@ -204,7 +200,12 @@ function FormularioLiberacao({
         </p>
       )}
       <div className="flex flex-wrap gap-2">
-        <Botao type="submit" disabled={enviando} className="sm:w-auto">
+        <Botao
+          type="submit"
+          variante="sucesso"
+          disabled={enviando}
+          className="sm:w-auto"
+        >
           {enviando ? "Salvando…" : "Confirmar liberação"}
         </Botao>
         <Botao
@@ -250,7 +251,12 @@ function ConfirmacaoRecusa({
         </p>
       )}
       <div className="flex flex-wrap gap-2">
-        <Botao type="submit" disabled={enviando} className="sm:w-auto">
+        <Botao
+          type="submit"
+          variante="perigo"
+          disabled={enviando}
+          className="sm:w-auto"
+        >
           {enviando ? "Salvando…" : "Confirmar recusa"}
         </Botao>
         <Botao

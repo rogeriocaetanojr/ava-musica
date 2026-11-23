@@ -1,56 +1,40 @@
 import Link from "next/link";
+import { RodapeInterno } from "@/components/rodape";
 import { CONTEINER } from "@/components/conteiner";
 import { Suspense } from "react";
 import { Aviso } from "@/components/aviso";
-import { BarraProgresso } from "@/components/barra-progresso";
-import { Rodape } from "@/components/rodape";
 import { AbasDoProfessor } from "@/components/abas-do-professor";
 import { classesDoBotao } from "@/components/botao";
 import { CabecalhoDoProfessor } from "@/components/cabecalho-do-professor";
 import { Cordas } from "@/components/cordas";
 import { exigirProfessor } from "@/lib/auth";
-import { dataPorExtenso, quandoFoi } from "@/lib/datas";
+import { atividadeRelativa, dataPorExtenso } from "@/lib/datas";
 import { primeiroNome } from "@/lib/nomes";
-import { Avatar } from "@/components/avatar";
 import { fotosDe } from "@/lib/fotos";
+import { DIAS_SEM_ATIVIDADE } from "./alunos/validacao";
 import {
-  type ContagemDoCurso,
-  type SituacaoDoAluno,
+  type AlunoDaColuna,
+  type ColunaDoCurso,
+  ColunasPorCurso,
+} from "./colunas-por-curso";
+
+import {
   aulasConcluidasNaSemana,
   resumoParaProfessor,
   situacaoDoAluno,
 } from "@/lib/painel";
-import { aulasEmOrdem } from "@/lib/progresso";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 import {
-  type CursoDoPainel,
+  type AlunoDoPainel,
   contagemDe,
   dadosDoPainel,
   situacaoDosAlunos,
 } from "./progresso/dados";
 
-const cartao = "rounded-3xl border border-linha bg-superficie";
-const tituloDeCartao = "font-titulo text-2xl text-texto";
-
-// Cores dos avatares, alternadas pela ordem da lista.
-const AVATARES = [
-  "bg-bordo text-amarelo",
-  "bg-amarelo text-texto-sobre-amarelo",
-  "bg-bloco text-texto-sobre-bloco",
-  "bg-vinho text-amarelo-claro",
-];
-
-const ETIQUETAS: Record<SituacaoDoAluno, { texto: string; classe: string }> = {
-  ativo: { texto: "Ativo", classe: "bg-linha text-destaque" },
-  aguardando: {
-    texto: "Aguardando responsável",
-    classe: "bg-bloco text-texto-sobre-bloco",
-  },
-  bloqueado: { texto: "Bloqueado", classe: "bg-vinho text-sobre-bordo" },
-};
-
 const faixa =
   "flex min-h-12 items-center justify-between gap-3 rounded-2xl bg-bloco px-5 py-3 text-sm font-bold text-texto-sobre-bloco";
+
+const DIA_MS = 24 * 60 * 60 * 1000;
 
 function ErroAoCarregar({ children }: { children: React.ReactNode }) {
   return <Aviso role="alert">{children}</Aviso>;
@@ -71,22 +55,6 @@ function Icone({ caminho }: { caminho: string }) {
       <path d={caminho} />
     </svg>
   );
-}
-
-// "Aula N · hoje": a aula concluída mais recente do aluno no curso (o banco
-// já escolhe a mais recente entre as publicadas), com o número na ordem do
-// curso.
-function ultimaAulaNoCurso(
-  curso: CursoDoPainel,
-  contagem: ContagemDoCurso | undefined,
-): string | null {
-  if (!contagem?.ultima_aula_id || !contagem.ultima_aula_em) return null;
-  const numero =
-    aulasEmOrdem(curso.modulos).findIndex(
-      (a) => a.id === contagem.ultima_aula_id,
-    ) + 1;
-  if (numero === 0) return null;
-  return `Aula ${numero} · ${quandoFoi(contagem.ultima_aula_em)}`;
 }
 
 function Indicador({
@@ -150,6 +118,72 @@ function AcoesDoCelular() {
   );
 }
 
+// Colunas do painel, uma por curso publicado. Fora do componente: usa a
+// hora atual para o selo "Parado".
+function colunasDoPainel(
+  dados: NonNullable<Awaited<ReturnType<typeof dadosDoPainel>>>,
+  estudando: AlunoDoPainel[],
+  fotos: Map<string, string>,
+): ColunaDoCurso[] {
+  const agora = Date.now();
+  return dados.cursos
+    .filter((curso) => curso.publicado)
+    .map((curso) => {
+      // Título de cada aula, para o "Parou em" (ultima_aula_id das contagens).
+      const tituloDaAula = new Map(
+        curso.modulos.flatMap((m) => m.aulas.map((a) => [a.id, a.titulo])),
+      );
+      const alunos: AlunoDaColuna[] = estudando.flatMap((aluno) => {
+        const matricula = aluno.matriculas.find((m) => m.curso_id === curso.id);
+        if (!matricula) return [];
+        const contagem = contagemDe(dados.contagens, aluno.id, curso.id);
+        // Parado: a última aula concluída no curso (ou, sem nenhuma, a
+        // matrícula) passou do limite da Turma.
+        const desde = contagem?.ultima_aula_em ?? matricula.criado_em;
+        const dias = (agora - Date.parse(desde)) / DIA_MS;
+        const resumo = resumoParaProfessor(curso.modulos, contagem);
+        return [
+          {
+            id: aluno.id,
+            nome: aluno.nome,
+            foto: fotos.get(aluno.id) ?? null,
+            percentual: resumo.percentual,
+            concluidas: resumo.concluidas,
+            total: resumo.total,
+            parouEm: contagem?.ultima_aula_id
+              ? (tituloDaAula.get(contagem.ultima_aula_id) ?? null)
+              : null,
+            parado: dias > DIAS_SEM_ATIVIDADE,
+            // Última aula concluída no curso (progresso_por_curso).
+            ultimaAtividade: contagem?.ultima_aula_em ?? null,
+            quando: contagem?.ultima_aula_em
+              ? atividadeRelativa(contagem.ultima_aula_em, new Date(agora))
+              : "",
+          },
+        ];
+      });
+      const media =
+        alunos.length === 0
+          ? null
+          : Math.round(
+              alunos.reduce((soma, x) => soma + x.percentual, 0) /
+                alunos.length,
+            );
+      const ultimaAtividade =
+        alunos
+          .flatMap((x) => (x.ultimaAtividade ? [x.ultimaAtividade] : []))
+          .sort()
+          .at(-1) ?? null;
+      return {
+        id: curso.id,
+        titulo: curso.titulo,
+        alunos,
+        media,
+        ultimaAtividade,
+      };
+    });
+}
+
 async function Resumo() {
   await exigirProfessor();
 
@@ -187,26 +221,14 @@ async function Resumo() {
   const publicados = dados.cursos.filter((c) => c.publicado).length;
   const naSemana = aulasConcluidasNaSemana(dados.contagens);
 
-  const cursoPorId = new Map(dados.cursos.map((c) => [c.id, c]));
-  const fotos = await fotosDe(dados.alunos.map((a) => a.id));
-  const linhas = dados.alunos.flatMap((aluno, indice) => {
-    const cursos = aluno.matriculas
-      .map((m) => cursoPorId.get(m.curso_id))
-      .filter((c) => c !== undefined)
-      .sort((a, b) => a.titulo.localeCompare(b.titulo));
-    const base = {
-      aluno,
-      avatar: AVATARES[indice % AVATARES.length],
-      foto: fotos.get(aluno.id) ?? null,
-      situacao: situacaoDe(aluno.id),
-      variosCursos: cursos.length > 1,
-    };
-    const comCurso: (typeof base & { curso: CursoDoPainel | null })[] =
-      cursos.length === 0
-        ? [{ ...base, curso: null }]
-        : cursos.map((curso) => ({ ...base, curso }));
-    return comCurso;
-  });
+  // Uma coluna por curso publicado, com o progresso de cada aluno naquele
+  // curso, das contagens do banco (progresso_por_curso). Bloqueados ficam de
+  // fora: não estão estudando.
+  const estudando = dados.alunos.filter(
+    (a) => situacaoDe(a.id) !== "bloqueado",
+  );
+  const fotos = await fotosDe(estudando.map((a) => a.id));
+  const colunas = colunasDoPainel(dados, estudando, fotos);
 
   return (
     <>
@@ -271,214 +293,7 @@ async function Resumo() {
         />
       </ul>
 
-      <div className="flex min-w-0 flex-col gap-6">
-        <section
-          aria-labelledby="progresso-dos-alunos-celular"
-          className="md:hidden"
-        >
-          <h2
-            id="progresso-dos-alunos-celular"
-            className="pb-3 text-base font-bold text-destaque"
-          >
-            Progresso dos alunos
-          </h2>
-          {linhas.length === 0 ? (
-            <p className="border-t border-linha pt-3 text-texto-secundario">
-              Nenhum aluno cadastrado ainda.
-            </p>
-          ) : (
-            <ul className="divide-y divide-linha border-t border-linha">
-              {linhas.map(
-                ({ aluno, avatar, foto, situacao, curso, variosCursos }) => {
-                  const resumo = curso
-                    ? resumoParaProfessor(
-                        curso.modulos,
-                        contagemDe(dados.contagens, aluno.id, curso.id),
-                      )
-                    : null;
-                  return (
-                    <li key={`${aluno.id}-${curso?.id ?? "sem-curso"}`}>
-                      <Link
-                        href={`/professor/alunos/${aluno.id}`}
-                        className="flex min-h-12 items-center gap-4 py-3"
-                      >
-                        <Avatar foto={foto} className={`size-12 ${avatar}`} />
-                        <span className="flex min-w-0 flex-1 flex-col gap-1">
-                          <span className="font-bold break-words text-texto">
-                            {aluno.nome}
-                          </span>
-                          {/* Com um curso só, a linha fica como no
-                              protótipo; o curso aparece para diferenciar as
-                              linhas de quem tem vários, e sem matrícula. */}
-                          {(variosCursos || !curso) && (
-                            <span className="text-sm break-words text-texto-secundario">
-                              {curso ? (
-                                <>
-                                  {curso.titulo}
-                                  {!curso.publicado && " (rascunho)"}
-                                </>
-                              ) : (
-                                "Sem matrículas"
-                              )}
-                            </span>
-                          )}
-                          {situacao !== "ativo" ? (
-                            <span
-                              className={`self-start rounded-full px-3 py-1 text-xs font-bold ${ETIQUETAS[situacao].classe}`}
-                            >
-                              {ETIQUETAS[situacao].texto}
-                            </span>
-                          ) : (
-                            curso &&
-                            resumo && (
-                              <BarraProgresso
-                                percentual={resumo.percentual}
-                                rotulo={`Progresso de ${aluno.nome} em ${curso.titulo}`}
-                                cor="bordo"
-                                comTexto={false}
-                              />
-                            )
-                          )}
-                        </span>
-                        {situacao === "ativo" && resumo && (
-                          <span className="shrink-0 font-titulo text-xl text-texto">
-                            {resumo.percentual}%
-                          </span>
-                        )}
-                      </Link>
-                    </li>
-                  );
-                },
-              )}
-            </ul>
-          )}
-        </section>
-
-        <section
-          aria-labelledby="progresso-dos-alunos"
-          className={`${cartao} hidden min-w-0 overflow-hidden md:block`}
-        >
-          <div className="flex flex-wrap items-center justify-between gap-2 px-6 pt-5 pb-2">
-            <h2 id="progresso-dos-alunos" className={tituloDeCartao}>
-              Progresso dos alunos
-            </h2>
-            <Link
-              href="/professor/alunos"
-              className="inline-flex min-h-12 items-center text-sm font-bold text-destaque underline"
-            >
-              Ver todos
-            </Link>
-          </div>
-          {linhas.length === 0 ? (
-            <p className="px-6 pb-6 text-texto-secundario">
-              Nenhum aluno cadastrado ainda.
-            </p>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[46rem] text-left text-sm">
-                <thead className="border-b border-linha text-xs font-bold text-texto-secundario">
-                  <tr>
-                    <th scope="col" className="px-6 py-3">
-                      Aluno
-                    </th>
-                    <th scope="col" className="px-3 py-3">
-                      Curso
-                    </th>
-                    <th scope="col" className="px-3 py-3">
-                      Progresso
-                    </th>
-                    <th scope="col" className="px-3 py-3">
-                      Última aula
-                    </th>
-                    <th scope="col" className="px-6 py-3">
-                      Situação
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-linha">
-                  {linhas.map(({ aluno, avatar, foto, situacao, curso }) => {
-                    const resumo = curso
-                      ? resumoParaProfessor(
-                          curso.modulos,
-                          contagemDe(dados.contagens, aluno.id, curso.id),
-                        )
-                      : null;
-                    const ultima = curso
-                      ? ultimaAulaNoCurso(
-                          curso,
-                          contagemDe(dados.contagens, aluno.id, curso.id),
-                        )
-                      : null;
-                    const etiqueta = ETIQUETAS[situacao];
-                    return (
-                      <tr key={`${aluno.id}-${curso?.id ?? "sem-curso"}`}>
-                        <td className="px-6 py-3">
-                          <Link
-                            href={`/professor/alunos/${aluno.id}`}
-                            className="flex min-h-12 items-center gap-3 font-bold text-texto hover:underline"
-                          >
-                            <Avatar
-                              foto={foto}
-                              className={`size-10 ${avatar}`}
-                            />
-                            <span className="break-words">{aluno.nome}</span>
-                          </Link>
-                        </td>
-                        <td className="px-3 py-3 break-words">
-                          {curso ? (
-                            <>
-                              {curso.titulo}
-                              {!curso.publicado && (
-                                <span className="text-texto-secundario">
-                                  {" "}
-                                  (rascunho)
-                                </span>
-                              )}
-                            </>
-                          ) : (
-                            <span className="text-texto-secundario">
-                              Sem matrículas
-                            </span>
-                          )}
-                        </td>
-                        <td className="px-3 py-3">
-                          {curso && resumo ? (
-                            <div className="flex min-w-36 items-center gap-3">
-                              <div className="flex-1">
-                                <BarraProgresso
-                                  percentual={resumo.percentual}
-                                  rotulo={`Progresso de ${aluno.nome} em ${curso.titulo}`}
-                                  cor="bordo"
-                                  comTexto={false}
-                                />
-                              </div>
-                              <span>{resumo.percentual}%</span>
-                            </div>
-                          ) : (
-                            <span aria-label="Sem progresso">—</span>
-                          )}
-                        </td>
-                        <td className="px-3 py-3">
-                          {ultima ?? (
-                            <span aria-label="Nenhuma aula concluída">—</span>
-                          )}
-                        </td>
-                        <td className="px-6 py-3">
-                          <span
-                            className={`inline-block rounded-full px-3 py-1 text-xs font-bold ${etiqueta.classe}`}
-                          >
-                            {etiqueta.texto}
-                          </span>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </section>
-      </div>
+      <ColunasPorCurso colunas={colunas} />
     </>
   );
 }
@@ -548,7 +363,7 @@ async function Painel() {
           <Resumo />
         </Suspense>
       </main>
-      <Rodape largura="max-w-6xl" />
+      <RodapeInterno />
       <AbasDoProfessor atual="painel" />
     </>
   );

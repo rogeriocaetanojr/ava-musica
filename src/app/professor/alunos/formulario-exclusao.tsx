@@ -48,7 +48,12 @@ export function FormularioExclusao({
           {estado.erro}
         </p>
       )}
-      <Botao type="submit" disabled={!confere || enviando} tamanho="pequeno">
+      <Botao
+        type="submit"
+        variante="perigo"
+        disabled={!confere || enviando}
+        className="sm:w-auto"
+      >
         {enviando ? "Excluindo…" : "Excluir todos os dados"}
       </Botao>
     </form>

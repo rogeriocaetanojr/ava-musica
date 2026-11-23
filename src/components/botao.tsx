@@ -1,6 +1,7 @@
 import type { ComponentProps } from "react";
 
-export type VarianteDoBotao = "primario" | "destaque" | "secundario" | "link";
+export type VarianteDoBotao =
+  "primario" | "destaque" | "secundario" | "sucesso" | "perigo" | "link";
 export type TamanhoDoBotao = "normal" | "pequeno";
 
 const VARIANTES: Record<VarianteDoBotao, string> = {
@@ -8,6 +9,8 @@ const VARIANTES: Record<VarianteDoBotao, string> = {
   destaque: "bg-amarelo text-texto-sobre-amarelo hover:bg-amarelo-claro",
   secundario:
     "border border-linha bg-superficie text-texto hover:border-borda-campo",
+  sucesso: "bg-botao-sucesso text-sobre-sucesso hover:opacity-90",
+  perigo: "bg-botao-perigo text-sobre-perigo hover:opacity-90",
   link: "",
 };
 

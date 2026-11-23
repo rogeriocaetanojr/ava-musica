@@ -18,7 +18,8 @@ export type CursoDoPainel = {
 export type AlunoDoPainel = {
   id: string;
   nome: string;
-  matriculas: { curso_id: string }[];
+  // criado_em: quando foi matriculado (para o selo "Parado" do painel).
+  matriculas: { curso_id: string; criado_em: string }[];
 };
 export type RegistroDoAluno = RegistroDeProgresso;
 
@@ -54,7 +55,7 @@ export async function dadosDoPainel(alunoId?: string) {
 
   let alunos = supabase
     .from("perfis")
-    .select("id, nome, matriculas (curso_id)")
+    .select("id, nome, matriculas (curso_id, criado_em)")
     .eq("papel", "aluno")
     .not("liberado_em", "is", null)
     .order("nome");

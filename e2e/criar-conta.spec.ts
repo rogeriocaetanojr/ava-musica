@@ -15,9 +15,8 @@ function secao(pagina: Page, titulo: string) {
     .filter({ has: pagina.getByRole("heading", { name: titulo }) });
 }
 
-// No celular, os pedidos ficam num painel aberto pelo botão com a quantidade.
-async function abrirPedidos(pagina: Page, projeto: string) {
-  if (projeto !== "celular") return;
+// Os pedidos ficam no painel lateral aberto pelo botão com a quantidade.
+async function abrirPedidos(pagina: Page) {
   await pagina.getByRole("button", { name: /^Pedidos de acesso/ }).click();
 }
 
@@ -83,7 +82,7 @@ test("criar conta, confirmar o e-mail, esperar o professor liberar e entrar com 
   await professor.goto("/professor");
   await professor.getByRole("link", { name: /pedidos? de acesso/ }).click();
   await expect(professor).toHaveURL(/\/professor\/alunos$/);
-  await abrirPedidos(professor, projeto);
+  await abrirPedidos(professor);
   const pedido = pedidos.getByRole("listitem").filter({ hasText: email });
   await expect(pedido.getByText(nome)).toBeVisible();
   await pedido.getByRole("button", { name: "Liberar" }).click();

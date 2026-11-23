@@ -15,7 +15,6 @@ describe("validarCurso", () => {
         instrumento: "Violão",
         nivel: "Iniciante",
         descricao: "Primeiros acordes.",
-        capa_url: "https://exemplo.com/capa.jpg",
         publicado: "on",
       }),
     );
@@ -26,7 +25,6 @@ describe("validarCurso", () => {
         instrumento: "Violão",
         nivel: "Iniciante",
         descricao: "Primeiros acordes.",
-        capa_url: "https://exemplo.com/capa.jpg",
         publicado: true,
       },
     });
@@ -43,7 +41,6 @@ describe("validarCurso", () => {
         instrumento: "Piano",
         nivel: null,
         descricao: null,
-        capa_url: null,
         publicado: false,
       },
     });
@@ -66,16 +63,6 @@ describe("validarCurso", () => {
         formulario({ titulo: "Piano", instrumento: "Piano", nivel: "Mestre" }),
       ),
     ).toMatchObject({ ok: false, erro: "Escolha um nível da lista." });
-  });
-
-  it("recusa capa que não é link http ou https", () => {
-    for (const capa of ["javascript:alert(1)", "capa.jpg"]) {
-      expect(
-        validarCurso(
-          formulario({ titulo: "Piano", instrumento: "Piano", capa_url: capa }),
-        ),
-      ).toMatchObject({ ok: false });
-    }
   });
 
   it("devolve o que foi digitado quando há erro", () => {

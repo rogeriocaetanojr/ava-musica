@@ -3,8 +3,9 @@
 import { useActionState, useId, useState } from "react";
 import { type Bloco, BlocoConteudo } from "@/components/bloco-conteudo";
 import { Botao } from "@/components/botao";
-import { Campo, CampoSelect, CampoTexto } from "@/components/campo";
-import { ehTipoDeBloco, TIPOS_DE_BLOCO, type TipoDeBloco } from "@/lib/embeds";
+import { Campo, CampoTexto } from "@/components/campo";
+import { TIPOS_DE_BLOCO, type TipoDeBloco } from "@/lib/embeds";
+import { ICONES, Icone } from "./icones";
 import type { EstadoFormulario } from "../../cursos/validacao";
 import { NOMES_DOS_TIPOS } from "./validacao";
 
@@ -34,9 +35,6 @@ const DICAS: Record<TipoDeBloco, string> = {
   prova:
     "No Forms, crie uma pergunta de resposta curta “Código do aluno” e gere um link pré-preenchido com CODIGO_DO_ALUNO nela. O código de cada aluno aparece na ficha dele. Links forms.gle abrem sem o código preenchido.",
 };
-
-// Mesmas classes do Campo, que só cobre input: o select e o textarea usam
-// estas.
 
 export function FormularioBloco({
   acao,
@@ -76,21 +74,36 @@ export function FormularioBloco({
 
   return (
     <form action={enviar} className="space-y-4">
-      <CampoSelect
-        id={`${id}-tipo`}
-        rotulo="Tipo"
-        name="tipo"
-        value={tipo}
-        onChange={(e) => {
-          if (ehTipoDeBloco(e.target.value)) setTipo(e.target.value);
-        }}
-      >
-        {TIPOS_DE_BLOCO.map((t) => (
-          <option key={t} value={t}>
-            {NOMES_DOS_TIPOS[t]}
-          </option>
-        ))}
-      </CampoSelect>
+      {/* Tipo escolhido por cards com ícone: rádios de verdade, para o
+          teclado (setas) e o leitor de tela funcionarem como num grupo. */}
+      <fieldset className="space-y-2">
+        <legend className="text-sm font-bold text-texto">Tipo</legend>
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+          {TIPOS_DE_BLOCO.map((t) => (
+            <label
+              key={t}
+              className={`flex min-h-12 cursor-pointer items-center gap-2 rounded-xl border px-3 py-2 text-sm font-bold has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-1 has-[:focus-visible]:outline-texto ${
+                tipo === t
+                  ? "border-destaque bg-bloco text-texto-sobre-bloco"
+                  : "border-linha bg-superficie text-texto hover:border-borda-campo"
+              }`}
+            >
+              <input
+                type="radio"
+                name="tipo"
+                value={t}
+                checked={tipo === t}
+                onChange={() => setTipo(t)}
+                className="sr-only"
+              />
+              <span className="text-destaque">
+                <Icone d={ICONES[t]} />
+              </span>
+              <span className="min-w-0">{NOMES_DOS_TIPOS[t]}</span>
+            </label>
+          ))}
+        </div>
+      </fieldset>
 
       <Campo
         id={`${id}-titulo`}

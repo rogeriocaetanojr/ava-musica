@@ -1,9 +1,9 @@
 import { Suspense } from "react";
+import { RodapeInterno } from "@/components/rodape";
 import { AbasDoAluno } from "@/components/abas-do-aluno";
 import { CabecalhoDoAluno } from "@/components/cabecalho-do-aluno";
 import { CartaoDoPerfil } from "@/components/cartao-do-perfil";
 import { CONTEINER } from "@/components/conteiner";
-import { Rodape } from "@/components/rodape";
 import { exigirAlunoOuProfessor } from "@/lib/auth";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 import {
@@ -110,7 +110,7 @@ export default function Perfil() {
           <PerfilDoAluno />
         </Suspense>
       </div>
-      <Rodape largura="max-w-6xl" />
+      <RodapeInterno />
       <AbasDoAluno atual="perfil" />
     </div>
   );

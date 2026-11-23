@@ -55,3 +55,18 @@ export function quandoFoi(data: string, agora: Date = new Date()): string {
     dateStyle: "short",
   }).format(new Date(data));
 }
+
+// Tempo relativo curto para a última atividade: "agora", "há 25 min",
+// "há 2 h" (nas últimas 24 horas e no mesmo dia) e, depois, como quandoFoi
+// ("ontem", "há 5 dias" ou a data curta).
+export function atividadeRelativa(
+  data: string,
+  agora: Date = new Date(),
+): string {
+  const minutos = Math.floor((agora.getTime() - Date.parse(data)) / 60000);
+  if (minutos < 1) return "agora";
+  if (minutos < 60) return `há ${minutos} min`;
+  const relativo = quandoFoi(data, agora);
+  if (relativo === "hoje") return `há ${Math.floor(minutos / 60)} h`;
+  return relativo;
+}

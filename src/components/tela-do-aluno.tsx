@@ -4,7 +4,11 @@ import {
   CabecalhoDoAluno,
   type SecaoDoAluno,
 } from "@/components/cabecalho-do-aluno";
-import { type FolgaDoRodape, Rodape } from "@/components/rodape";
+import {
+  FolgaDaBarra,
+  type FolgaDoRodape,
+  RodapeInterno,
+} from "@/components/rodape";
 import { exigirAlunoOuProfessor } from "@/lib/auth";
 import { recadosDoAluno } from "@/app/(aluno)/dados";
 
@@ -43,7 +47,8 @@ export function TelaDoAluno({
         <CabecalhoComSessao atual={atual} />
       </Suspense>
       <div className="flex flex-1 flex-col">{children}</div>
-      <Rodape largura="max-w-6xl" folga={folgaDoRodape} />
+      <RodapeInterno />
+      {folgaDoRodape && <FolgaDaBarra folga={folgaDoRodape} />}
       {!semAbas && <AbasDoAluno atual={atual} />}
     </div>
   );

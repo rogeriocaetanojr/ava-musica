@@ -88,6 +88,22 @@ export function MenuDaConta({
               </button>
             </form>
           </li>
+          {/* Política e termos acessíveis de qualquer tela (LGPD), já que o
+              rodapé fica só nas telas públicas. */}
+          <li className="mt-1 flex flex-wrap gap-x-3 border-t border-linha px-4 pt-1">
+            <Link
+              href="/privacidade"
+              className="inline-flex min-h-10 items-center text-xs text-texto-secundario hover:text-texto"
+            >
+              Privacidade
+            </Link>
+            <Link
+              href="/termos"
+              className="inline-flex min-h-10 items-center text-xs text-texto-secundario hover:text-texto"
+            >
+              Termos de uso
+            </Link>
+          </li>
         </ul>
       </div>
     </>

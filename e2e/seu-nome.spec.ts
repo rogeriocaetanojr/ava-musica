@@ -1,4 +1,4 @@
-import { expect, type Page, test } from "@playwright/test";
+import { expect, type Locator, type Page, test } from "@playwright/test";
 import {
   criarContaSemNome,
   entrar,
@@ -13,9 +13,14 @@ function secao(pagina: Page, titulo: string) {
     .filter({ has: pagina.getByRole("heading", { name: titulo }) });
 }
 
-// No celular, os pedidos ficam num painel aberto pelo botão com a quantidade.
-async function abrirPedidos(pagina: Page, projeto: string) {
-  if (projeto !== "celular") return;
+async function liberarPedidoDe(pedido: Locator) {
+  await pedido.getByRole("button", { name: "Liberar" }).click();
+  await pedido.getByLabel("Data de nascimento").fill("2000-01-01");
+  await pedido.getByRole("button", { name: "Confirmar liberação" }).click();
+}
+
+// Os pedidos ficam no painel lateral aberto pelo botão com a quantidade.
+async function abrirPedidos(pagina: Page) {
   await pagina.getByRole("button", { name: /^Pedidos de acesso/ }).click();
 }
 
@@ -70,14 +75,24 @@ test("sem nome, a tela do nome vem antes de tudo e o pedido só chega ao profess
 
   // Agora o pedido aparece, com o nome.
   await professor.reload();
-  await abrirPedidos(professor, projeto);
+  await abrirPedidos(professor);
   const pedido = pedidos.getByRole("listitem").filter({ hasText: email });
   await expect(pedido.getByText(nome)).toBeVisible();
 
-  // Na ficha, aberta pelo pedido, o professor corrige o nome, e a mudança
-  // fica na auditoria.
-  await pedido.getByRole("link", { name: `Ver ficha de ${nome}` }).click();
+  // Pedido não tem ficha: o professor libera pelo painel de pedidos.
+  await liberarPedidoDe(pedido);
+  await expect(
+    professor.getByRole("status").filter({ hasText: "foi liberado" }),
+  ).toBeVisible();
+
+  // Liberado, vira aluno da turma, com ficha: lá o professor corrige o nome,
+  // e a mudança fica na auditoria.
+  await professor.goto("/professor/alunos");
+  await professor.getByRole("link", { name: new RegExp(nome) }).click();
   await expect(professor.getByRole("heading", { name: nome })).toBeVisible();
+  // Editar nome fica no menu "⋯" da ficha e abre o painel lateral.
+  await professor.getByRole("button", { name: "Mais ações" }).click();
+  await professor.getByRole("button", { name: "Editar nome" }).click();
   await professor.getByLabel("Nome completo").fill(nomeCorrigido);
   await professor.getByRole("button", { name: "Salvar nome" }).click();
   await expect(
@@ -88,17 +103,7 @@ test("sem nome, a tela do nome vem antes de tudo e o pedido só chega ao profess
   ).toBeVisible();
   await expect(professor.getByText("Alterou o nome")).toBeVisible();
 
-  // Liberado, o aluno vê o nome no perfil.
-  await professor.goto("/professor/alunos");
-  await abrirPedidos(professor, projeto);
-  const liberar = pedidos.getByRole("listitem").filter({ hasText: email });
-  await liberar.getByRole("button", { name: "Liberar" }).click();
-  await liberar.getByLabel("Data de nascimento").fill("2000-01-01");
-  await liberar.getByRole("button", { name: "Confirmar liberação" }).click();
-  await expect(
-    professor.getByRole("status").filter({ hasText: "foi liberado" }),
-  ).toBeVisible();
-
+  // O aluno vê o nome corrigido no perfil.
   await aluno.goto("/perfil");
   await expect(aluno).toHaveURL(/\/perfil$/);
   await expect(

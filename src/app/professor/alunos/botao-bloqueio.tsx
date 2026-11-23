@@ -1,31 +1,30 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState } from "react";
 import { Botao } from "@/components/botao";
 import { bloquearAluno, desbloquearAluno } from "./acoes";
 
-// Pede uma confirmação antes de bloquear ou desbloquear.
-export function BotaoBloqueio({
+// Conteúdo do painel "Bloquear acesso" (ou "Desbloquear acesso") do menu da
+// ficha: o aviso e o botão de confirmar.
+export function ConfirmacaoBloqueio({
   alunoId,
   nome,
   bloqueado,
+  aoCancelar,
 }: {
   alunoId: string;
   nome: string;
   bloqueado: boolean;
+  aoCancelar: () => void;
 }) {
-  const [confirmando, setConfirmando] = useState(false);
-  const [estado, enviar, enviando] = useActionState(async () => {
-    const resultado = await (bloqueado ? desbloquearAluno : bloquearAluno)(
-      alunoId,
-    );
-    setConfirmando(false);
-    return resultado;
-  }, {});
+  const [estado, enviar, enviando] = useActionState(
+    () => (bloqueado ? desbloquearAluno : bloquearAluno)(alunoId),
+    {},
+  );
   const acao = bloqueado ? "Desbloquear acesso" : "Bloquear acesso";
 
   return (
-    <form action={enviar} className="space-y-3">
+    <form action={enviar} className="space-y-4">
       <p className="text-sm text-texto-secundario">
         {bloqueado ? (
           <>
@@ -48,41 +47,32 @@ export function BotaoBloqueio({
           {estado.erro}
         </p>
       )}
-      {estado.sucesso && (
+      {estado.sucesso ? (
         <p
           role="status"
-          className="rounded-xl bg-linha p-4 text-sm text-sucesso"
+          className="rounded-xl bg-bloco-sucesso p-4 text-sm text-texto-sobre-bloco-sucesso"
         >
           {estado.sucesso}
         </p>
-      )}
-      {confirmando ? (
+      ) : (
         <div className="flex flex-wrap gap-2">
           <Botao
             type="submit"
             disabled={enviando}
-            tamanho="pequeno"
-            variante={bloqueado ? "secundario" : "primario"}
+            variante={bloqueado ? "sucesso" : "perigo"}
+            className="sm:w-auto"
           >
             {enviando ? "Salvando…" : `Confirmar: ${acao.toLowerCase()}`}
           </Botao>
           <Botao
             disabled={enviando}
-            onClick={() => setConfirmando(false)}
+            onClick={aoCancelar}
             variante="secundario"
-            tamanho="pequeno"
+            className="sm:w-auto"
           >
             Cancelar
           </Botao>
         </div>
-      ) : (
-        <Botao
-          onClick={() => setConfirmando(true)}
-          variante="secundario"
-          tamanho="pequeno"
-        >
-          {acao}
-        </Botao>
       )}
     </form>
   );

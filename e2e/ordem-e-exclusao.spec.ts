@@ -235,6 +235,8 @@ test("excluir aula, módulo e curso pede confirmação com o que vai junto e gra
     mensagem = d.message();
     void d.accept();
   });
+  // O Excluir curso fica no painel do Editar curso.
+  await page.getByRole("button", { name: "Editar curso" }).click();
   await page.getByRole("button", { name: "Excluir curso" }).click();
   await expect(page).toHaveURL(/\/professor\/cursos$/);
   expect(mensagem).toBe(

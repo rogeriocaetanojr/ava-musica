@@ -11,7 +11,7 @@ import { type Direcao, ordenar } from "@/lib/ordem";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 import { BotaoRemover } from "../../aulas/[id]/botao-remover";
 import { type ResumoDaExclusao, textoDaExclusao } from "../exclusao";
-import { FormularioCurso } from "../formulario-curso";
+import { PainelDoCurso } from "../painel-do-curso";
 import { ehUuid } from "../validacao";
 import {
   criarAula,
@@ -20,6 +20,7 @@ import {
   excluirAula,
   excluirCurso,
   excluirModulo,
+  publicarCurso,
   moverAula,
   moverModulo,
   publicarAula,
@@ -32,7 +33,8 @@ import {
   TituloEditavel,
 } from "./edicao-do-titulo";
 import { FormularioTitulo } from "./formulario-titulo";
-import { Recolhivel } from "./recolhivel";
+import { PainelDeTitulo } from "./painel-de-titulo";
+import { classesDoBotao } from "@/components/botao";
 
 type Aula = { id: string; titulo: string; ordem: number; publicada: boolean };
 type Modulo = { id: string; titulo: string; ordem: number; aulas: Aula[] };
@@ -42,7 +44,6 @@ type Curso = {
   instrumento: string;
   nivel: string | null;
   descricao: string | null;
-  capa_url: string | null;
   publicado: boolean;
   modulos: Modulo[];
 };
@@ -53,10 +54,6 @@ const botaoPequeno =
 // Botões de ordem: quadrados de 48 px só com o ícone; desativados, mantêm o
 // tamanho e ficam apagados.
 const botaoDeIcone = `${botaoPequeno} size-12 justify-center px-0 disabled:cursor-not-allowed disabled:bg-fundo disabled:text-borda-campo/50`;
-
-// Largura de editar, subir e descer lado a lado, para o botão Adicionar
-// alinhar com essa coluna.
-const LARGURA_DA_COLUNA = "md:w-40";
 
 const tituloDeSecao = "font-titulo text-2xl text-texto";
 
@@ -148,28 +145,28 @@ function ItemAula({
   resumos: Resumos;
 }) {
   return (
-    <li className="space-y-3 border-t border-linha py-3 first:border-t-0">
+    <li className="border-t border-linha py-2 first:border-t-0">
       <EdicaoDoTitulo>
-        <TituloEditavel
-          titulo={aula.titulo}
-          classeDoTitulo="font-bold text-texto"
-          quebraLinha
-          extra={
-            <Etiqueta
-              publicado={aula.publicada}
-              texto={aula.publicada ? "Publicada" : "Rascunho"}
+        <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
+          <TituloEditavel
+            titulo={aula.titulo}
+            classeDoTitulo="font-bold text-texto"
+            quebraLinha
+            extra={
+              <Etiqueta
+                publicado={aula.publicada}
+                texto={aula.publicada ? "Publicada" : "Rascunho"}
+              />
+            }
+          >
+            <FormularioTitulo
+              acao={renomearAula.bind(null, aula.id)}
+              rotulo="Título da aula"
+              textoDoBotao="Salvar"
+              inicial={aula.titulo}
             />
-          }
-        >
-          <FormularioTitulo
-            acao={renomearAula.bind(null, aula.id)}
-            rotulo="Título da aula"
-            textoDoBotao="Salvar"
-            inicial={aula.titulo}
-          />
-        </TituloEditavel>
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="contents">
+          </TituloEditavel>
+          <div className="flex flex-wrap items-center gap-2 lg:shrink-0 lg:justify-end">
             <FormularioDeAcao
               acao={publicarAula.bind(null, aula.id, !aula.publicada)}
             >
@@ -181,29 +178,31 @@ function ItemAula({
               Conteúdo
             </Link>
             <BotaoEditar nome={`a aula ${aula.titulo}`} />
+            <BotoesDeOrdem
+              mover={moverAula.bind(null, aula.id)}
+              primeiro={primeira}
+              ultimo={ultima}
+              nome={`a aula ${aula.titulo}`}
+            />
+            <BotaoRemover
+              remover={excluirAula.bind(null, aula.id)}
+              nome={`a aula ${aula.titulo}`}
+              className={botaoDeIcone}
+              confirmar={textoDaExclusao(
+                "aula",
+                aula.titulo,
+                resumos.get(aula.id),
+              )}
+            />
           </div>
-          <BotoesDeOrdem
-            mover={moverAula.bind(null, aula.id)}
-            primeiro={primeira}
-            ultimo={ultima}
-            nome={`a aula ${aula.titulo}`}
-          />
-          <BotaoRemover
-            remover={excluirAula.bind(null, aula.id)}
-            nome={`a aula ${aula.titulo}`}
-            className={botaoDeIcone}
-            confirmar={textoDaExclusao(
-              "aula",
-              aula.titulo,
-              resumos.get(aula.id),
-            )}
-          />
         </div>
       </EdicaoDoTitulo>
     </li>
   );
 }
 
+// Bloco compacto do módulo: o título com as setas de ordem, editar e excluir
+// à direita; embaixo, as aulas em linhas e o botão Nova aula.
 function ItemModulo({
   modulo,
   posicao,
@@ -220,51 +219,18 @@ function ItemModulo({
   const aulas = ordenar(modulo.aulas);
 
   return (
-    <li className="space-y-2 rounded-2xl border border-linha bg-superficie px-4 py-2 md:space-y-4 md:rounded-3xl md:p-6 lg:rounded-none lg:border-x-0 lg:border-t-0 lg:bg-transparent lg:p-0 lg:py-6 lg:first:pt-0 lg:last:border-b-0 lg:last:pb-0">
-      <Recolhivel
-        abertoNoInicio={posicao === 1}
-        classeDoConteudo="space-y-4 pb-2 md:pb-0"
-        cabecalho={
-          <>
-            <span className="block text-sm font-bold text-destaque">
+    <li className="space-y-3 rounded-2xl border border-linha bg-fundo p-4">
+      <EdicaoDoTitulo>
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+          <div className="min-w-0 flex-1 space-y-0.5">
+            <h3 className="text-sm font-bold text-destaque">
               Módulo {posicao} · {aulas.length}{" "}
               {aulas.length === 1 ? "aula" : "aulas"}
-            </span>
-            <span className="block font-titulo text-xl break-words text-texto">
-              {modulo.titulo}
-            </span>
-          </>
-        }
-      >
-        <EdicaoDoTitulo>
-          <div className="space-y-2 md:flex md:items-center md:gap-2 md:space-y-0">
-            <div className="flex items-center justify-end gap-2 md:contents">
-              <h3 className="order-first mr-2 shrink-0 text-sm font-bold text-destaque max-md:hidden">
-                Módulo {posicao}
-              </h3>
-              <div className="flex gap-2 md:order-last">
-                <BotaoEditar nome={`o módulo ${modulo.titulo}`} />
-                <BotoesDeOrdem
-                  mover={moverModulo.bind(null, modulo.id)}
-                  primeiro={primeiro}
-                  ultimo={ultimo}
-                  nome={`o módulo ${modulo.titulo}`}
-                />
-                <BotaoRemover
-                  remover={excluirModulo.bind(null, modulo.id)}
-                  nome={`o módulo ${modulo.titulo}`}
-                  className={botaoDeIcone}
-                  confirmar={textoDaExclusao(
-                    "modulo",
-                    modulo.titulo,
-                    resumos.get(modulo.id),
-                  )}
-                />
-              </div>
-            </div>
+            </h3>
             <TituloEditavel
               titulo={modulo.titulo}
-              classeDoTitulo="font-titulo text-xl text-texto max-md:hidden"
+              classeDoTitulo="font-titulo text-xl text-texto"
+              quebraLinha
             >
               <FormularioTitulo
                 acao={renomearModulo.bind(null, modulo.id)}
@@ -274,35 +240,56 @@ function ItemModulo({
               />
             </TituloEditavel>
           </div>
-        </EdicaoDoTitulo>
-
-        {aulas.length === 0 ? (
-          <p className="text-sm text-texto-secundario">
-            Nenhuma aula neste módulo.
-          </p>
-        ) : (
-          <ol>
-            {aulas.map((aula, indice) => (
-              <ItemAula
-                key={aula.id}
-                aula={aula}
-                primeira={indice === 0}
-                ultima={indice === aulas.length - 1}
-                resumos={resumos}
-              />
-            ))}
-          </ol>
-        )}
-
-        <div className="border-t border-linha pt-4">
-          <FormularioTitulo
-            acao={criarAula.bind(null, modulo.id)}
-            rotulo="Nova aula"
-            textoDoBotao="Adicionar"
-            classeDoBotao={LARGURA_DA_COLUNA}
-          />
+          <div className="flex shrink-0 gap-2">
+            <BotoesDeOrdem
+              mover={moverModulo.bind(null, modulo.id)}
+              primeiro={primeiro}
+              ultimo={ultimo}
+              nome={`o módulo ${modulo.titulo}`}
+            />
+            <BotaoEditar nome={`o módulo ${modulo.titulo}`} />
+            <BotaoRemover
+              remover={excluirModulo.bind(null, modulo.id)}
+              nome={`o módulo ${modulo.titulo}`}
+              className={botaoDeIcone}
+              confirmar={textoDaExclusao(
+                "modulo",
+                modulo.titulo,
+                resumos.get(modulo.id),
+              )}
+            />
+          </div>
         </div>
-      </Recolhivel>
+      </EdicaoDoTitulo>
+
+      {aulas.length === 0 ? (
+        <p className="text-sm text-texto-secundario">
+          Nenhuma aula neste módulo.
+        </p>
+      ) : (
+        <ol className="rounded-xl border border-linha bg-superficie px-3">
+          {aulas.map((aula, indice) => (
+            <ItemAula
+              key={aula.id}
+              aula={aula}
+              primeira={indice === 0}
+              ultima={indice === aulas.length - 1}
+              resumos={resumos}
+            />
+          ))}
+        </ol>
+      )}
+
+      <PainelDeTitulo
+        rotulo="Nova aula"
+        titulo="Nova aula"
+        rotuloDoCampo="Título da nova aula"
+        rotuloAcessivel={`Nova aula no módulo ${modulo.titulo}`}
+        acao={criarAula.bind(null, modulo.id)}
+        variante="secundario"
+        tamanho="pequeno"
+        classeDoBotao=""
+      />
     </li>
   );
 }
@@ -316,7 +303,7 @@ async function EditorDoCurso({ params }: { params: Promise<{ id: string }> }) {
   const { data } = await supabase
     .from("cursos")
     .select(
-      "id, titulo, instrumento, nivel, descricao, capa_url, publicado, modulos (id, titulo, ordem, aulas (id, titulo, ordem, publicada))",
+      "id, titulo, instrumento, nivel, descricao, publicado, modulos (id, titulo, ordem, aulas (id, titulo, ordem, publicada))",
     )
     .eq("id", id)
     .maybeSingle();
@@ -336,29 +323,36 @@ async function EditorDoCurso({ params }: { params: Promise<{ id: string }> }) {
 
   return (
     <>
+      {/* Cabeçalho: título, selo e as ações do curso. Os dados abrem no
+          mesmo painel lateral do Novo curso, já preenchido. */}
       <LinhaDeVoltar href="/professor/cursos" rotulo="Voltar para Cursos">
-        <div className="md:flex md:flex-wrap md:items-center md:gap-3">
-          <h1 className="font-titulo text-3xl break-words text-texto md:text-5xl">
-            {curso.titulo}
-          </h1>
-          <span className="mt-1 inline-block md:mt-0 md:inline">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="flex flex-wrap items-center gap-3">
+            <h1 className="font-titulo text-3xl break-words text-texto md:text-5xl">
+              {curso.titulo}
+            </h1>
             <Etiqueta
               publicado={curso.publicado}
               texto={curso.publicado ? "Publicado" : "Rascunho"}
             />
-          </span>
-        </div>
-      </LinhaDeVoltar>
-
-      <div className="flex flex-col gap-6 md:gap-8 lg:grid lg:grid-cols-12 lg:items-start lg:gap-6">
-        <section className="space-y-4 rounded-3xl border border-linha bg-superficie px-4 py-2 md:max-w-3xl md:p-6 lg:sticky lg:top-6 lg:col-span-5 lg:max-w-none">
-          <h2 className={`${tituloDeSecao} max-md:sr-only`}>Dados do curso</h2>
-          <Recolhivel
-            abertoNoInicio
-            classeDoConteudo="pb-3 md:pb-0"
-            cabecalho={<span className={tituloDeSecao}>Dados do curso</span>}
-          >
-            <FormularioCurso
+          </div>
+          <div className="flex flex-col gap-3 sm:flex-row md:shrink-0">
+            <FormularioDeAcao
+              acao={publicarCurso.bind(null, curso.id, !curso.publicado)}
+            >
+              <button
+                type="submit"
+                className={classesDoBotao(
+                  curso.publicado ? "secundario" : "destaque",
+                  "sm:w-auto",
+                )}
+              >
+                {curso.publicado ? "Despublicar" : "Publicar"}
+              </button>
+            </FormularioDeAcao>
+            <PainelDoCurso
+              rotulo="Editar curso"
+              variante="secundario"
               acao={editarCurso.bind(null, curso.id)}
               textoDoBotao="Salvar curso"
               inicial={{
@@ -366,55 +360,71 @@ async function EditorDoCurso({ params }: { params: Promise<{ id: string }> }) {
                 instrumento: curso.instrumento,
                 nivel: curso.nivel ?? "",
                 descricao: curso.descricao ?? "",
-                capa_url: curso.capa_url ?? "",
                 publicado: curso.publicado ? "on" : "",
               }}
-            />
-            <div className="mt-6 border-t border-linha pt-4">
-              <FormularioDeAcao
-                acao={excluirCurso.bind(null, curso.id)}
-                confirmar={textoDaExclusao(
-                  "curso",
-                  curso.titulo,
-                  resumos.get(curso.id),
-                )}
-              >
-                <button type="submit" className={botaoPequeno}>
-                  Excluir curso
-                </button>
-              </FormularioDeAcao>
-            </div>
-          </Recolhivel>
-        </section>
-
-        <section className="space-y-4 md:space-y-6 lg:col-span-7 lg:rounded-3xl lg:border lg:border-linha lg:bg-superficie lg:p-6">
-          <h2 className={tituloDeSecao}>Módulos e aulas</h2>
-          {modulos.length === 0 ? (
-            <p>Nenhum módulo criado ainda.</p>
-          ) : (
-            <ol className="space-y-3 md:space-y-6 lg:space-y-0">
-              {modulos.map((modulo, indice) => (
-                <ItemModulo
-                  key={modulo.id}
-                  modulo={modulo}
-                  posicao={indice + 1}
-                  primeiro={indice === 0}
-                  ultimo={indice === modulos.length - 1}
-                  resumos={resumos}
-                />
-              ))}
-            </ol>
-          )}
-          <div className="rounded-2xl border border-dashed border-borda-campo p-4 md:max-w-3xl md:rounded-3xl md:p-6 lg:max-w-none lg:rounded-none lg:border-x-0 lg:border-b-0 lg:border-solid lg:border-linha lg:px-0 lg:pb-0">
-            <FormularioTitulo
-              acao={criarModulo.bind(null, curso.id)}
-              rotulo="Novo módulo"
-              textoDoBotao="Adicionar"
-              classeDoBotao={LARGURA_DA_COLUNA}
+              extra={
+                <FormularioDeAcao
+                  acao={excluirCurso.bind(null, curso.id)}
+                  confirmar={textoDaExclusao(
+                    "curso",
+                    curso.titulo,
+                    resumos.get(curso.id),
+                  )}
+                >
+                  <button type="submit" className={botaoPequeno}>
+                    Excluir curso
+                  </button>
+                </FormularioDeAcao>
+              }
             />
           </div>
-        </section>
-      </div>
+        </div>
+      </LinhaDeVoltar>
+
+      <section
+        aria-labelledby="modulos-e-aulas"
+        className="space-y-4 rounded-3xl border border-linha bg-superficie p-4 md:p-6"
+      >
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 id="modulos-e-aulas" className={tituloDeSecao}>
+            Módulos e aulas
+          </h2>
+          {modulos.length > 0 && (
+            <PainelDeTitulo
+              rotulo="Novo módulo"
+              titulo="Novo módulo"
+              rotuloDoCampo="Título do novo módulo"
+              acao={criarModulo.bind(null, curso.id)}
+              tamanho="pequeno"
+              classeDoBotao=""
+            />
+          )}
+        </div>
+        {modulos.length === 0 ? (
+          <div className="flex flex-col items-center gap-4 rounded-2xl border border-dashed border-borda-campo px-4 py-10 text-center">
+            <p className="text-lg font-bold text-texto">Nenhum módulo ainda</p>
+            <PainelDeTitulo
+              rotulo="Criar primeiro módulo"
+              titulo="Novo módulo"
+              rotuloDoCampo="Título do novo módulo"
+              acao={criarModulo.bind(null, curso.id)}
+            />
+          </div>
+        ) : (
+          <ol className="space-y-3">
+            {modulos.map((modulo, indice) => (
+              <ItemModulo
+                key={modulo.id}
+                modulo={modulo}
+                posicao={indice + 1}
+                primeiro={indice === 0}
+                ultimo={indice === modulos.length - 1}
+                resumos={resumos}
+              />
+            ))}
+          </ol>
+        )}
+      </section>
     </>
   );
 }
@@ -427,7 +437,7 @@ export default function EditarCurso({
   return (
     <TelaDoProfessor atual="cursos">
       <main
-        className={`${CONTEINER} flex max-w-2xl flex-1 flex-col gap-6 py-6 md:gap-8 md:py-10`}
+        className={`${CONTEINER} flex max-w-6xl flex-1 flex-col gap-6 py-6 md:gap-8 md:py-10`}
       >
         <Suspense fallback={<p>Carregando…</p>}>
           <EditorDoCurso params={params} />

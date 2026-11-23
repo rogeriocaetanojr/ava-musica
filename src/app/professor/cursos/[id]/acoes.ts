@@ -159,6 +159,30 @@ export async function renomearAula(
   return { sucesso: "Salvo." };
 }
 
+// Botão do cabeçalho da página do curso: publica ou despublica só o curso.
+export async function publicarCurso(
+  cursoId: string,
+  publicado: boolean,
+): Promise<ResultadoDaAcao> {
+  await exigirProfessor();
+  if (!ehUuid(cursoId) || typeof publicado !== "boolean")
+    return { erro: ERRO_ID };
+
+  const supabase = await criarClienteServidor();
+  const { error } = await supabase
+    .from("cursos")
+    .update({ publicado })
+    .eq("id", cursoId);
+  if (error)
+    return {
+      erro: publicado
+        ? "Não foi possível publicar o curso. Tente de novo."
+        : "Não foi possível despublicar o curso. Tente de novo.",
+    };
+  atualizarTelas();
+  return {};
+}
+
 export async function publicarAula(
   aulaId: string,
   publicada: boolean,

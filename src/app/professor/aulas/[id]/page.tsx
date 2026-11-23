@@ -1,29 +1,24 @@
 import Link from "next/link";
-import { TelaDoProfessor } from "@/components/tela-do-professor";
-import { LinhaDeVoltar } from "@/components/linha-de-voltar";
-import { classesDoBotao } from "@/components/botao";
-import { CONTEINER } from "@/components/conteiner";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import type { Bloco } from "@/components/bloco-conteudo";
+import { classesDoBotao } from "@/components/botao";
+import { CONTEINER } from "@/components/conteiner";
+import { FormularioDeAcao } from "@/components/formulario-de-acao";
+import { LinhaDeVoltar } from "@/components/linha-de-voltar";
+import { TelaDoProfessor } from "@/components/tela-do-professor";
+import type { ResultadoDaAcao } from "@/lib/acoes";
 import { exigirProfessor } from "@/lib/auth";
-import { codigoDoAluno, type TipoDeBloco } from "@/lib/embeds";
+import { codigoDoAluno } from "@/lib/embeds";
 import { type Direcao, ordenar } from "@/lib/ordem";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 import { publicarAula, renomearAula } from "../../cursos/[id]/acoes";
-import {
-  AoEditar,
-  BotaoEditar,
-  EdicaoDoTitulo,
-} from "../../cursos/[id]/edicao-do-titulo";
+import { PainelDeTitulo } from "../../cursos/[id]/painel-de-titulo";
 import { ehUuid } from "../../cursos/validacao";
 import { criarBloco, editarBloco, moverBloco, removerBloco } from "./acoes";
 import { BotaoRemover } from "./botao-remover";
-import { FormularioDeAcao } from "@/components/formulario-de-acao";
-import type { ResultadoDaAcao } from "@/lib/acoes";
-import { FormularioBloco } from "./formulario-bloco";
-import { NovoBloco } from "./novo-bloco";
-import { FormularioDados } from "./formulario-dados";
+import { Icone, IconeDoTipo } from "./icones";
+import { PainelDoBloco } from "./painel-do-bloco";
 import { NOMES_DOS_TIPOS } from "./validacao";
 
 type Conteudo = Bloco & { id: string; ordem: number };
@@ -40,44 +35,7 @@ type Aula = {
 const botaoDeIcone =
   "grid size-12 shrink-0 place-items-center rounded-xl border border-linha bg-superficie text-texto hover:border-borda-campo disabled:cursor-not-allowed disabled:bg-fundo disabled:text-borda-campo/50";
 
-const tituloDeSecao = "font-titulo text-2xl text-texto";
-const cartao = "rounded-3xl border border-linha bg-superficie p-4 md:p-6";
-
-// Ícone de cada tipo, no traço dos materiais da aula do aluno.
-const ICONES: Record<TipoDeBloco, string> = {
-  texto: "M5 6h14M5 10h14M5 14h10M5 18h7",
-  youtube: "M3 6h18v12H3zM10 9l5 3-5 3z",
-  drive: "M14 3H6v18h12V7zM14 3v4h4",
-  audio:
-    "M9 18V5l11-2v13M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM20 16a3 3 0 1 1-6 0 3 3 0 0 1 6 0z",
-  link: "M14 4h6v6M20 4l-9 9M18 14v6H4V6h6",
-  prova: "M4 4h16v16H4zM8 12l3 3 5-6",
-};
-
-function Icone({ d, classe = "size-5" }: { d: string; classe?: string }) {
-  return (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={classe}
-    >
-      <path d={d} />
-    </svg>
-  );
-}
-
-function IconeDoTipo({ tipo }: { tipo: TipoDeBloco }) {
-  return (
-    <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-bloco text-destaque">
-      <Icone d={ICONES[tipo]} classe="size-6" />
-    </span>
-  );
-}
+const LAPIS = "M4 20h4L19 9l-4-4L4 16v4z M13.5 6.5l4 4";
 
 function Etiqueta({ publicada }: { publicada: boolean }) {
   return (
@@ -93,6 +51,13 @@ function Etiqueta({ publicada }: { publicada: boolean }) {
 
 function nomeDoBloco(bloco: Bloco): string {
   return bloco.titulo || NOMES_DOS_TIPOS[bloco.tipo];
+}
+
+// Resumo de uma linha: o começo do texto ou o link do material.
+function resumoDoBloco(bloco: Bloco): string {
+  if (bloco.tipo === "texto")
+    return (bloco.texto ?? "").replace(/\s+/g, " ").trim();
+  return bloco.url ?? "";
 }
 
 function BotoesDeOrdem({
@@ -132,24 +97,8 @@ function BotoesDeOrdem({
   );
 }
 
-// Prévia curta: o começo do texto ou o link do material.
-function Previa({ bloco }: { bloco: Bloco }) {
-  if (bloco.tipo === "texto")
-    return (
-      <p className="line-clamp-3 whitespace-pre-line text-texto-secundario">
-        {bloco.texto}
-      </p>
-    );
-  return (
-    <p
-      className="truncate text-sm text-texto-secundario"
-      title={bloco.url ?? ""}
-    >
-      {bloco.url}
-    </p>
-  );
-}
-
+// Card compacto do bloco: ícone do tipo, título e resumo de uma linha; à
+// direita, as setas de ordem, editar (painel lateral) e excluir.
 function ItemBloco({
   bloco,
   posicao,
@@ -164,47 +113,50 @@ function ItemBloco({
   codigo: string;
 }) {
   const nome = `o bloco ${posicao}, ${nomeDoBloco(bloco)}`;
+  const resumo = resumoDoBloco(bloco);
 
   return (
-    <li className={`space-y-4 ${cartao}`}>
-      <EdicaoDoTitulo>
-        <div className="flex flex-wrap items-start gap-4">
-          <IconeDoTipo tipo={bloco.tipo} />
-          <div className="min-w-0 flex-1 basis-48">
-            <p className="text-sm font-bold text-destaque">
-              {posicao}. {NOMES_DOS_TIPOS[bloco.tipo]}
-            </p>
-            <p className="font-bold break-words text-texto">
-              {nomeDoBloco(bloco)}
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <BotaoEditar nome={nome} />
-            <BotoesDeOrdem
-              mover={moverBloco.bind(null, bloco.id)}
-              primeiro={primeiro}
-              ultimo={ultimo}
-              nome={nome}
-            />
-            <BotaoRemover
-              remover={removerBloco.bind(null, bloco.id)}
-              nome={nome}
-              className={botaoDeIcone}
-            />
-          </div>
+    <li className="flex flex-col gap-3 rounded-2xl border border-linha bg-superficie p-3 sm:flex-row sm:items-center">
+      <div className="flex min-w-0 flex-1 items-center gap-3">
+        <IconeDoTipo tipo={bloco.tipo} />
+        <div className="min-w-0 flex-1">
+          <p
+            className="truncate font-bold text-texto"
+            title={nomeDoBloco(bloco)}
+          >
+            <span className="text-destaque">{posicao}.</span>{" "}
+            {nomeDoBloco(bloco)}
+          </p>
+          <p className="truncate text-sm text-texto-secundario" title={resumo}>
+            <span className="sr-only">{NOMES_DOS_TIPOS[bloco.tipo]}: </span>
+            {resumo}
+          </p>
         </div>
-
-        <AoEditar fora={<Previa bloco={bloco} />}>
-          <div className="border-t border-linha pt-4">
-            <FormularioBloco
-              acao={editarBloco.bind(null, bloco.id)}
-              textoDoBotao="Salvar bloco"
-              inicial={bloco}
-              codigo={codigo}
-            />
-          </div>
-        </AoEditar>
-      </EdicaoDoTitulo>
+      </div>
+      <div className="flex shrink-0 gap-2 self-end sm:self-auto">
+        <BotoesDeOrdem
+          mover={moverBloco.bind(null, bloco.id)}
+          primeiro={primeiro}
+          ultimo={ultimo}
+          nome={nome}
+        />
+        <PainelDoBloco
+          rotulo="Editar bloco"
+          rotuloAcessivel={`Editar ${nome}`}
+          acao={editarBloco.bind(null, bloco.id)}
+          codigo={codigo}
+          inicial={bloco}
+          botaoProprio={{
+            className: botaoDeIcone,
+            conteudo: <Icone d={LAPIS} />,
+          }}
+        />
+        <BotaoRemover
+          remover={removerBloco.bind(null, bloco.id)}
+          nome={nome}
+          className={botaoDeIcone}
+        />
+      </div>
     </li>
   );
 }
@@ -226,140 +178,110 @@ async function EditorDaAula({ params }: { params: Promise<{ id: string }> }) {
 
   const aula = data as unknown as Aula;
   const blocos = ordenar(aula.conteudos);
+  const codigo = codigoDoAluno(sessao.id);
   const linkDoCurso = `/professor/cursos/${aula.modulos.curso_id}`;
 
   return (
     <>
+      {/* Cabeçalho: título, selo e quantidade de blocos; à direita, abrir
+          como aluno, editar o título (painel lateral) e publicar. */}
       <LinhaDeVoltar href={linkDoCurso} rotulo="Voltar ao curso">
-        <h1 className="font-titulo text-3xl break-words text-texto md:text-5xl">
-          {aula.titulo}
-        </h1>
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="min-w-0 space-y-2">
+            <p className="text-sm font-bold break-words text-texto-secundario">
+              {aula.modulos.cursos.titulo} · {aula.modulos.titulo}
+            </p>
+            <h1 className="font-titulo text-3xl break-words text-texto md:text-5xl">
+              {aula.titulo}
+            </h1>
+            <p className="flex flex-wrap items-center gap-2 text-sm text-texto-secundario">
+              <Etiqueta publicada={aula.publicada} /> · {blocos.length}{" "}
+              {blocos.length === 1 ? "bloco" : "blocos"}
+            </p>
+          </div>
+          <div className="flex flex-col gap-3 sm:flex-row md:shrink-0">
+            <Link
+              href={`/aulas/${aula.id}`}
+              className={classesDoBotao("link", "px-2 font-bold text-destaque")}
+            >
+              Abrir como aluno
+            </Link>
+            <PainelDeTitulo
+              rotulo="Editar aula"
+              titulo="Editar aula"
+              rotuloDoCampo="Título da aula"
+              inicial={aula.titulo}
+              textoDoBotao="Salvar"
+              acao={renomearAula.bind(null, aula.id)}
+              variante="secundario"
+              classeDoBotao="sm:w-auto"
+            />
+            <FormularioDeAcao
+              acao={publicarAula.bind(null, aula.id, !aula.publicada)}
+            >
+              <button
+                type="submit"
+                className={classesDoBotao(
+                  aula.publicada ? "secundario" : "destaque",
+                  "sm:w-auto",
+                )}
+              >
+                {aula.publicada ? "Despublicar" : "Publicar"}
+              </button>
+            </FormularioDeAcao>
+          </div>
+        </div>
       </LinhaDeVoltar>
 
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div className="min-w-0 space-y-2">
-          <p className="flex flex-wrap items-center gap-2 text-sm text-texto-secundario">
-            <Etiqueta publicada={aula.publicada} /> · {blocos.length}{" "}
-            {blocos.length === 1 ? "bloco" : "blocos"}
-          </p>
-        </div>
-        <FormularioDeAcao
-          acao={publicarAula.bind(null, aula.id, !aula.publicada)}
-          className="hidden md:block"
-        >
-          <button
-            type="submit"
-            className={classesDoBotao(
-              aula.publicada ? "secundario" : "primario",
-              "md:w-auto",
-            )}
-          >
-            {aula.publicada ? "Despublicar" : "Publicar"}
-          </button>
-        </FormularioDeAcao>
-      </div>
-
-      <div className="flex flex-col gap-6 md:gap-8 lg:grid lg:grid-cols-12 lg:items-start lg:gap-6">
-        <div className="flex flex-col gap-6 md:gap-8 lg:col-span-8">
-          <NovoBloco
-            acao={criarBloco.bind(null, aula.id)}
-            codigo={codigoDoAluno(sessao.id)}
-            className={cartao}
-            classeDoTitulo={tituloDeSecao}
-            publicar={
-              <FormularioDeAcao
-                acao={publicarAula.bind(null, aula.id, !aula.publicada)}
-              >
-                <button
-                  type="submit"
-                  className={classesDoBotao(
-                    aula.publicada ? "secundario" : "primario",
-                    "px-3",
-                  )}
-                >
-                  {aula.publicada ? "Despublicar" : "Publicar"}
-                </button>
-              </FormularioDeAcao>
-            }
-          />
-
-          <section className={`space-y-4 ${cartao}`}>
-            <h2 className={tituloDeSecao}>Dados da aula</h2>
-            <FormularioDados
-              acao={renomearAula.bind(null, aula.id)}
-              titulo={aula.titulo}
-            />
-          </section>
-
-          <section className="space-y-4">
-            <h2 className={tituloDeSecao}>Conteúdo da aula</h2>
-            {blocos.length === 0 ? (
-              <p className="text-texto-secundario">
-                Nenhum bloco ainda. Adicione o primeiro{" "}
-                <span className="md:hidden">em Novo bloco</span>
-                <span className="hidden md:inline">acima</span>.
-              </p>
-            ) : (
-              <ol className="space-y-4">
-                {blocos.map((bloco, indice) => (
-                  <ItemBloco
-                    key={bloco.id}
-                    bloco={bloco}
-                    posicao={indice + 1}
-                    primeiro={indice === 0}
-                    ultimo={indice === blocos.length - 1}
-                    codigo={codigoDoAluno(sessao.id)}
-                  />
-                ))}
-              </ol>
-            )}
-          </section>
-        </div>
-
-        <aside
-          aria-labelledby="como-o-aluno-ve"
-          className={`hidden space-y-4 md:block lg:sticky lg:top-6 lg:col-span-4 ${cartao}`}
-        >
-          <h2 id="como-o-aluno-ve" className={tituloDeSecao}>
-            Como o aluno vê
+      <section
+        aria-labelledby="conteudo-da-aula"
+        className="space-y-4 rounded-3xl border border-linha bg-superficie p-4 md:p-6"
+      >
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 id="conteudo-da-aula" className="font-titulo text-2xl text-texto">
+            Conteúdo da aula
           </h2>
-          {blocos.length === 0 ? (
-            <p className="text-sm text-texto-secundario">
-              A aula ainda não tem conteúdo.
-            </p>
-          ) : (
-            <ol className="space-y-3">
-              {blocos.map((bloco) => (
-                <li key={bloco.id} className="flex items-center gap-3">
-                  <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-bloco text-destaque">
-                    <Icone d={ICONES[bloco.tipo]} />
-                  </span>
-                  <span className="min-w-0 break-words text-texto">
-                    {nomeDoBloco(bloco)}
-                  </span>
-                </li>
-              ))}
-            </ol>
+          {blocos.length > 0 && (
+            <PainelDoBloco
+              rotulo="Adicionar bloco"
+              acao={criarBloco.bind(null, aula.id)}
+              codigo={codigo}
+            />
           )}
-          <p className="text-sm text-texto-secundario">
-            O aluno só vê a aula depois de publicada, e com o curso publicado.
-          </p>
-          <Link
-            href={`/aulas/${aula.id}`}
-            className={classesDoBotao("secundario")}
-          >
-            Abrir como aluno
-          </Link>
-        </aside>
-
-        {/* No celular, a lista de blocos já mostra a ordem: fica só o link. */}
-        <Link
-          href={`/aulas/${aula.id}`}
-          className={classesDoBotao("secundario", "md:hidden")}
-        >
-          Abrir como aluno
-        </Link>
-      </div>
+        </div>
+        {blocos.length === 0 ? (
+          <div className="flex flex-col items-center gap-4 rounded-2xl border border-dashed border-borda-campo px-4 py-10 text-center">
+            <p className="text-lg font-bold text-texto">
+              Esta aula ainda não tem conteúdo
+            </p>
+            <p className="max-w-md text-sm text-texto-secundario">
+              Junte textos, vídeos, arquivos, áudios, links e provas na ordem em
+              que o aluno vai estudar.
+            </p>
+            <PainelDoBloco
+              rotulo="Adicionar primeiro bloco"
+              acao={criarBloco.bind(null, aula.id)}
+              codigo={codigo}
+            />
+          </div>
+        ) : (
+          <ol className="space-y-2">
+            {blocos.map((bloco, indice) => (
+              <ItemBloco
+                key={bloco.id}
+                bloco={bloco}
+                posicao={indice + 1}
+                primeiro={indice === 0}
+                ultimo={indice === blocos.length - 1}
+                codigo={codigo}
+              />
+            ))}
+          </ol>
+        )}
+        <p className="text-sm text-texto-secundario">
+          O aluno só vê a aula depois de publicada, e com o curso publicado.
+        </p>
+      </section>
     </>
   );
 }
@@ -370,9 +292,9 @@ export default function EditarAula({
   params: Promise<{ id: string }>;
 }) {
   return (
-    <TelaDoProfessor atual="cursos" semAbas folgaDoRodape="barra">
+    <TelaDoProfessor atual="cursos">
       <main
-        className={`${CONTEINER} flex max-w-2xl flex-1 flex-col gap-6 pt-6 pb-32 md:gap-8 md:py-10`}
+        className={`${CONTEINER} flex max-w-6xl flex-1 flex-col gap-6 py-6 md:gap-8 md:py-10`}
       >
         <Suspense fallback={<p>Carregando…</p>}>
           <EditorDaAula params={params} />

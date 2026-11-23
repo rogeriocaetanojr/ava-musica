@@ -1,10 +1,10 @@
 import Link from "next/link";
+import { RodapeInterno } from "@/components/rodape";
 import { CONTEINER } from "@/components/conteiner";
 import { Suspense } from "react";
 import { Aviso } from "@/components/aviso";
 import { BarraProgresso } from "@/components/barra-progresso";
 import { classesDoBotao } from "@/components/botao";
-import { Rodape } from "@/components/rodape";
 import { AbasDoAluno } from "@/components/abas-do-aluno";
 import { CabecalhoDoAluno } from "@/components/cabecalho-do-aluno";
 import { ID_DOS_RECADOS, type Recado } from "@/components/sino-de-recados";
@@ -304,7 +304,7 @@ export default function MeusCursos() {
           <MeusCursosDoAluno />
         </Suspense>
       </div>
-      <Rodape largura="max-w-6xl" />
+      <RodapeInterno />
       <AbasDoAluno atual="cursos" />
     </div>
   );

@@ -1,10 +1,8 @@
-import Link from "next/link";
 import { FormularioDeAcao } from "@/components/formulario-de-acao";
-import { classesDoBotao } from "@/components/botao";
 import { LinhaDeVoltar } from "@/components/linha-de-voltar";
 import { TelaDoProfessor } from "@/components/tela-do-professor";
 import { CONTEINER } from "@/components/conteiner";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { Suspense } from "react";
 import { BarraProgresso } from "@/components/barra-progresso";
 import { exigirProfessor } from "@/lib/auth";
@@ -24,12 +22,10 @@ import { criarClienteAdmin } from "@/lib/supabase/admin";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 import { ehUuid } from "../../cursos/validacao";
 import { contagemDe, dadosDoPainel } from "../../progresso/dados";
-import { desmatricular, matricular } from "../acoes";
-import { BotaoBloqueio } from "../botao-bloqueio";
+import { desmatricular } from "../acoes";
 import { BotaoLinkDeAceite } from "../botao-link-de-aceite";
 import { BotaoReenviar } from "../botao-reenviar";
-import { FormularioExclusao } from "../formulario-exclusao";
-import { FormularioNome } from "../formulario-nome";
+import { MatricularEmCurso, MenuDaFicha } from "./acoes-da-ficha";
 import {
   CORES_DOS_STATUS,
   NOMES_DOS_STATUS,
@@ -55,12 +51,11 @@ type Aluno = {
 type Curso = { id: string; titulo: string; publicado: boolean };
 type Acesso = { id: number; acao: AcaoAuditada; criado_em: string };
 
-const cartao = "rounded-3xl border border-linha bg-superficie p-5 md:p-6";
-const cartaoComLista =
-  "overflow-hidden rounded-3xl border border-linha bg-superficie";
-const tituloDeCartao = "font-titulo text-2xl text-texto";
-const botaoPequeno =
-  "inline-flex min-h-12 shrink-0 items-center justify-center rounded-xl border border-linha bg-superficie px-4 text-sm font-bold text-texto hover:border-borda-campo";
+const cartao = "rounded-3xl border border-linha bg-superficie p-4 md:p-5";
+const tituloDeCartao = "font-titulo text-xl text-texto";
+const rotuloDoDado = "text-xs font-bold text-texto-secundario";
+// Estado vazio: uma linha cinza.
+const vazio = "text-sm text-texto-secundario";
 
 function formatarDataHora(data: string): string {
   return new Intl.DateTimeFormat("pt-BR", {
@@ -80,11 +75,25 @@ async function FichaDoAluno({ params }: { params: Promise<{ id: string }> }) {
   await exigirProfessor();
   const { id } = await params;
   if (!ehUuid(id)) notFound();
+
+  // Pedido de acesso não tem ficha: quem ainda não foi liberado é resolvido
+  // no painel de Pedidos de acesso, que já abre aberto. Conferido antes de
+  // registrar o acesso, para não auditar uma ficha que não é mostrada.
+  const supabase = await criarClienteServidor();
+  const { data: liberacao } = await supabase
+    .from("perfis")
+    .select("liberado_em")
+    .eq("id", id)
+    .eq("papel", "aluno")
+    .maybeSingle();
+  if (!liberacao) notFound();
+  if (liberacao.liberado_em === null)
+    redirect("/professor/alunos?pedidos=abrir");
+
   // Menor de 18: sem o registro do acesso, a ficha não é mostrada.
   if (!(await registrarAcesso("abrir", id)))
     throw new Error("Não foi possível registrar o acesso à ficha do aluno.");
 
-  const supabase = await criarClienteServidor();
   const [
     { data },
     { data: cursos },
@@ -108,7 +117,7 @@ async function FichaDoAluno({ params }: { params: Promise<{ id: string }> }) {
       .select("id, acao, criado_em")
       .eq("aluno_id", id)
       .order("criado_em", { ascending: false })
-      .limit(10),
+      .limit(20),
     // Só leitura, para o progresso de cada matrícula.
     dadosDoPainel(id),
     fotoDe(id),
@@ -146,91 +155,104 @@ async function FichaDoAluno({ params }: { params: Promise<{ id: string }> }) {
   const cursosMatriculados = (painel?.cursos ?? []).filter((c) =>
     matriculados.has(c.id),
   );
+  const listaDeAcessos = (acessos ?? []) as Acesso[];
+  // Só a chave de serviço grava app_metadata: a marca do cadastro pelo
+  // professor não pode ser forjada pelo aluno.
+  const porConvite = usuario?.user?.app_metadata?.origem === "professor";
 
   return (
     <>
+      {/* Cabeçalho: voltar, avatar, nome e selo; à direita, as ações
+          principais: Matricular em curso e o menu "⋯" (Editar nome,
+          Bloquear, Excluir). Pedido pendente não chega aqui. */}
       <LinhaDeVoltar href="/professor/alunos" rotulo="Voltar para Alunos">
-        <h1 className="font-titulo text-3xl break-all text-texto md:break-words">
-          {nome}
-        </h1>
-      </LinhaDeVoltar>
-      <div className="grid gap-6 lg:grid-cols-[22rem_1fr] lg:items-start">
-        <div className="flex flex-col gap-6">
-          <header className={`${cartao} space-y-4`}>
-            <div className="flex items-center gap-4">
-              <Avatar foto={foto} className="size-16 bg-bordo text-amarelo" />
-              <div className="min-w-0 space-y-2">
-                <p className="font-titulo text-xl break-all text-texto md:break-words">
-                  {nome}
-                </p>
-                <span
-                  className={`inline-block rounded-full px-3 py-1 text-xs font-bold ${CORES_DOS_STATUS[status]}`}
-                >
-                  {NOMES_DOS_STATUS[status]}
-                </span>
-              </div>
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="flex min-w-0 items-center gap-4">
+            <Avatar
+              foto={foto}
+              className="size-14 bg-linha text-texto-secundario"
+            />
+            <div className="min-w-0 space-y-1">
+              <h1 className="font-titulo text-3xl break-all text-texto md:break-words">
+                {nome}
+              </h1>
+              <span
+                className={`inline-block rounded-full px-3 py-0.5 text-xs font-bold ${CORES_DOS_STATUS[status]}`}
+              >
+                {NOMES_DOS_STATUS[status]}
+              </span>
             </div>
-            <dl className="space-y-3 border-t border-linha pt-4 text-sm">
+          </div>
+          <div className="flex flex-wrap items-center gap-2 md:shrink-0">
+            <MatricularEmCurso
+              alunoId={aluno.id}
+              cursos={((cursos ?? []) as Curso[]).filter(
+                (c) => !matriculados.has(c.id),
+              )}
+            />
+            <MenuDaFicha
+              alunoId={aluno.id}
+              nome={nome}
+              nomeCadastrado={aluno.nome ?? ""}
+              bloqueado={aluno.bloqueado_em !== null}
+            />
+          </div>
+        </div>
+      </LinhaDeVoltar>
+
+      <div className="grid gap-5 lg:grid-cols-[20rem_1fr] lg:items-start">
+        <div className="flex flex-col gap-5">
+          <section aria-labelledby="dados" className={`${cartao} space-y-3`}>
+            <h2 id="dados" className={tituloDeCartao}>
+              Dados
+            </h2>
+            <dl className="space-y-2 text-sm">
+              <div>
+                <dt className={rotuloDoDado}>E-mail</dt>
+                <dd className="break-all text-texto">{aluno.email}</dd>
+              </div>
               {aluno.data_nascimento && (
                 <div>
-                  <dt className="text-xs font-bold text-texto-secundario">
-                    Idade
-                  </dt>
+                  <dt className={rotuloDoDado}>Idade</dt>
                   <dd className="text-texto">
                     {calcularIdade(aluno.data_nascimento, hojeNoBrasil())} anos
                     (nascimento em {formatarData(aluno.data_nascimento)})
                   </dd>
                 </div>
               )}
-              <div>
-                <dt className="text-xs font-bold text-texto-secundario">
-                  E-mail
-                </dt>
-                <dd className="break-all text-texto">{aluno.email}</dd>
-              </div>
               {/* O Forms recebe este código no lugar do e-mail (ver lib/embeds.ts). */}
               <div>
-                <dt className="text-xs font-bold text-texto-secundario">
-                  Código nas provas
-                </dt>
+                <dt className={rotuloDoDado}>Código nas provas</dt>
                 <dd className="font-mono text-texto">
                   {codigoDoAluno(aluno.id)}
                 </dd>
               </div>
               <div>
-                <dt className="text-xs font-bold text-texto-secundario">
-                  Última atividade
-                </dt>
+                <dt className={rotuloDoDado}>Última atividade</dt>
                 <dd className="text-texto">
                   {ultima ? formatarDataHora(ultima) : "Sem atividade ainda"}
                 </dd>
               </div>
+              <div>
+                <dt className={rotuloDoDado}>Como entrou</dt>
+                <dd className="text-texto">
+                  {porConvite ? "Convite do professor" : "Pedido de acesso"}
+                </dd>
+              </div>
+              {aluno.bloqueado_em && (
+                <div>
+                  <dt className={rotuloDoDado}>Bloqueado desde</dt>
+                  <dd className="text-texto">
+                    {formatarDataHora(aluno.bloqueado_em)}
+                  </dd>
+                </div>
+              )}
             </dl>
             {/* O menor de 12 também define a senha antes do aceite. */}
             {(status === "convidado" ||
               (status === "aguardando" && !usuario?.user?.last_sign_in_at)) && (
               <BotaoReenviar alunoId={aluno.id} />
             )}
-            {status === "pendente" && (
-              <div className="space-y-2">
-                <p className="text-sm text-texto-secundario">
-                  Pediu acesso pelo login.
-                </p>
-                <Link
-                  href="/professor"
-                  className={classesDoBotao("secundario", "", "pequeno")}
-                >
-                  Libere ou recuse no painel
-                </Link>
-              </div>
-            )}
-          </header>
-
-          <section aria-labelledby="nome" className={`${cartao} space-y-3`}>
-            <h2 id="nome" className={tituloDeCartao}>
-              Nome
-            </h2>
-            <FormularioNome alunoId={aluno.id} nome={aluno.nome ?? ""} />
           </section>
 
           {responsavel && (
@@ -248,7 +270,7 @@ async function FichaDoAluno({ params }: { params: Promise<{ id: string }> }) {
                 </span>
               </p>
               {responsavel.aceito_em ? (
-                <p className="rounded-xl bg-linha p-4 text-sm text-sucesso">
+                <p className="text-sm text-sucesso">
                   Autorizou o acesso em {formatarData(responsavel.aceito_em)}.
                 </p>
               ) : (
@@ -266,75 +288,56 @@ async function FichaDoAluno({ params }: { params: Promise<{ id: string }> }) {
           )}
         </div>
 
-        <div className="flex min-w-0 flex-col gap-6">
-          <section aria-labelledby="matriculas" className={cartaoComLista}>
-            <h2 id="matriculas" className={`${tituloDeCartao} px-6 pt-5 pb-3`}>
+        <div className="flex min-w-0 flex-col gap-5">
+          <section
+            aria-labelledby="matriculas"
+            className={`${cartao} space-y-3`}
+          >
+            <h2 id="matriculas" className={tituloDeCartao}>
               Matrículas
             </h2>
-            {(cursos ?? []).length === 0 ? (
-              <p className="px-6 pb-6 text-texto-secundario">
-                Nenhum curso criado ainda.
-              </p>
+            {cursosMatriculados.length === 0 ? (
+              <p className={vazio}>Nenhuma matrícula.</p>
             ) : (
-              <ul className="divide-y divide-linha border-t border-linha">
-                {((cursos ?? []) as Curso[]).map((curso) => {
-                  const matriculado = matriculados.has(curso.id);
-                  const percentual = progressoDoCurso.get(curso.id);
+              <ul className="grid gap-2 sm:grid-cols-2">
+                {cursosMatriculados.map((curso) => {
+                  const percentual = progressoDoCurso.get(curso.id) ?? 0;
                   return (
                     <li
                       key={curso.id}
-                      className="flex flex-col gap-3 px-5 py-4 md:flex-row md:flex-wrap md:items-center md:gap-4 md:px-6"
+                      className="space-y-2 rounded-2xl border border-linha bg-fundo p-3"
                     >
-                      <div className="min-w-0 flex-1 space-y-2">
-                        <p className="break-words text-texto">
-                          <span className="font-bold">{curso.titulo}</span>
-                          {!curso.publicado && (
-                            <span className="text-sm text-texto-secundario">
-                              {" "}
-                              (rascunho)
-                            </span>
-                          )}
-                        </p>
-                        {matriculado ? (
-                          <div className="flex items-center gap-3">
-                            <span className="text-sm font-bold text-sucesso">
-                              Matriculado
-                            </span>
-                            {percentual !== undefined && (
-                              <>
-                                <div className="flex-1 md:max-w-64">
-                                  <BarraProgresso
-                                    percentual={percentual}
-                                    rotulo={`Progresso de ${nome} em ${curso.titulo}`}
-                                    cor="bordo"
-                                    comTexto={false}
-                                  />
-                                </div>
-                                <span className="text-sm text-texto">
-                                  {percentual}%
-                                </span>
-                              </>
-                            )}
-                          </div>
-                        ) : (
-                          <p className="text-sm text-texto-secundario">
-                            Não matriculado
-                          </p>
+                      <p className="font-bold break-words text-texto">
+                        {curso.titulo}
+                        {!curso.publicado && (
+                          <span className="text-sm font-normal text-texto-secundario">
+                            {" "}
+                            (rascunho)
+                          </span>
                         )}
+                      </p>
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1">
+                          <BarraProgresso
+                            percentual={percentual}
+                            rotulo={`Progresso de ${nome} em ${curso.titulo}`}
+                            cor="bordo"
+                            comTexto={false}
+                            fina
+                          />
+                        </div>
+                        <span className="w-9 text-right text-xs text-texto-secundario">
+                          {percentual}%
+                        </span>
                       </div>
                       <FormularioDeAcao
-                        acao={(matriculado ? desmatricular : matricular).bind(
-                          null,
-                          aluno.id,
-                          curso.id,
-                        )}
-                        className="w-full md:w-auto"
+                        acao={desmatricular.bind(null, aluno.id, curso.id)}
                       >
                         <button
                           type="submit"
-                          className={`${botaoPequeno} w-full md:w-auto`}
+                          className="inline-flex min-h-10 cursor-pointer items-center text-sm text-texto-secundario underline hover:text-texto"
                         >
-                          {matriculado ? "Desmatricular" : "Matricular"}
+                          Desmatricular
                         </button>
                       </FormularioDeAcao>
                     </li>
@@ -346,15 +349,13 @@ async function FichaDoAluno({ params }: { params: Promise<{ id: string }> }) {
 
           <section
             aria-labelledby="progresso-por-aula"
-            className={`${cartao} space-y-5`}
+            className={`${cartao} space-y-3`}
           >
             <h2 id="progresso-por-aula" className={tituloDeCartao}>
               Progresso por aula
             </h2>
             {cursosMatriculados.length === 0 ? (
-              <p className="text-sm text-texto-secundario">
-                O aluno não está matriculado em nenhum curso.
-              </p>
+              <p className={vazio}>Sem cursos, sem progresso para mostrar.</p>
             ) : (
               cursosMatriculados.map((curso) => {
                 const modulos = ordenar(curso.modulos)
@@ -364,27 +365,19 @@ async function FichaDoAluno({ params }: { params: Promise<{ id: string }> }) {
                   }))
                   .filter((modulo) => modulo.aulas.length > 0);
                 return (
-                  <div key={curso.id} className="space-y-3">
-                    <h3 className="font-bold break-words text-texto">
+                  <div key={curso.id} className="space-y-2">
+                    <h3 className="text-sm font-bold break-words text-texto">
                       {curso.titulo}
-                      {!curso.publicado && (
-                        <span className="text-sm font-normal text-texto-secundario">
-                          {" "}
-                          (rascunho)
-                        </span>
-                      )}
                     </h3>
                     {modulos.length === 0 && (
-                      <p className="text-sm text-texto-secundario">
-                        Nenhuma aula publicada.
-                      </p>
+                      <p className={vazio}>Nenhuma aula publicada.</p>
                     )}
                     {modulos.map((modulo) => (
-                      <div key={modulo.id} className="space-y-2">
-                        <h4 className="text-sm font-bold break-words text-texto-secundario">
+                      <div key={modulo.id} className="space-y-1">
+                        <h4 className="text-xs font-bold break-words text-texto-secundario">
                           {modulo.titulo}
                         </h4>
-                        <ul className="divide-y divide-linha rounded-xl border border-linha">
+                        <ul className="rounded-xl bg-fundo px-3 py-1">
                           {modulo.aulas.map((aula) => {
                             const concluida = aulaConcluidaEm.get(aula.id);
                             const provas = aula.conteudos.filter(
@@ -393,42 +386,47 @@ async function FichaDoAluno({ params }: { params: Promise<{ id: string }> }) {
                             return (
                               <li
                                 key={aula.id}
-                                className="space-y-1 px-4 py-3 text-sm"
+                                className="flex flex-col gap-x-3 py-1.5 text-sm sm:flex-row sm:items-baseline sm:justify-between"
                               >
-                                <p className="font-bold break-words text-texto">
+                                <span className="min-w-0 break-words text-texto">
                                   {aula.titulo}
-                                </p>
-                                <p
-                                  className={
-                                    concluida
-                                      ? "text-sucesso"
-                                      : "text-texto-secundario"
-                                  }
-                                >
-                                  {concluida
-                                    ? `Concluída em ${formatarDataHora(concluida)}`
-                                    : "Não concluída"}
-                                </p>
-                                {provas.map((prova, i) => {
-                                  const enviada = provaEnviadaEm.get(prova.id);
-                                  return (
-                                    <p
-                                      key={prova.id}
-                                      className={
-                                        enviada
-                                          ? "text-sucesso"
-                                          : "text-texto-secundario"
-                                      }
-                                    >
-                                      {provas.length > 1
-                                        ? `Prova ${i + 1}: `
-                                        : "Prova: "}
-                                      {enviada
-                                        ? `enviada em ${formatarDataHora(enviada)}`
-                                        : "não enviada"}
-                                    </p>
-                                  );
-                                })}
+                                </span>
+                                <span className="shrink-0 text-xs">
+                                  <span
+                                    className={
+                                      concluida
+                                        ? "text-sucesso"
+                                        : "text-texto-secundario"
+                                    }
+                                  >
+                                    {concluida
+                                      ? `Concluída em ${formatarDataHora(concluida)}`
+                                      : "Não concluída"}
+                                  </span>
+                                  {provas.map((prova, i) => {
+                                    const enviada = provaEnviadaEm.get(
+                                      prova.id,
+                                    );
+                                    return (
+                                      <span
+                                        key={prova.id}
+                                        className={
+                                          enviada
+                                            ? "text-sucesso"
+                                            : "text-texto-secundario"
+                                        }
+                                      >
+                                        {" · "}
+                                        {provas.length > 1
+                                          ? `Prova ${i + 1}: `
+                                          : "Prova: "}
+                                        {enviada
+                                          ? `enviada em ${formatarDataHora(enviada)}`
+                                          : "não enviada"}
+                                      </span>
+                                    );
+                                  })}
+                                </span>
                               </li>
                             );
                           })}
@@ -441,65 +439,54 @@ async function FichaDoAluno({ params }: { params: Promise<{ id: string }> }) {
             )}
           </section>
 
-          <section aria-labelledby="ultimos-acessos" className={cartaoComLista}>
-            <h2
-              id="ultimos-acessos"
-              className={`${tituloDeCartao} px-6 pt-5 pb-3`}
-            >
+          <section
+            aria-labelledby="ultimos-acessos"
+            className={`${cartao} space-y-3`}
+          >
+            <h2 id="ultimos-acessos" className={tituloDeCartao}>
               Últimos acessos
             </h2>
-            {(acessos ?? []).length === 0 ? (
-              <p className="px-6 pb-6 text-sm text-texto-secundario">
-                Nenhum acesso registrado. Só são registrados os acessos aos
-                dados de alunos menores de 18 anos.
+            {listaDeAcessos.length === 0 ? (
+              <p className={vazio}>
+                Nenhum acesso registrado (só os de alunos menores de 18 anos).
               </p>
             ) : (
-              <ul className="divide-y divide-linha border-t border-linha text-sm">
-                {((acessos ?? []) as Acesso[]).map((acesso) => (
-                  <li
-                    key={acesso.id}
-                    className="flex flex-col gap-1 px-5 py-3 md:flex-row md:flex-wrap md:justify-between md:gap-2 md:px-6"
-                  >
-                    <span className="text-texto">
-                      {NOMES_DAS_ACOES[acesso.acao] ?? acesso.acao}
-                    </span>
-                    <span className="text-texto-secundario">
-                      {formatarDataHora(acesso.criado_em)}
-                    </span>
-                  </li>
-                ))}
-              </ul>
+              <>
+                <ListaDeAcessos acessos={listaDeAcessos.slice(0, 5)} />
+                {listaDeAcessos.length > 5 && (
+                  <details className="group">
+                    <summary className="inline-flex min-h-10 cursor-pointer items-center text-sm font-bold text-destaque underline group-open:hidden">
+                      Ver mais ({listaDeAcessos.length - 5})
+                    </summary>
+                    <ListaDeAcessos acessos={listaDeAcessos.slice(5)} />
+                  </details>
+                )}
+              </>
             )}
-          </section>
-
-          <section aria-labelledby="acesso" className={`${cartao} space-y-3`}>
-            <h2 id="acesso" className={tituloDeCartao}>
-              Acesso
-            </h2>
-            {aluno.bloqueado_em && (
-              <p className="text-sm font-bold text-texto">
-                Bloqueado desde {formatarDataHora(aluno.bloqueado_em)}.
-              </p>
-            )}
-            <BotaoBloqueio
-              alunoId={aluno.id}
-              nome={nome}
-              bloqueado={aluno.bloqueado_em !== null}
-            />
           </section>
         </div>
       </div>
-
-      <section
-        aria-labelledby="excluir"
-        className="mt-4 space-y-3 rounded-3xl border-2 border-destaque bg-superficie p-5 md:p-6"
-      >
-        <h2 id="excluir" className="font-titulo text-2xl text-destaque">
-          Excluir todos os dados
-        </h2>
-        <FormularioExclusao alunoId={aluno.id} nome={nome} />
-      </section>
     </>
+  );
+}
+
+function ListaDeAcessos({ acessos }: { acessos: Acesso[] }) {
+  return (
+    <ul className="text-sm">
+      {acessos.map((acesso) => (
+        <li
+          key={acesso.id}
+          className="flex flex-wrap justify-between gap-x-3 py-1"
+        >
+          <span className="text-texto">
+            {NOMES_DAS_ACOES[acesso.acao] ?? acesso.acao}
+          </span>
+          <span className="text-xs text-texto-secundario">
+            {formatarDataHora(acesso.criado_em)}
+          </span>
+        </li>
+      ))}
+    </ul>
   );
 }
 

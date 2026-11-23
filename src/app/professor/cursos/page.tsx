@@ -6,7 +6,7 @@ import { Cordas } from "@/components/cordas";
 import { exigirProfessor } from "@/lib/auth";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 import { criarCurso } from "./acoes";
-import { FormularioCurso } from "./formulario-curso";
+import { PainelDoCurso } from "./painel-do-curso";
 
 type CursoResumo = {
   id: string;
@@ -52,7 +52,7 @@ async function ListaDeCursos() {
   if (cursos.length === 0) return <p>Nenhum curso criado ainda.</p>;
 
   return (
-    <ul className="space-y-3 md:grid md:grid-cols-2 md:gap-6 md:space-y-0 lg:grid-cols-3 lg:gap-4">
+    <ul className="space-y-3 md:grid md:grid-cols-2 md:gap-6 md:space-y-0 lg:grid-cols-3">
       {cursos.map((curso, posicao) => {
         const capa = CAPAS[posicao % CAPAS.length];
         const aulas = curso.modulos.reduce(
@@ -110,40 +110,26 @@ export default function CursosDoProfessor() {
   return (
     <TelaDoProfessor atual="cursos">
       <main
-        className={`${CONTEINER} flex max-w-2xl flex-1 flex-col gap-6 py-6 md:gap-8 md:py-10`}
+        className={`${CONTEINER} flex max-w-6xl flex-1 flex-col gap-6 py-6 md:gap-8 md:py-10`}
       >
-        <div className="space-y-2 md:flex md:flex-wrap md:items-end md:justify-between md:gap-4 md:space-y-0">
-          <div className="space-y-2">
-            <h1 className="font-titulo text-4xl text-texto md:text-5xl">
-              Cursos
-            </h1>
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <h1 className="font-titulo text-4xl text-texto md:text-5xl">
+            Cursos
+          </h1>
+          <div className="w-full sm:w-auto">
+            <PainelDoCurso
+              rotulo="Novo curso"
+              acao={criarCurso}
+              textoDoBotao="Criar curso"
+            />
           </div>
         </div>
 
-        <div className="flex flex-col gap-6 md:gap-8 lg:grid lg:grid-cols-12 lg:items-start lg:gap-6">
-          <section
-            aria-label="Lista de cursos"
-            className="space-y-3 lg:col-span-7"
-          >
-            <Suspense fallback={<p>Carregando…</p>}>
-              <ListaDeCursos />
-            </Suspense>
-          </section>
-
-          <section
-            id="novo-curso"
-            aria-labelledby="titulo-novo-curso"
-            className="scroll-mt-6 space-y-4 rounded-3xl border border-linha bg-superficie p-5 md:max-w-3xl md:p-6 lg:sticky lg:top-6 lg:order-first lg:col-span-5 lg:max-w-none"
-          >
-            <h2
-              id="titulo-novo-curso"
-              className="font-titulo text-2xl text-texto"
-            >
-              Novo curso
-            </h2>
-            <FormularioCurso acao={criarCurso} textoDoBotao="Criar curso" />
-          </section>
-        </div>
+        <section aria-label="Lista de cursos">
+          <Suspense fallback={<p>Carregando…</p>}>
+            <ListaDeCursos />
+          </Suspense>
+        </section>
       </main>
     </TelaDoProfessor>
   );

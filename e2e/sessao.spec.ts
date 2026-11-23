@@ -76,6 +76,8 @@ test("aluno bloqueado com a sessão aberta perde o acesso na hora e, na renovaç
     const telaDoProfessor = await professor.newPage();
     await entrar(telaDoProfessor, PROFESSOR);
     await telaDoProfessor.goto(`/professor/alunos/${alunoId}`);
+    // Bloquear fica no menu "⋯" da ficha.
+    await telaDoProfessor.getByRole("button", { name: "Mais ações" }).click();
     await telaDoProfessor
       .getByRole("button", { name: "Bloquear acesso" })
       .click();

@@ -12,10 +12,24 @@ type Props = {
   ) => Promise<EstadoFormulario>;
   inicial?: Record<string, string>;
   textoDoBotao: string;
+  // Chamado quando a ação salva sem erro (o painel de edição fecha).
+  aoSalvar?: () => void;
 };
 
-export function FormularioCurso({ acao, inicial = {}, textoDoBotao }: Props) {
-  const [estado, enviar, enviando] = useActionState(acao, {});
+export function FormularioCurso({
+  acao,
+  inicial = {},
+  textoDoBotao,
+  aoSalvar,
+}: Props) {
+  const [estado, enviar, enviando] = useActionState<EstadoFormulario, FormData>(
+    async (anterior, formData) => {
+      const resultado = await acao(anterior, formData);
+      if (resultado.sucesso) aoSalvar?.();
+      return resultado;
+    },
+    {},
+  );
   const valores = estado.valores ?? inicial;
 
   return (
@@ -60,16 +74,6 @@ export function FormularioCurso({ acao, inicial = {}, textoDoBotao }: Props) {
         rows={3}
         maxLength={2000}
         defaultValue={valores.descricao}
-      />
-
-      <Campo
-        id="capa_url"
-        rotulo="Endereço da imagem de capa (opcional)"
-        name="capa_url"
-        type="url"
-        inputMode="url"
-        placeholder="https://"
-        defaultValue={valores.capa_url}
       />
 
       <label className="flex min-h-12 items-center gap-3 py-2">

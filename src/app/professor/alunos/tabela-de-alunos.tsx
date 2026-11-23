@@ -1,22 +1,40 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { type ReactNode, useState } from "react";
+import { Avatar } from "@/components/avatar";
+import { BarraProgresso } from "@/components/barra-progresso";
 import { classesDoBotao } from "@/components/botao";
 import { classesDoCampo } from "@/components/campo";
-import { BarraProgresso } from "@/components/barra-progresso";
-import { Avatar } from "@/components/avatar";
+import { PainelLateral } from "@/components/painel-lateral";
+import type { StatusDoAluno } from "./validacao";
 
 export type LinhaDaTurma = {
   id: string;
   nome: string;
   email: string;
-  avatar: string;
   // Link assinado da foto de perfil; sem foto, a silhueta.
   foto: string | null;
-  etiqueta: { texto: string; classe: string };
+  status: StatusDoAluno;
+  // Vai para "Precisam de atenção" (convidado, aguardando aceite, sem curso
+  // ou parado).
+  atencao: boolean;
+  // Posição do motivo principal na ordem de prioridade (0 sem motivo).
+  prioridade: number;
+  // Ícone (caminho SVG) só nos selos de motivo de "Precisam de atenção".
+  etiquetas: { texto: string; classe: string; icone?: string }[];
   cursos: { id: string; titulo: string; percentual: number | null }[];
 };
+
+type Filtro = "todos" | "ativo" | "convidado" | "bloqueado";
+
+const FILTROS: { valor: Filtro; rotulo: string }[] = [
+  { valor: "todos", rotulo: "Todos" },
+  { valor: "ativo", rotulo: "Ativos" },
+  { valor: "convidado", rotulo: "Convidados" },
+  { valor: "bloqueado", rotulo: "Bloqueados" },
+];
 
 // Tira acentos e caixa para a busca achar "joao" em "João".
 function normalizar(texto: string): string {
@@ -26,244 +44,332 @@ function normalizar(texto: string): string {
     .toLowerCase();
 }
 
-// Cabeçalho com a busca pelo nome e a turma, filtrada no navegador sobre a
-// lista já carregada. No computador, pedidos e recusados ficam numa coluna fixa
-// à direita; no celular, ficam no painel aberto pelo botão abaixo do cabeçalho.
+// Um curso: o título; vários: "3 cursos". O progresso é a média dos cursos
+// com progresso; o detalhe por curso fica na ficha.
+function resumoDosCursos(cursos: LinhaDaTurma["cursos"]): {
+  texto: string | null;
+  percentual: number | null;
+} {
+  if (cursos.length === 0) return { texto: null, percentual: null };
+  const texto =
+    cursos.length === 1 ? cursos[0].titulo : `${cursos.length} cursos`;
+  const comProgresso = cursos.flatMap((c) =>
+    c.percentual === null ? [] : [c.percentual],
+  );
+  const percentual =
+    comProgresso.length === 0
+      ? null
+      : Math.round(
+          comProgresso.reduce((soma, p) => soma + p, 0) / comProgresso.length,
+        );
+  return { texto, percentual };
+}
+
+// Cinza mais apagado para "Sem matrículas".
+const apagado = "text-texto-secundario/70";
+// Avatar sem foto: todos na mesma cor neutra.
+const AVATAR_NEUTRO = "bg-linha text-texto-secundario";
+
+function Selo({ etiqueta }: { etiqueta: LinhaDaTurma["etiquetas"][number] }) {
+  return (
+    <span
+      className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-bold whitespace-nowrap ${etiqueta.classe}`}
+    >
+      {etiqueta.icone && (
+        <svg
+          aria-hidden="true"
+          viewBox="0 0 24 24"
+          className="size-3.5 shrink-0"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d={etiqueta.icone} />
+        </svg>
+      )}
+      {etiqueta.texto}
+    </span>
+  );
+}
+
+// Cursos e progresso numa coluna só: o curso (ou "3 cursos") em cima e a
+// barra fina com a % embaixo. Sem matrícula, só "Sem matrículas".
+function CursosEProgresso({ linha }: { linha: LinhaDaTurma }) {
+  const resumo = resumoDosCursos(linha.cursos);
+  if (!resumo.texto)
+    return <span className={`text-sm ${apagado}`}>Sem matrículas</span>;
+  return (
+    <span className="block min-w-0 space-y-1">
+      <span
+        className="block truncate text-sm text-texto"
+        title={
+          linha.cursos.length > 1
+            ? linha.cursos.map((c) => c.titulo).join(", ")
+            : undefined
+        }
+      >
+        {resumo.texto}
+      </span>
+      {resumo.percentual !== null && (
+        <span className="flex items-center gap-2">
+          <span className="flex-1">
+            <BarraProgresso
+              percentual={resumo.percentual}
+              rotulo={
+                linha.cursos.length > 1
+                  ? `Progresso médio de ${linha.nome}`
+                  : `Progresso de ${linha.nome}`
+              }
+              cor="bordo"
+              comTexto={false}
+              fina
+            />
+          </span>
+          <span className="w-9 text-right text-xs text-texto-secundario">
+            {resumo.percentual}%
+          </span>
+        </span>
+      )}
+    </span>
+  );
+}
+
+function NomeEEmail({ linha }: { linha: LinhaDaTurma }) {
+  return (
+    <span className="flex min-w-0 items-center gap-3">
+      <Avatar foto={linha.foto} className={`size-9 ${AVATAR_NEUTRO}`} />
+      <span className="min-w-0">
+        <span
+          className="block truncate font-medium text-texto"
+          title={linha.nome}
+        >
+          {linha.nome}
+        </span>
+        <span
+          className="block truncate text-xs text-texto-secundario/80"
+          title={linha.email}
+        >
+          {linha.email}
+        </span>
+      </span>
+    </span>
+  );
+}
+
+// Seções da turma, nesta ordem; a de quem precisa de atenção vem primeiro,
+// e quem está nela não se repete em Ativos.
+const GRUPOS: {
+  id: string;
+  titulo: string;
+  pertence: (linha: LinhaDaTurma) => boolean;
+}[] = [
+  { id: "atencao", titulo: "Precisam de atenção", pertence: (l) => l.atencao },
+  {
+    id: "ativos",
+    titulo: "Ativos",
+    pertence: (l) => !l.atencao && l.status === "ativo",
+  },
+  {
+    id: "bloqueados",
+    titulo: "Bloqueados",
+    pertence: (l) => l.status === "bloqueado",
+  },
+];
+
+// Card compacto do aluno, todo clicável: avatar e nome, com o e-mail
+// cortado embaixo; o curso e o progresso no meio; o selo no fim.
+function CartaoDoAluno({ linha }: { linha: LinhaDaTurma }) {
+  return (
+    <Link
+      href={`/professor/alunos/${linha.id}`}
+      className="flex h-full flex-col gap-3 rounded-2xl border border-linha bg-superficie p-3 transition-colors hover:border-borda-campo hover:bg-fundo"
+    >
+      <NomeEEmail linha={linha} />
+      <span className="block flex-1">
+        <CursosEProgresso linha={linha} />
+      </span>
+      <span className="flex flex-wrap gap-1.5">
+        {linha.etiquetas.map((etiqueta) => (
+          <Selo key={etiqueta.texto} etiqueta={etiqueta} />
+        ))}
+      </span>
+    </Link>
+  );
+}
+
+// Tela de Alunos: no cabeçalho, o título, a busca, o filtro por situação e
+// os botões dos painéis laterais (Pedidos de acesso, com a contagem, e
+// Recusados) e o Convidar aluno; embaixo, a turma na largura toda, filtrada
+// no navegador sobre a lista já carregada.
 export function TabelaDeAlunos({
   linhas,
+  quantidadeDePedidos,
   pedidos,
+  recusados,
 }: {
   linhas: LinhaDaTurma[];
+  // Nula quando os pedidos não carregaram.
+  quantidadeDePedidos: number | null;
   pedidos: ReactNode;
+  recusados: ReactNode;
 }) {
+  // A ficha de um pedido pendente manda para cá com ?pedidos=abrir.
+  const parametros = useSearchParams();
+  const abrirPedidos = parametros.get("pedidos") === "abrir";
+  // O "Ver todos" de uma coluna do painel chega com ?curso=<id>.
+  const cursoId = parametros.get("curso");
+  const cursoFiltrado = cursoId
+    ? (linhas.flatMap((l) => l.cursos).find((c) => c.id === cursoId)?.titulo ??
+      null)
+    : null;
   const [busca, setBusca] = useState("");
+  const [filtro, setFiltro] = useState<Filtro>("todos");
   const termo = normalizar(busca.trim());
-  const visiveis = termo
-    ? linhas.filter((l) => normalizar(l.nome).includes(termo))
-    : linhas;
+  const visiveis = linhas.filter(
+    (l) =>
+      (filtro === "todos" || l.status === filtro) &&
+      (!termo || normalizar(l.nome).includes(termo)) &&
+      (!cursoId || l.cursos.some((c) => c.id === cursoId)),
+  );
+  const comPedidos = (quantidadeDePedidos ?? 0) > 0;
 
   return (
     <>
-      <div className="flex flex-wrap items-end gap-4">
-        <h1 className="mr-auto font-titulo text-4xl text-texto">Alunos</h1>
-        <BuscaDeAlunos valor={busca} aoMudar={setBusca} />
-        <Link
-          href="/professor/alunos/convidar"
-          className={classesDoBotao("primario", "max-md:hidden sm:w-auto")}
-        >
-          Convidar aluno
-        </Link>
-      </div>
-      <div className="flex flex-col gap-6 lg:grid lg:grid-cols-12 lg:items-start lg:gap-8">
-        <div className="contents lg:col-span-4 lg:col-start-9 lg:row-start-1 lg:flex lg:flex-col lg:gap-6">
-          {pedidos}
-        </div>
-        <section
-          aria-labelledby="turma"
-          className="order-2 min-w-0 overflow-hidden rounded-3xl border border-linha bg-superficie lg:col-span-8 lg:col-start-1 lg:row-start-1"
-        >
-          <h2
-            id="turma"
-            className="px-6 pt-5 pb-3 font-titulo text-2xl text-texto"
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <h1 className="font-titulo text-4xl text-texto">Alunos</h1>
+        <div className="flex flex-wrap gap-2 sm:gap-3">
+          <PainelLateral
+            rotulo="Pedidos de acesso"
+            abertoNoInicio={abrirPedidos}
+            botaoProprio={{
+              className: classesDoBotao(
+                comPedidos ? "destaque" : "secundario",
+                "w-auto",
+                "pequeno",
+              ),
+              conteudo: (
+                <>
+                  Pedidos de acesso
+                  {comPedidos && (
+                    <span className="ml-1 inline-grid min-w-6 place-items-center rounded-full bg-bordo px-1.5 text-xs font-bold text-sobre-bordo">
+                      {quantidadeDePedidos}
+                    </span>
+                  )}
+                </>
+              ),
+            }}
           >
-            Turma
-          </h2>
-          <p role="status" className="sr-only">
-            {termo
-              ? `${visiveis.length} ${visiveis.length === 1 ? "aluno encontrado" : "alunos encontrados"}`
-              : ""}
-          </p>
-          {linhas.length === 0 ? (
-            <p className="px-6 pb-6 text-texto-secundario">
-              Nenhum aluno cadastrado ainda.
-            </p>
-          ) : visiveis.length === 0 ? (
-            <p className="px-6 pb-6 text-texto-secundario">
-              Nenhum aluno com esse nome.
-            </p>
-          ) : (
-            <>
-              <ul
-                aria-label="Alunos da turma"
-                className="divide-y divide-linha border-t border-linha md:hidden"
-              >
-                {visiveis.map((linha) => (
-                  <li key={linha.id}>
-                    <Link
-                      href={`/professor/alunos/${linha.id}`}
-                      className="block min-h-12 space-y-3 px-5 py-4 hover:bg-fundo"
-                    >
-                      <span className="flex items-center gap-3">
-                        <Avatar
-                          foto={linha.foto}
-                          className={`size-10 ${linha.avatar}`}
-                        />
-                        <span className="min-w-0 flex-1">
-                          <span className="block font-bold break-words text-texto">
-                            {linha.nome}
-                          </span>
-                          <span className="block text-xs break-all text-texto-secundario">
-                            {linha.email}
-                          </span>
-                        </span>
-                        <span
-                          className={`shrink-0 rounded-full px-3 py-1 text-xs font-bold ${linha.etiqueta.classe}`}
-                        >
-                          {linha.etiqueta.texto}
-                        </span>
-                      </span>
-                      {linha.cursos.length === 0 ? (
-                        <span className="block text-sm text-texto-secundario">
-                          Sem matrículas
-                        </span>
-                      ) : (
-                        <div className="space-y-2">
-                          {linha.cursos.map((curso) => (
-                            <div key={curso.id} className="space-y-1">
-                              <span className="block text-sm break-words text-texto">
-                                {curso.titulo}
-                              </span>
-                              {curso.percentual === null ? (
-                                <span
-                                  aria-label="Sem progresso"
-                                  className="block text-sm text-texto-secundario"
-                                >
-                                  —
-                                </span>
-                              ) : (
-                                <div className="flex items-center gap-3">
-                                  <div className="flex-1">
-                                    <BarraProgresso
-                                      percentual={curso.percentual}
-                                      rotulo={`Progresso de ${linha.nome} em ${curso.titulo}`}
-                                      cor="bordo"
-                                      comTexto={false}
-                                    />
-                                  </div>
-                                  <span className="w-10 text-right text-sm text-texto">
-                                    {curso.percentual}%
-                                  </span>
-                                </div>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-              <div className="hidden overflow-x-auto md:block lg:overflow-visible">
-                <table className="w-full min-w-[46rem] text-left text-sm">
-                  <thead className="border-b border-linha bg-superficie text-xs font-bold text-texto-secundario">
-                    <tr>
-                      <th scope="col" className="px-6 py-3">
-                        Aluno
-                      </th>
-                      <th scope="col" className="px-3 py-3">
-                        Cursos
-                      </th>
-                      <th scope="col" className="px-3 py-3">
-                        Progresso
-                      </th>
-                      <th scope="col" className="px-6 py-3">
-                        Situação
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-linha">
-                    {visiveis.map((linha) => (
-                      <tr key={linha.id} className="align-top">
-                        <td className="px-6 py-3">
-                          <Link
-                            href={`/professor/alunos/${linha.id}`}
-                            className="flex min-h-12 items-center gap-3 font-bold text-texto hover:underline"
-                          >
-                            <Avatar
-                              foto={linha.foto}
-                              className={`size-10 ${linha.avatar}`}
-                            />
-                            <span className="min-w-0">
-                              <span className="block break-words">
-                                {linha.nome}
-                              </span>
-                              <span className="block text-xs font-normal break-all text-texto-secundario">
-                                {linha.email}
-                              </span>
-                            </span>
-                          </Link>
-                        </td>
-                        <td className="px-3 py-3">
-                          {linha.cursos.length === 0 ? (
-                            <span className="flex min-h-12 items-center text-texto-secundario">
-                              Sem matrículas
-                            </span>
-                          ) : (
-                            <ul className="space-y-2">
-                              {linha.cursos.map((curso) => (
-                                <li
-                                  key={curso.id}
-                                  className="flex min-h-6 items-center break-words"
-                                >
-                                  {curso.titulo}
-                                </li>
-                              ))}
-                            </ul>
-                          )}
-                        </td>
-                        <td className="px-3 py-3">
-                          {linha.cursos.length === 0 ? (
-                            <span
-                              aria-label="Sem progresso"
-                              className="flex min-h-12 items-center"
-                            >
-                              —
-                            </span>
-                          ) : (
-                            <ul className="space-y-2">
-                              {linha.cursos.map((curso) => (
-                                <li
-                                  key={curso.id}
-                                  className="flex min-h-6 min-w-36 items-center gap-3"
-                                >
-                                  {curso.percentual === null ? (
-                                    <span aria-label="Sem progresso">—</span>
-                                  ) : (
-                                    <>
-                                      <div className="flex-1">
-                                        <BarraProgresso
-                                          percentual={curso.percentual}
-                                          rotulo={`Progresso de ${linha.nome} em ${curso.titulo}`}
-                                          cor="bordo"
-                                          comTexto={false}
-                                        />
-                                      </div>
-                                      <span className="w-10 text-right">
-                                        {curso.percentual}%
-                                      </span>
-                                    </>
-                                  )}
-                                </li>
-                              ))}
-                            </ul>
-                          )}
-                        </td>
-                        <td className="px-6 py-3 align-middle">
-                          <span
-                            className={`inline-block rounded-full px-3 py-1 text-xs font-bold ${linha.etiqueta.classe}`}
-                          >
-                            {linha.etiqueta.texto}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </>
-          )}
-        </section>
+            {() => pedidos}
+          </PainelLateral>
+          <PainelLateral
+            rotulo="Recusados"
+            titulo="Recusados recentemente"
+            variante="secundario"
+            tamanho="pequeno"
+            classeDoBotao="w-auto"
+          >
+            {() => recusados}
+          </PainelLateral>
+          <Link
+            href="/professor/alunos/convidar"
+            className={classesDoBotao("primario", "w-auto", "pequeno")}
+          >
+            Convidar aluno
+          </Link>
+        </div>
       </div>
+
+      <div className="flex flex-col gap-3 md:flex-row md:items-center">
+        <BuscaDeAlunos valor={busca} aoMudar={setBusca} />
+        <div
+          role="group"
+          aria-label="Filtrar por situação"
+          className="flex flex-wrap gap-1 rounded-full border border-linha bg-superficie p-1"
+        >
+          {FILTROS.map(({ valor, rotulo }) => (
+            <button
+              key={valor}
+              type="button"
+              aria-pressed={filtro === valor}
+              onClick={() => setFiltro(valor)}
+              className={`min-h-10 cursor-pointer rounded-full px-4 text-sm font-bold ${
+                filtro === valor
+                  ? "bg-bloco text-texto-sobre-bloco"
+                  : "text-texto-secundario hover:text-texto"
+              }`}
+            >
+              {rotulo}
+            </button>
+          ))}
+        </div>
+        {cursoId && (
+          <p className="flex items-center gap-2 text-sm text-texto">
+            <span>
+              Curso:{" "}
+              <strong className="break-words">
+                {cursoFiltrado ?? "curso sem alunos"}
+              </strong>
+            </span>
+            <Link
+              href="/professor/alunos"
+              className="inline-flex min-h-10 items-center font-bold text-destaque underline"
+            >
+              Limpar
+            </Link>
+          </p>
+        )}
+      </div>
+
+      <section aria-labelledby="turma" className="min-w-0 space-y-5">
+        <h2 id="turma" className="sr-only">
+          Turma
+        </h2>
+        <p role="status" className="sr-only">
+          {termo || filtro !== "todos" || cursoId
+            ? `${visiveis.length} ${visiveis.length === 1 ? "aluno encontrado" : "alunos encontrados"}`
+            : ""}
+        </p>
+        {linhas.length === 0 ? (
+          <p className="text-texto-secundario">
+            Nenhum aluno cadastrado ainda.
+          </p>
+        ) : visiveis.length === 0 ? (
+          <p className="text-texto-secundario">Nenhum aluno com esse filtro.</p>
+        ) : (
+          GRUPOS.map((grupo) => {
+            const doGrupo = visiveis.filter(grupo.pertence);
+            // A seção vazia não aparece.
+            if (doGrupo.length === 0) return null;
+            return (
+              <section
+                key={grupo.id}
+                aria-labelledby={`grupo-${grupo.id}`}
+                className="space-y-2"
+              >
+                <h3
+                  id={`grupo-${grupo.id}`}
+                  className="text-sm font-bold text-texto-secundario"
+                >
+                  {grupo.titulo}{" "}
+                  <span className="font-normal">({doGrupo.length})</span>
+                </h3>
+                <ul
+                  aria-label={grupo.titulo}
+                  className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+                >
+                  {doGrupo.map((linha) => (
+                    <li key={linha.id}>
+                      <CartaoDoAluno linha={linha} />
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            );
+          })
+        )}
+      </section>
     </>
   );
 }
@@ -276,7 +382,7 @@ function BuscaDeAlunos({
   aoMudar: (valor: string) => void;
 }) {
   return (
-    <div className="w-full sm:w-72">
+    <div className="w-full md:w-72">
       <label htmlFor="busca-de-alunos" className="sr-only">
         Buscar aluno pelo nome
       </label>

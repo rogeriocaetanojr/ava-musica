@@ -141,17 +141,17 @@ export type StatusDoAluno =
 export const NOMES_DOS_STATUS: Record<StatusDoAluno, string> = {
   bloqueado: "Bloqueado",
   pendente: "Pendente",
-  aguardando: "Aguardando responsável",
+  aguardando: "Aguardando aceite",
   convidado: "Convidado",
   ativo: "Ativo",
 };
 
 export const CORES_DOS_STATUS: Record<StatusDoAluno, string> = {
-  bloqueado: "bg-vinho text-sobre-bordo",
+  bloqueado: "bg-bloco-perigo text-texto-sobre-bloco-perigo",
   pendente: "bg-amarelo text-texto-sobre-amarelo",
-  aguardando: "bg-bloco text-texto-sobre-bloco",
-  convidado: "border border-linha bg-fundo text-texto",
-  ativo: "bg-linha text-destaque",
+  aguardando: "bg-amarelo text-texto-sobre-amarelo",
+  convidado: "border border-linha bg-fundo text-texto-secundario",
+  ativo: "bg-bloco-sucesso text-texto-sobre-bloco-sucesso",
 };
 
 // Bloqueado: o professor pausou o acesso (vale acima dos outros).
@@ -187,4 +187,98 @@ export function normalizarEmail(valor: unknown): string | null {
   if (typeof valor !== "string") return null;
   const email = valor.trim().toLowerCase();
   return EMAIL.test(email) && email.length <= 254 ? email : null;
+}
+
+// Aluno ativo sem abrir nenhuma aula há mais que isto vai para "Precisam de
+// atenção" na Turma, com o selo "Parado há X dias".
+export const DIAS_SEM_ATIVIDADE = 14;
+const DIA_MS = 24 * 60 * 60 * 1000;
+
+export type MotivoDeAtencao =
+  | { tipo: "aguardando" | "convidado" | "sem-curso" }
+  | { tipo: "parado"; dias: number };
+
+// Ordem de prioridade dos motivos; a seção e a ordenação dos cards usam o
+// primeiro.
+export const ORDEM_DOS_MOTIVOS: MotivoDeAtencao["tipo"][] = [
+  "aguardando",
+  "convidado",
+  "sem-curso",
+  "parado",
+];
+const MAXIMO_DE_MOTIVOS = 2;
+
+// Motivos para o aluno aparecer em "Precisam de atenção", na ordem de
+// prioridade (aguardando aceite, convidado, sem curso, parado) e no máximo
+// dois, por exemplo Convidado + Sem curso. Parado: a última aula concluída
+// passou do limite ou, sem nenhuma, a matrícula mais antiga passou dele.
+// Bloqueado não entra. Vazio quando não precisa de atenção.
+export function motivosDeAtencao(
+  aluno: {
+    status: StatusDoAluno;
+    // Datas de matrícula (criado_em de cada matrícula).
+    matriculas: string[];
+    // Última aula concluída, em qualquer curso.
+    ultimaAtividade: string | null;
+  },
+  agora: number = Date.now(),
+): MotivoDeAtencao[] {
+  if (aluno.status === "bloqueado" || aluno.status === "pendente") return [];
+  const motivos: MotivoDeAtencao[] = [];
+  if (aluno.status === "aguardando") motivos.push({ tipo: "aguardando" });
+  if (aluno.status === "convidado") motivos.push({ tipo: "convidado" });
+  if (aluno.matriculas.length === 0) motivos.push({ tipo: "sem-curso" });
+  else {
+    const desde =
+      aluno.ultimaAtividade ??
+      aluno.matriculas.reduce((a, b) =>
+        Date.parse(a) < Date.parse(b) ? a : b,
+      );
+    const dias = Math.floor((agora - Date.parse(desde)) / DIA_MS);
+    if (dias > DIAS_SEM_ATIVIDADE) motivos.push({ tipo: "parado", dias });
+  }
+  return motivos.slice(0, MAXIMO_DE_MOTIVOS);
+}
+
+// Selo do card conforme o motivo: uma cor por motivo (fundo suave e texto
+// forte, AA nos dois temas) e um ícone antes do texto, para não depender só
+// da cor. Os traços são caminhos SVG de 24×24.
+const SELOS_DOS_MOTIVOS: Record<
+  MotivoDeAtencao["tipo"],
+  { classe: string; icone: string }
+> = {
+  // Ampulheta.
+  aguardando: {
+    classe: "bg-selo-amarelo text-sobre-selo-amarelo",
+    icone: "M7 3h10M7 21h10M8 3c0 5 8 5 8 9s-8 4-8 9M16 3c0 5-8 5-8 9s8 4 8 9",
+  },
+  // Envelope.
+  convidado: {
+    classe: "bg-selo-azul text-sobre-selo-azul",
+    icone: "M3 6h18v12H3zM3 7l9 6 9-6",
+  },
+  // Livro.
+  "sem-curso": {
+    classe: "bg-selo-laranja text-sobre-selo-laranja",
+    icone: "M4 5a2 2 0 0 1 2-2h14v16H6a2 2 0 0 0-2 2zM4 21V5",
+  },
+  // Pausa.
+  parado: {
+    classe: "bg-selo-vermelho text-sobre-selo-vermelho",
+    icone: "M9 6v12M15 6v12",
+  },
+};
+
+export function seloDoMotivo(motivo: MotivoDeAtencao): {
+  texto: string;
+  classe: string;
+  icone: string;
+} {
+  const texto =
+    motivo.tipo === "sem-curso"
+      ? "Sem curso"
+      : motivo.tipo === "parado"
+        ? `Parado há ${motivo.dias} dias`
+        : NOMES_DOS_STATUS[motivo.tipo];
+  return { texto, ...SELOS_DOS_MOTIVOS[motivo.tipo] };
 }

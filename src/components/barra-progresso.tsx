@@ -12,6 +12,7 @@ export function BarraProgresso({
   cor = "sucesso",
   comTexto = true,
   grossa = false,
+  fina = false,
 }: {
   percentual: number;
   rotulo: string;
@@ -19,6 +20,8 @@ export function BarraProgresso({
   comTexto?: boolean;
   // Barra mais alta, para o destaque do Continue de onde parou.
   grossa?: boolean;
+  // Barra mais baixa, para listas compactas (turma).
+  fina?: boolean;
 }) {
   const { trilho, barra } = CORES[cor];
   return (
@@ -29,7 +32,7 @@ export function BarraProgresso({
         aria-valuemin={0}
         aria-valuemax={100}
         aria-valuenow={percentual}
-        className={`w-full overflow-hidden rounded-full ${grossa ? "h-3.5" : cor === "sucesso" ? "h-3" : "h-2"} ${trilho}`}
+        className={`w-full overflow-hidden rounded-full ${grossa ? "h-3.5" : fina ? "h-1.5" : cor === "sucesso" ? "h-3" : "h-2"} ${trilho}`}
       >
         <div
           className={`h-full rounded-full ${barra}`}

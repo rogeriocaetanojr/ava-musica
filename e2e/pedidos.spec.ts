@@ -45,6 +45,8 @@ test("recusado não pede de novo até o professor permitir", async ({
   await entrar(professor, PROFESSOR);
   await expect(professor).toHaveURL(/\/professor$/);
   await professor.goto("/professor/alunos");
+  // Pedidos e recusados ficam em painéis laterais abertos pelo cabeçalho.
+  await professor.getByRole("button", { name: /^Pedidos de acesso/ }).click();
   const pedido = secao(professor, "Pedidos de acesso")
     .getByRole("listitem")
     .filter({ hasText: email });
@@ -53,6 +55,8 @@ test("recusado não pede de novo até o professor permitir", async ({
   await expect(
     professor.getByRole("status").filter({ hasText: "recusado" }),
   ).toBeVisible();
+  await professor.keyboard.press("Escape");
+  await professor.getByRole("button", { name: "Recusados" }).click();
   const recusa = secao(professor, "Recusados recentemente")
     .getByRole("listitem")
     .filter({ hasText: dica });

@@ -27,6 +27,27 @@
   --color-borda-cartao: #6e1a2d;
   --color-veu: #2e1a1c;
   --color-aba-atual: #3d0e1a;
+  /* Botões de liberar (sucesso) e de recusar (perigo): o texto sobre o fundo
+     tem contraste AA (4,5:1 ou mais) nos dois temas. Claro: 7,1:1 e 6,6:1. */
+  --color-botao-sucesso: #166534;
+  --color-sobre-sucesso: #ffffff;
+  --color-botao-perigo: #b42318;
+  --color-sobre-perigo: #ffffff;
+  /* Selo de bloqueado: texto vermelho escuro sobre rosa claro, 7:1. */
+  --color-bloco-perigo: #fde8e6;
+  --color-texto-sobre-bloco-perigo: #8a1c12;
+  /* Alça da barra de rolagem: cinza-vinho no claro (cerca de 3:1 com o fundo). */
+  --color-rolagem: #9c8084;
+  --color-rolagem-forte: #6e5558;
+  /* Selos de motivo de "Precisam de atenção": fundo suave e texto forte, todos acima de 5,5:1. */
+  --color-selo-amarelo: #fdf3d0;
+  --color-sobre-selo-amarelo: #7a5200;
+  --color-selo-azul: #e3edfb;
+  --color-sobre-selo-azul: #1d4ed8;
+  --color-selo-laranja: #fdebdc;
+  --color-sobre-selo-laranja: #9a3412;
+  --color-selo-vermelho: #fbeeee;
+  --color-sobre-selo-vermelho: #a63d3d;
 
   --font-titulo: var(--fonte-bricolage), system-ui, sans-serif;
   --font-sans: var(--fonte-manrope), system-ui, sans-serif;
@@ -58,6 +79,24 @@
     --color-borda-cartao: #8f3a4e;
     --color-veu: #000000;
     --color-aba-atual: #f2c230;
+    /* Escuro: os mesmos botões saturados, com texto branco (5:1 e 6,5:1). */
+    --color-botao-sucesso: #15803d;
+    --color-sobre-sucesso: #ffffff;
+    --color-botao-perigo: #b91c1c;
+    --color-sobre-perigo: #ffffff;
+    --color-bloco-perigo: #3a1414;
+    --color-texto-sobre-bloco-perigo: #f7c4bd;
+    --color-rolagem: #8f4a5b;
+    --color-rolagem-forte: #b06a7c;
+    /* Selos de motivo no escuro: texto claro sobre fundo escuro, acima de 7:1. */
+    --color-selo-amarelo: #33280a;
+    --color-sobre-selo-amarelo: #f5d36b;
+    --color-selo-azul: #13233d;
+    --color-sobre-selo-azul: #9cc2ff;
+    --color-selo-laranja: #3a1f0e;
+    --color-sobre-selo-laranja: #fdba74;
+    --color-selo-vermelho: #331a1c;
+    --color-sobre-selo-vermelho: #f2a7a7;
   }
 
   @media (prefers-color-scheme: dark) {
@@ -79,6 +118,23 @@
       --color-borda-cartao: #8f3a4e;
       --color-veu: #000000;
       --color-aba-atual: #f2c230;
+      --color-botao-sucesso: #15803d;
+      --color-sobre-sucesso: #ffffff;
+      --color-botao-perigo: #b91c1c;
+      --color-sobre-perigo: #ffffff;
+      --color-bloco-perigo: #3a1414;
+      --color-texto-sobre-bloco-perigo: #f7c4bd;
+      --color-rolagem: #8f4a5b;
+      --color-rolagem-forte: #b06a7c;
+      /* Selos de motivo no escuro: texto claro sobre fundo escuro, acima de 7:1. */
+      --color-selo-amarelo: #33280a;
+      --color-sobre-selo-amarelo: #f5d36b;
+      --color-selo-azul: #13233d;
+      --color-sobre-selo-azul: #9cc2ff;
+      --color-selo-laranja: #3a1f0e;
+      --color-sobre-selo-laranja: #fdba74;
+      --color-selo-vermelho: #331a1c;
+      --color-sobre-selo-vermelho: #f2a7a7;
     }
   }
 }
@@ -106,10 +162,66 @@ body {
   accent-color: var(--color-destaque);
 }
 
+/* Barra de rolagem do site todo (página, painéis laterais e listas): fina,
+   trilho transparente e alça arredondada na cor do tema, mais forte no hover.
+   Continua visível; só a faixa de cursos do painel esconde a dela, que tem
+   setas e pontinhos no lugar. Firefox usa scrollbar-width/scrollbar-color;
+   Chrome, Edge e Safari, os pseudo-elementos ::-webkit-scrollbar. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-rolagem) transparent;
+}
+
+*:hover {
+  scrollbar-color: var(--color-rolagem-forte) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--color-rolagem);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-rolagem-forte);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Sem barra nenhuma: só o carrossel "Progresso por curso" do painel, que
+   navega pelas setas, pelos pontinhos, pelo arrasto e pelo teclado. Fica fora
+   de @layer, como as regras acima: um utilitário do Tailwind (em camada)
+   perderia para elas. */
+.sem-barra-de-rolagem {
+  scrollbar-width: none;
+}
+
+.sem-barra-de-rolagem::-webkit-scrollbar {
+  display: none;
+}
+
 /* Contorno amarelo em tudo que recebe foco pelo teclado. */
 :focus-visible {
   outline: 3px solid var(--color-amarelo);
   outline-offset: 2px;
+}
+
+/* Campos dos painéis laterais (role="dialog"): foco discreto, um contorno
+   fino na cor do texto, sem o amarelo grosso. Contraste com a superfície bem
+   acima dos 3:1 do AA nos dois temas. */
+[role="dialog"] :is(input, select, textarea):focus-visible {
+  outline: 2px solid var(--color-texto);
+  outline-offset: 1px;
 }
 
 /* Telas de página inteira trazem o próprio logo e o link da política. */
