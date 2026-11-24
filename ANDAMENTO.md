@@ -26,7 +26,6 @@
 - [ ] Lista de aulas do professor com o título inteiro
 - [ ] Acabamento visual da revisão das telas
 - [ ] Rodapés e páginas públicas num só padrão
-- [ ] Botão "Entrar com Google" de volta na tela de login: saiu sem querer no commit 2812b27 (que deixou a tela de entrar compacta e também tirou o Google do teste do login); será restaurado depois
 
 ### Testes
 
@@ -35,6 +34,8 @@
 - [ ] Entrada única nos testes e teste de recusa também no celular
 - [ ] Teste do bloqueio de aluno
 - [ ] Teste da exclusão de aluno
+- [ ] Teste automático de acessibilidade também no tema escuro (hoje `e2e/acessibilidade.spec.ts` roda só no claro)
+- [ ] Testes de ponta a ponta numa tela de 400 px de largura (o celular dos testes é o Pixel 7, com 412 px)
 - [x] Teste dos recados
 - [x] Teste de ações sem permissão
 - [x] Teste automático de acessibilidade
@@ -43,7 +44,6 @@
 
 ### Revisão
 
-- [ ] Revisão do protótipo e demonstração para o professor
 - [ ] Depois do deploy, conferir num celular de verdade que o teclado não esconde o botão de enviar nos painéis Novo recado, Novo bloco e Pedidos de acesso
 
 ### Publicação do site
@@ -54,8 +54,8 @@
   - **Secure password change** ligado à mão nos dois projetos (Authentication → Sign In / Providers → Email), como no `config.toml`, que vale só para o Supabase local: é a proteção do S6 no site publicado (veja `guias/deploy.md`).
 - [ ] Chaves e configurações secretas guardadas com segurança
 - [ ] Site publicado na Netlify, com versão de teste e versão oficial
-- [ ] Login com Google e envio de e-mails funcionando de verdade
-  - Inclui o cadastro aberto, o Google ligado e o SMTP do Resend para o aviso de pedido novo (veja `guias/deploy.md` e `guias/login-google.md`).
+- [ ] Ativar o envio de e-mails de verdade
+  - Inclui o cadastro aberto e o SMTP do Resend para o aviso de pedido novo (veja `guias/deploy.md`).
   - Ligar na nuvem o captcha (Cloudflare Turnstile) e o hook que barra recusados por 7 dias, nos dois projetos (veja `guias/deploy.md`).
   - A política de privacidade (versão 3-rascunho) cita o Supabase, o Google, a Cloudflare, o Resend e a Netlify e a transferência internacional; confirmar com cada serviço onde os dados ficam e se o contrato tem cláusulas de proteção de dados antes da revisão jurídica.
 - [ ] Verificações automáticas completas a cada mudança no código
@@ -74,6 +74,10 @@
 - [ ] Cuidados com os dados pessoais no dia a dia, conforme a LGPD
 - [ ] Manual do professor e documentação do projeto
 - [ ] Lançamento com um primeiro grupo de alunos
+
+## Decisões
+
+- A entrada com Google fica para uma versão futura.
 
 ## Concluído
 
@@ -100,6 +104,13 @@
 - [x] Aluno sem convite pode pedir acesso entrando com o Google; o professor libera ou recusa no painel e recebe um e-mail a cada pedido novo
 - [x] Pedido de acesso também pelo e-mail, com captcha, e bloqueio de 7 dias para quem foi recusado, com a lista "Recusados recentemente" no painel
 - [x] Nome do aluno sempre preenchido: tela "Como você se chama?" para quem entra sem nome, e o professor pode corrigir o nome na ficha do aluno
+
+### Revisão
+
+- [x] Revisar segurança e acessibilidade do protótipo
+  - Contorno de foco duplo no tema claro (cor do texto com o amarelo por fora), com contraste de pelo menos 3:1 com o fundo; no escuro continua só o amarelo
+  - Falha no envio de e-mail registrada só com os códigos do erro, sem o endereço do destinatário
+  - `marcarAula` e `marcarProva` começam com `exigirAluno()`
 
 ### Telas
 

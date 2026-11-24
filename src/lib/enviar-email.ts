@@ -27,7 +27,12 @@ async function enviar(
     });
     return true;
   } catch (erro) {
-    console.error("Falha ao enviar e-mail:", erro);
+    // Só os códigos: a mensagem do SMTP pode trazer o endereço do destinatário.
+    const { code, responseCode } = (erro ?? {}) as {
+      code?: string;
+      responseCode?: number;
+    };
+    console.error("Falha ao enviar e-mail:", code, responseCode);
     return false;
   }
 }

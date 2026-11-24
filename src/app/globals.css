@@ -210,18 +210,35 @@ body {
   display: none;
 }
 
-/* Contorno amarelo em tudo que recebe foco pelo teclado. */
+/* Foco pelo teclado. No claro, contorno duplo: o da cor do texto garante o
+   contraste de 3:1 com o fundo creme (o amarelo sozinho dá cerca de 1,6:1) e
+   o amarelo por fora mantém a identidade. No escuro, só o amarelo, que já
+   contrasta com o fundo. */
 :focus-visible {
-  outline: 3px solid var(--color-amarelo);
+  outline: 3px solid var(--color-texto);
   outline-offset: 2px;
+  box-shadow: 0 0 0 5px var(--color-amarelo);
+}
+
+:root[data-tema="escuro"] :focus-visible {
+  outline-color: var(--color-amarelo);
+  box-shadow: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-tema]) :focus-visible {
+    outline-color: var(--color-amarelo);
+    box-shadow: none;
+  }
 }
 
 /* Campos dos painéis laterais (role="dialog"): foco discreto, um contorno
    fino na cor do texto, sem o amarelo grosso. Contraste com a superfície bem
    acima dos 3:1 do AA nos dois temas. */
-[role="dialog"] :is(input, select, textarea):focus-visible {
+:root [role="dialog"] :is(input, select, textarea):focus-visible {
   outline: 2px solid var(--color-texto);
   outline-offset: 1px;
+  box-shadow: none;
 }
 
 /* Telas de página inteira trazem o próprio logo e o link da política. */

@@ -61,6 +61,7 @@ export async function marcarAula(
   aulaId: string,
   concluida: boolean,
 ): Promise<ResultadoDaAcao> {
+  await exigirAluno();
   return registrar(
     aulaId,
     null,
@@ -76,6 +77,7 @@ export async function marcarProva(
   conteudoId: string,
   enviada: boolean,
 ): Promise<ResultadoDaAcao> {
+  await exigirAluno();
   return registrar(
     aulaId,
     conteudoId,
