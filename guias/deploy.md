@@ -101,6 +101,52 @@ O site manda um e-mail ao professor a cada pedido novo e o convite ao aluno cada
 - com o cadastro aberto, alguém pode criar muitas contas pelo Google ou em Criar conta para gastar a cota. Cada conta gera um e-mail de confirmação e só um aviso, e o aviso só sai depois de a pessoa abrir o link; o captcha, o limite de 30 e-mails por hora e o limite do Supabase de 15 cadastros a cada 5 minutos por IP seguram o ritmo. Se isso acontecer, recuse os pedidos e considere desligar o cadastro por um tempo;
 - acompanhe o uso no painel do Resend. Se passar de 100 por dia, os e-mails do dia param, inclusive as confirmações de conta e os convites.
 
+## Migrações pelo computador (`db:push:staging` e `db:push:prod`)
+
+Os dois projetos do Supabase ficam em São Paulo (`sa-east-1`): `ava-staging` (homologação) e `ava-prod` (produção). No dia a dia, quem aplica as migrações é o workflow `migracoes.yml` (seção seguinte); estes scripts servem para a primeira aplicação e para quando for preciso aplicar à mão.
+
+1. Entre na CLI uma vez por computador: `npx supabase login` (abre o navegador e guarda o token de acesso fora do repositório).
+2. No `.env.local`, ponha o identificador de cada projeto, que fica em **Project Settings → General → Project ID** (20 letras e números):
+
+   ```
+   STAGING_PROJECT_REF=<id do ava-staging>
+   PROD_PROJECT_REF=<id do ava-prod>
+   ```
+
+   Também dá para defini-los só no terminal (no PowerShell, `$env:STAGING_PROJECT_REF="<id>"`).
+
+3. Rode o do ambiente:
+
+   | Comando                   | O que faz                                                  |
+   | ------------------------- | ---------------------------------------------------------- |
+   | `npm run db:push:staging` | `supabase link` no `ava-staging` e `supabase db push` nele |
+   | `npm run db:push:prod`    | `supabase link` no `ava-prod` e `supabase db push` nele    |
+
+4. Quando a CLI pedir a senha do banco (**Database password**), digite no terminal a senha do projeto (a definida ao criá-lo; se perdeu, gere outra em **Project Settings → Database → Reset database password** e atualize o `SUPABASE_DB_URL` dos environments do GitHub). A senha não fica em nenhum arquivo do projeto.
+5. O `db push` lista as migrações que faltam e pergunta se pode aplicar; responda `Y`. Sem nada novo, ele diz que o banco está atualizado.
+
+Sempre aplique primeiro no `ava-staging` e só depois no `ava-prod`. O `link` vale para a pasta toda (fica em `supabase/.temp/`, fora do Git): depois de um `db:push:prod`, qualquer outro comando da CLI que use o projeto ligado vai no `ava-prod`.
+
+**Testes SQL na homologação:** com as migrações aplicadas, rode os testes de `supabase/tests` contra o `ava-staging`. Cada arquivo roda numa transação desfeita no fim, então nada fica gravado. Use o endereço do **Session pooler** (o mesmo `SUPABASE_DB_URL` da seção seguinte) e digite a senha no lugar de `[YOUR-PASSWORD]` direto no terminal (PowerShell):
+
+```
+$env:DATABASE_URL="<endereço do Session pooler do ava-staging, com a senha>"; npm run test:db; Remove-Item Env:DATABASE_URL
+```
+
+Nunca rode os testes SQL contra o `ava-prod`.
+
+**Conta do professor:** toda conta nasce `aluno`. Depois de o professor criar a conta no site (Criar conta e confirmar o e-mail), promova-a no **SQL Editor** do projeto, com o e-mail dele:
+
+```sql
+update public.perfis
+set papel = 'professor'
+where id = (select id from auth.users where email = '<e-mail do professor>');
+```
+
+Confira com `select id, papel from public.perfis where papel = 'professor';`: deve voltar uma linha só.
+
+**Conferências depois de aplicar:** em **Database → Tables**, todas as tabelas de `public` com **RLS enabled**, e em **Advisors → Security Advisor**, nenhum item em **Errors**, nos dois projetos.
+
 ## Automação no GitHub (migrações, backup, keep-alive)
 
 Os workflows de `.github/workflows` usam três **environments** do repositório (**Settings → Environments**). As chaves ficam só neles, nunca em arquivo:

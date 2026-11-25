@@ -49,9 +49,6 @@
 ### Publicação do site
 
 - [ ] Contas dos serviços criadas e com acesso de duas pessoas
-- [ ] Banco de dados na nuvem, com ambientes de teste e de uso real
-  - Projetos criados em São Paulo: `ava-staging` (homologação) e `ava-prod` (produção); environments `homologacao`, `producao` (com revisor) e `producao-leitura` cadastrados no GitHub. Migrações aplicadas nos dois.
-  - **Secure password change** ligado à mão nos dois projetos (Authentication → Sign In / Providers → Email), como no `config.toml`, que vale só para o Supabase local: é a proteção do S6 no site publicado (veja `guias/deploy.md`).
 - [ ] Chaves e configurações secretas guardadas com segurança
 - [ ] Site publicado na Netlify, com versão de teste e versão oficial
 - [ ] Ativar o envio de e-mails de verdade
@@ -176,3 +173,10 @@
 - [x] D2: keep-alive duas vezes por semana nos dois ambientes (`keep-alive.yml`)
 - [x] D3: as contas de Criar conta não confirmadas em 48 horas são apagadas todo dia às 3h (função `privado.apagar_contas_nao_confirmadas`, agendada pelo pg_cron)
 - [x] O3 (código): erros do servidor para o Sentry sem o SDK e sem dados pessoais (`src/lib/monitoramento.ts`); o monitor de uptime e o projeto do Sentry ficam na Publicação do site
+
+### Publicação do site
+
+- [x] Banco de dados na nuvem, com ambientes de teste e de uso real
+  - Projetos criados em São Paulo: `ava-staging` (homologação) e `ava-prod` (produção); environments `homologacao`, `producao` (com revisor) e `producao-leitura` cadastrados no GitHub. Migrações aplicadas nos dois.
+  - Migrações também pelo computador com `npm run db:push:staging` e `npm run db:push:prod` (`supabase link` e `supabase db push`, com o identificador do projeto em `STAGING_PROJECT_REF` e `PROD_PROJECT_REF`; veja `guias/deploy.md`).
+  - **Secure password change** ligado à mão nos dois projetos (Authentication → Sign In / Providers → Email), como no `config.toml`, que vale só para o Supabase local: é a proteção do S6 no site publicado (veja `guias/deploy.md`).
