@@ -19,7 +19,7 @@ jobs:
     # agendamento), restrito à main em Settings → Environments.
     environment: producao-leitura
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       # O pg_dump precisa ser da mesma versão do Postgres do Supabase (17).
       - name: Cliente do Postgres 17
         run: |
