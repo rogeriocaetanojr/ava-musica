@@ -1,6 +1,29 @@
+# Publicação na Netlify (passo a passo em guias/deploy.md, "Site na Netlify").
+#
+# Dois contextos:
+# - production: o branch `producao` (definido no painel como Production branch),
+#   que vai para o domínio oficial e usa o projeto ava-prod do Supabase;
+# - branch-deploy: só o branch `main` (no painel, Branch deploys → Let me add
+#   individual branches → main), que publica a homologação em
+#   main--<site>.netlify.app e usa o projeto ava-staging.
+# Deploy previews ficam desligados no painel (o trabalho é direto na main, sem
+# pull requests), por isso não há contexto deploy-preview aqui.
+#
+# As variáveis de ambiente não ficam aqui: cada contexto tem os valores dele em
+# Site configuration → Environment variables. Variáveis deste arquivo valem só
+# no build, e o site também lê várias delas nas funções do servidor.
+# O Next.js roda pelo adaptador da Netlify, que a própria Netlify instala ao
+# reconhecer o projeto.
+
 [build]
   command = "npm run build"
   publish = ".next"
 
 [build.environment]
   NODE_VERSION = "24"
+
+[context.production]
+  command = "npm run build"
+
+[context.branch-deploy]
+  command = "npm run build"

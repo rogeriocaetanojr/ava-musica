@@ -50,6 +50,7 @@
 
 - [ ] Contas dos serviços criadas e com acesso de duas pessoas
 - [ ] Site publicado na Netlify, com versão de teste e versão oficial
+  - O `netlify.toml` tem os contextos `production` (branch `producao`, `ava-prod`) e `branch-deploy` (só a `main`, `ava-staging`), sem deploy previews; o fluxo e as variáveis por contexto estão em `guias/deploy.md`. Falta, no painel: criar o site, o branch `producao`, as variáveis e o domínio na Hostinger.
 - [ ] Ativar o envio de e-mails de verdade
   - Inclui o cadastro aberto e o SMTP do Resend para o aviso de pedido novo (veja `guias/deploy.md`).
   - Ligar na nuvem o captcha (Cloudflare Turnstile) e o hook que barra recusados por 7 dias, nos dois projetos (veja `guias/deploy.md`).

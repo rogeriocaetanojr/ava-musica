@@ -59,7 +59,7 @@ export function Rodape({
         {/* Coluna vazia que, no computador, deixa o crédito no centro. */}
         {!compacto && <span aria-hidden="true" className="hidden md:block" />}
         <p className="pt-2 text-sm text-texto-secundario md:pt-0">
-          © 2026 {NOME_DO_AVA}
+          © 2026 {NOME_DO_AVA}. Todos os direitos reservados.
         </p>
         <div
           className={`flex flex-wrap items-center justify-center gap-x-6 ${compacto ? "" : "md:justify-end"}`}

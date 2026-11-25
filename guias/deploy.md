@@ -6,12 +6,66 @@ Guia de publicação do site. As seções serão completadas à medida que as et
 
 Os endereços enviados por e-mail ou copiados pelo professor (o link do convite, o link de confirmação de Criar conta e o link de autorização do responsável) são montados com essa variável. Configure-a na Netlify, em **Site configuration → Environment variables**, com o endereço de cada ambiente, sem barra no final:
 
-| Ambiente    | Valor                                  |
-| ----------- | -------------------------------------- |
-| Homologação | endereço da versão de teste na Netlify |
-| Produção    | endereço oficial do site               |
+| Ambiente    | Valor                                    |
+| ----------- | ---------------------------------------- |
+| Homologação | `https://main--<site>.netlify.app`       |
+| Produção    | `https://johnmeyerescolademusica.com.br` |
 
 Sem ela, o `npm run build` para com o erro "NEXT_PUBLIC_SITE_URL não está definida", para evitar e-mails com links apontando para `localhost`. O build confere também as outras variáveis obrigatórias (`src/lib/env.ts` e `.env.example`). No computador, ela fica no `.env.local` (`http://localhost:3000`).
+
+## Site na Netlify e fluxo de publicação
+
+O trabalho é feito direto na `main`, sem pull requests. São dois ambientes, cada um ligado a um branch:
+
+| Branch     | Contexto da Netlify | Endereço                                 | Supabase      |
+| ---------- | ------------------- | ---------------------------------------- | ------------- |
+| `main`     | Branch deploys      | `https://main--<site>.netlify.app`       | `ava-staging` |
+| `producao` | Production          | `https://johnmeyerescolademusica.com.br` | `ava-prod`    |
+
+**Fluxo:**
+
+1. Todo push na `main` publica na homologação. Confira lá a mudança (login, a tela alterada e o que mais ela afetar).
+2. Quando a homologação estiver boa, leve a `main` para a produção atualizando o branch `producao` com ela:
+
+   ```
+   git push origin main:producao
+   ```
+
+   A Netlify publica a produção a partir do `producao`. Nunca se faz commit direto no `producao`: ele só recebe o que já passou pela `main`.
+
+3. Se a mudança tiver migração, aplique-a no `ava-prod` (aprovação do workflow `migracoes.yml`, seção "Automação no GitHub") **antes** de atualizar o `producao`, para o código novo não chegar antes do banco.
+4. Para desfazer algo na produção, faça `git revert` na `main`, confira na homologação e atualize o `producao` de novo. O histórico nunca é reescrito.
+
+**Primeira configuração (painel da Netlify):**
+
+1. **Add new project → Import an existing project → GitHub**, escolha o repositório. O build e a pasta vêm do `netlify.toml`.
+2. Antes do primeiro deploy, cadastre as variáveis de cada contexto (tabela abaixo); sem elas, o build para dizendo qual falta.
+3. Crie o branch `producao` a partir da `main` (`git push origin main:producao`).
+4. Em **Project configuration → Build & deploy → Branches and deploy contexts**:
+   - **Production branch:** `producao`;
+   - **Branch deploys:** _Let me add individual branches_, só `main`;
+   - **Deploy Previews:** _Don't deploy pull requests_.
+5. Em **Domain management**, adicione `johnmeyerescolademusica.com.br` e o `www`. A zona DNS fica na Hostinger: crie lá os registros que a Netlify mostrar (o `A` do domínio e o `CNAME` do `www` para `<site>.netlify.app`). O HTTPS sai sozinho depois que o DNS propagar.
+
+**Variáveis por contexto** (**Project configuration → Environment variables**, com valores diferentes em _Production_ e em _Branch deploys_; nunca no `netlify.toml` nem no repositório):
+
+| Variável                         | Production (`ava-prod`)                                                     | Branch deploys (`ava-staging`)            | De onde copiar                                                             | Secreta |
+| -------------------------------- | --------------------------------------------------------------------------- | ----------------------------------------- | -------------------------------------------------------------------------- | ------- |
+| `NEXT_PUBLIC_SUPABASE_URL`       | Project URL do `ava-prod`                                                   | Project URL do `ava-staging`              | Supabase → **Project Settings → Data API** (ou **Connect**)                | Não     |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY`  | publishable (ou anon) do `ava-prod`                                         | publishable (ou anon) do `ava-staging`    | Supabase → **Project Settings → API Keys**                                 | Não     |
+| `NEXT_PUBLIC_SITE_URL`           | `https://johnmeyerescolademusica.com.br`                                    | `https://main--<site>.netlify.app`        | Netlify → **Domain management**                                            | Não     |
+| `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | site key do widget de produção                                              | site key do widget de homologação         | Cloudflare → **Turnstile** → widget → **Site Key**                         | Não     |
+| `SUPABASE_SERVICE_ROLE_KEY`      | secret (ou service_role) do `ava-prod`                                      | secret (ou service_role) do `ava-staging` | Supabase → **Project Settings → API Keys**                                 | Sim     |
+| `SMTP_HOST`                      | `smtp.resend.com`                                                           | `smtp.resend.com`                         | Resend → **Settings → SMTP**                                               | Não     |
+| `SMTP_PORT`                      | `465`                                                                       | `465`                                     | Resend → **Settings → SMTP**                                               | Não     |
+| `SMTP_USER`                      | `resend`                                                                    | `resend`                                  | Resend → **Settings → SMTP**                                               | Não     |
+| `SMTP_PASS`                      | chave de API de produção                                                    | chave de API de homologação               | Resend → **API Keys** → _Create API key_ (Sending access, só esse domínio) | Sim     |
+| `SMTP_REMETENTE`                 | `Escola de Música John Meyer <nao-responda@johnmeyerescolademusica.com.br>` | o mesmo                                   | domínio verificado no Resend → **Domains**                                 | Não     |
+| `EMAIL_PROFESSOR`                | e-mail do professor                                                         | e-mail de quem testa                      | —                                                                          | Não     |
+| `SENTRY_DSN` (opcional)          | DSN do projeto no Sentry                                                    | o mesmo                                   | Sentry → **Settings → Projects → Client Keys (DSN)**                       | Sim     |
+| `SENTRY_AMBIENTE` (opcional)     | `producao`                                                                  | `homologacao`                             | —                                                                          | Não     |
+
+Marque as secretas como **Contains secret values**. As `NEXT_PUBLIC_` entram no build: depois de mudar uma, publique de novo. A chave secreta do Turnstile e a senha do SMTP do Supabase não vão para a Netlify: ficam no painel do Supabase.
 
 ## Senha e confirmação do e-mail
 
@@ -83,14 +137,14 @@ O site manda um e-mail ao professor a cada pedido novo e o convite ao aluno cada
 2. Crie uma chave de API com permissão **Sending access**, uma por ambiente.
 3. Na Netlify, em **Site configuration → Environment variables**, para cada ambiente:
 
-   | Variável          | Valor                                                       |
-   | ----------------- | ----------------------------------------------------------- |
-   | `SMTP_HOST`       | `smtp.resend.com`                                           |
-   | `SMTP_PORT`       | `465`                                                       |
-   | `SMTP_USER`       | `resend`                                                    |
-   | `SMTP_PASS`       | a chave de API do Resend (marque como secreta)              |
-   | `SMTP_REMETENTE`  | `Escola de Música John Meyer <avisos@<domínio verificado>>` |
-   | `EMAIL_PROFESSOR` | o e-mail do professor (em homologação, o de quem testa)     |
+   | Variável          | Valor                                                                       |
+   | ----------------- | --------------------------------------------------------------------------- |
+   | `SMTP_HOST`       | `smtp.resend.com`                                                           |
+   | `SMTP_PORT`       | `465`                                                                       |
+   | `SMTP_USER`       | `resend`                                                                    |
+   | `SMTP_PASS`       | a chave de API do Resend (marque como secreta)                              |
+   | `SMTP_REMETENTE`  | `Escola de Música John Meyer <nao-responda@johnmeyerescolademusica.com.br>` |
+   | `EMAIL_PROFESSOR` | o e-mail do professor (em homologação, o de quem testa)                     |
 
 4. Sem essas variáveis, o site funciona e os pedidos aparecem no painel, mas o aviso não sai, e o convite também não: a tela Convidar mostra o link com o botão Copiar, para o professor mandar ao aluno de outro jeito.
 5. **Mesmo SMTP no Supabase:** use o Resend também como SMTP próprio do Supabase, em **Authentication → Emails → SMTP Settings** (host, porta, usuário e senha iguais). É por ele que saem os e-mails de confirmação de Criar conta, e é o que libera o limite de 30 e-mails por hora da tabela acima.
@@ -139,11 +193,16 @@ Nunca rode os testes SQL contra o `ava-prod`.
 
 ```sql
 update public.perfis
-set papel = 'professor'
-where id = (select id from auth.users where email = '<e-mail do professor>');
+set papel = 'professor',
+    liberado_em = coalesce(liberado_em, now()),
+    pedido_em = null
+where id = (
+  select id from auth.users
+  where email = lower('<e-mail do professor>') and email_confirmed_at is not null
+);
 ```
 
-Confira com `select id, papel from public.perfis where papel = 'professor';`: deve voltar uma linha só.
+O `SQL Editor` roda como `postgres`, que os gatilhos de `perfis` deixam mudar o papel e a liberação; pela API isso é barrado. Deve responder `UPDATE 1`; com `UPDATE 0`, o e-mail está diferente ou a conta ainda não foi confirmada. Confira com `select id, papel, liberado_em, bloqueado_em from public.perfis where papel = 'professor';`: deve voltar uma linha só, com `liberado_em` preenchido e `bloqueado_em` vazio.
 
 **Conferências depois de aplicar:** em **Database → Tables**, todas as tabelas de `public` com **RLS enabled**, e em **Advisors → Security Advisor**, nenhum item em **Errors**, nos dois projetos.
 
