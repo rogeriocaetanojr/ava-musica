@@ -32,7 +32,7 @@ jobs:
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
           BACKUP_SENHA: ${{ secrets.BACKUP_SENHA }}
         run: bash scripts/backup/fazer-backup.sh backup
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: backup-${{ github.run_id }}
           path: backup/
