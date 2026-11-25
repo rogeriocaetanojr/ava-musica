@@ -12,11 +12,27 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  segredos:
+    name: Segredos no histórico (gitleaks)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      # fetch-depth 0 traz o histórico inteiro, para varrer todos os commits.
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: gitleaks
+        run: |
+          versao=8.28.0
+          curl -sSfL "https://github.com/gitleaks/gitleaks/releases/download/v${versao}/gitleaks_${versao}_linux_x64.tar.gz" \
+            | tar -xz gitleaks
+          ./gitleaks git --redact --verbose --exit-code 1 .
+
   app:
     name: Lint, tipos, testes, auditoria e build
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    # Valores de exemplo: o build confere que todas existem (src/env.ts).
+    # Valores de exemplo: o build confere que todas existem (src/lib/env.ts).
     env:
       NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:54321
       NEXT_PUBLIC_SUPABASE_ANON_KEY: chave-anon-de-exemplo
