@@ -11,7 +11,7 @@ Os endereços enviados por e-mail ou copiados pelo professor (o link do convite,
 | Homologação | endereço da versão de teste na Netlify |
 | Produção    | endereço oficial do site               |
 
-Sem ela, o `npm run build` para com o erro "NEXT_PUBLIC_SITE_URL não está definida", para evitar e-mails com links apontando para `localhost`. O build confere também as outras variáveis obrigatórias (`src/env.ts` e `.env.example`). No computador, ela fica no `.env.local` (`http://localhost:3000`).
+Sem ela, o `npm run build` para com o erro "NEXT_PUBLIC_SITE_URL não está definida", para evitar e-mails com links apontando para `localhost`. O build confere também as outras variáveis obrigatórias (`src/lib/env.ts` e `.env.example`). No computador, ela fica no `.env.local` (`http://localhost:3000`).
 
 ## Senha e confirmação do e-mail
 

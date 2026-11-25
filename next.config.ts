@@ -1,6 +1,6 @@
 import type { NextConfig } from "next";
 import { PHASE_PRODUCTION_BUILD } from "next/constants";
-import { validarAmbiente } from "./src/env";
+import { validarAmbiente } from "./src/lib/env";
 import { CABECALHOS_DE_SEGURANCA } from "./src/lib/seguranca";
 
 const nextConfig: NextConfig = {
@@ -35,7 +35,7 @@ const nextConfig: NextConfig = {
 };
 
 export default function config(fase: string): NextConfig {
-  // No build de produção, todas as variáveis precisam existir (src/env.ts).
+  // No build de produção, todas as variáveis precisam existir (src/lib/env.ts).
   // Sem o endereço do site, por exemplo, os convites e links de aceite
   // apontariam para localhost (ver urlDoSite em src/lib/site.ts).
   if (fase === PHASE_PRODUCTION_BUILD) validarAmbiente();

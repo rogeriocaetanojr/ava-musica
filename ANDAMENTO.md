@@ -49,7 +49,6 @@
 ### Publicação do site
 
 - [ ] Contas dos serviços criadas e com acesso de duas pessoas
-- [ ] Chaves e configurações secretas guardadas com segurança
 - [ ] Site publicado na Netlify, com versão de teste e versão oficial
 - [ ] Ativar o envio de e-mails de verdade
   - Inclui o cadastro aberto e o SMTP do Resend para o aviso de pedido novo (veja `guias/deploy.md`).
@@ -166,7 +165,7 @@
 - [x] P1: o proxy confere a sessão com `getClaims()` (JWT validado localmente com a chave pública do projeto), e `obterSessao` e `alunoLiberado` são memoizados por requisição (`React.cache`). Idas ao Supabase para a sessão, por página: professor de 3 para 2 (Auth e perfil); aluno de 7 para 3 (Auth, perfil e `aluno_liberado`). O aluno bloqueado com o JWT ainda válido é barrado pelo `getUser` da página e cai no login com o aviso e os cookies apagados; na renovação da sessão, o próprio proxy recusa
 - [x] O2: o CI roda em push na `main` e em todo pull request, com um job de ponta a ponta: Supabase local no runner, seed e build de produção (`E2E_PRODUCAO=1` faz o Playwright usar `next build` e `next start`); se falhar, o relatório do Playwright fica nos artefatos
 - [x] O4: Dependabot semanal para o npm e para as ações do GitHub, e `npm audit --omit=dev --audit-level=high` no CI
-- [x] O7: `src/env.ts` confere todas as variáveis no build de produção e para dizendo qual falta ou está em formato errado; o `.env.example` diz quais são obrigatórias. O `.env.local` de cada computador precisa ter também as do SMTP (`SMTP_HOST`, `SMTP_PORT`, `SMTP_REMETENTE` e `EMAIL_PROFESSOR`) para o `npm run build` passar
+- [x] O7: `src/lib/env.ts` (antes `src/env.ts`) confere todas as variáveis no build de produção e para dizendo qual falta ou está em formato errado; o `.env.example` diz quais são obrigatórias. O `.env.local` de cada computador precisa ter também as do SMTP (`SMTP_HOST`, `SMTP_PORT`, `SMTP_REMETENTE` e `EMAIL_PROFESSOR`) para o `npm run build` passar
 - [x] Testes de ponta a ponta novos: aluno reenviando a ação de professor (recusada), recados para todos e por curso, convite vencido e com envio duplo, aceite com envio duplo, nova senha com link inválido, janela vencida e envio duplo, axe-core nas telas principais no computador e no celular e title em todo iframe
 - [x] O2 (resto): workflow `migracoes.yml` com `supabase db push` na homologação depois do CI na `main` e na produção só com aprovação (environment `producao` com revisor)
 - [x] D1: backup semanal dos dados com `pg_dump`, cifrado, nos artefatos do GitHub por 90 dias (`backup.yml` e `scripts/backup`); `guias/backup.md` explica a restauração, testada no banco local (mesmas contagens, mesma chave das recusas e login funcionando)
@@ -176,6 +175,9 @@
 
 ### Publicação do site
 
+- [x] Chaves e configurações secretas guardadas com segurança
+  - `src/lib/env.ts` separa as variáveis públicas das de servidor e o build para dizendo qual falta; os valores das de servidor só se leem por `src/lib/env-servidor.ts` (`server-only`). O `.env.example` traz só os nomes e onde cada um fica; a chave secreta do Turnstile fica só no painel do Supabase.
+  - O CI roda o gitleaks no histórico inteiro a cada push. Falta ligar no GitHub o push protection de segredos (Settings → Code security).
 - [x] Banco de dados na nuvem, com ambientes de teste e de uso real
   - Projetos criados em São Paulo: `ava-staging` (homologação) e `ava-prod` (produção); environments `homologacao`, `producao` (com revisor) e `producao-leitura` cadastrados no GitHub. Migrações aplicadas nos dois.
   - Migrações também pelo computador com `npm run db:push:staging` e `npm run db:push:prod` (`supabase link` e `supabase db push`, com o identificador do projeto em `STAGING_PROJECT_REF` e `PROD_PROJECT_REF`; veja `guias/deploy.md`).

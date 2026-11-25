@@ -29,7 +29,9 @@ describe("problemasDoAmbiente", () => {
   it.each(OBRIGATORIAS.map((r) => r.nome))("diz quando falta %s", (nome) => {
     const problemas = problemasDoAmbiente({ ...completo, [nome]: "" });
     expect(problemas).toHaveLength(1);
-    expect(problemas[0]).toMatch(new RegExp(`^${nome} não está definida`));
+    expect(problemas[0]).toMatch(
+      new RegExp(`^${nome} não está definida \\((pública|de servidor), para `),
+    );
   });
 
   it("recusa endereço, porta e e-mail inválidos", () => {
@@ -44,6 +46,17 @@ describe("problemasDoAmbiente", () => {
       "NEXT_PUBLIC_SITE_URL está em formato inválido (esperado: url).",
       "SMTP_PORT está em formato inválido (esperado: porta).",
       "EMAIL_PROFESSOR está em formato inválido (esperado: email).",
+    ]);
+  });
+
+  it("recusa chave de servidor com prefixo NEXT_PUBLIC_", () => {
+    expect(
+      problemasDoAmbiente({
+        ...completo,
+        NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY: "service",
+      }),
+    ).toEqual([
+      "NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY não pode existir: SUPABASE_SERVICE_ROLE_KEY é de servidor e iria para o navegador.",
     ]);
   });
 

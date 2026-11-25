@@ -2,6 +2,10 @@
 // (next.config.ts). Sem uma delas, o build para dizendo qual falta, em vez de
 // o site subir e quebrar só quando alguém usa a parte que depende dela.
 // Os nomes e o que cada uma faz estão no .env.example.
+//
+// Este arquivo só traz os nomes e as regras, nunca os valores das de
+// servidor: os valores delas se leem por src/lib/env-servidor.ts, que tem
+// `import "server-only"` e por isso não pode ir para o navegador.
 
 type Regra = {
   nome: string;
@@ -10,17 +14,14 @@ type Regra = {
   formato?: "url" | "porta" | "email";
 };
 
-export const OBRIGATORIAS: readonly Regra[] = [
+// Públicas: têm o prefixo NEXT_PUBLIC_ e vão junto com o código do navegador.
+export const PUBLICAS: readonly Regra[] = [
   {
     nome: "NEXT_PUBLIC_SUPABASE_URL",
     para: "falar com o Supabase",
     formato: "url",
   },
   { nome: "NEXT_PUBLIC_SUPABASE_ANON_KEY", para: "falar com o Supabase" },
-  {
-    nome: "SUPABASE_SERVICE_ROLE_KEY",
-    para: "convidar, bloquear e excluir alunos",
-  },
   {
     nome: "NEXT_PUBLIC_SITE_URL",
     para: "os links dos convites e do aceite",
@@ -29,6 +30,14 @@ export const OBRIGATORIAS: readonly Regra[] = [
   {
     nome: "NEXT_PUBLIC_TURNSTILE_SITE_KEY",
     para: "o captcha do login, de Criar conta e do convite",
+  },
+];
+
+// De servidor: nunca com NEXT_PUBLIC_, só lidas em código server-only.
+export const DE_SERVIDOR: readonly Regra[] = [
+  {
+    nome: "SUPABASE_SERVICE_ROLE_KEY",
+    para: "convidar, bloquear e excluir alunos",
   },
   { nome: "SMTP_HOST", para: "enviar os e-mails" },
   { nome: "SMTP_PORT", para: "enviar os e-mails", formato: "porta" },
@@ -39,6 +48,8 @@ export const OBRIGATORIAS: readonly Regra[] = [
     formato: "email",
   },
 ];
+
+export const OBRIGATORIAS: readonly Regra[] = [...PUBLICAS, ...DE_SERVIDOR];
 
 function formatoValido(valor: string, formato: Regra["formato"]): boolean {
   switch (formato) {
@@ -59,20 +70,40 @@ function formatoValido(valor: string, formato: Regra["formato"]): boolean {
   }
 }
 
-// Devolve um problema por linha; lista vazia quando está tudo certo.
-export function problemasDoAmbiente(
+function conferir(
+  regras: readonly Regra[],
+  tipo: string,
   env: Record<string, string | undefined>,
 ): string[] {
   const problemas: string[] = [];
-  for (const regra of OBRIGATORIAS) {
+  for (const regra of regras) {
     const valor = env[regra.nome]?.trim();
     if (!valor)
-      problemas.push(`${regra.nome} não está definida (${regra.para}).`);
+      problemas.push(
+        `${regra.nome} não está definida (${tipo}, para ${regra.para}).`,
+      );
     else if (!formatoValido(valor, regra.formato))
       problemas.push(
         `${regra.nome} está em formato inválido (esperado: ${regra.formato}).`,
       );
   }
+  return problemas;
+}
+
+// Devolve um problema por linha; lista vazia quando está tudo certo.
+export function problemasDoAmbiente(
+  env: Record<string, string | undefined>,
+): string[] {
+  const problemas = [
+    ...conferir(PUBLICAS, "pública", env),
+    ...conferir(DE_SERVIDOR, "de servidor", env),
+  ];
+  // Nenhuma de servidor pode ter ido parar numa NEXT_PUBLIC_ por engano.
+  for (const regra of DE_SERVIDOR)
+    if (env[`NEXT_PUBLIC_${regra.nome}`]?.trim())
+      problemas.push(
+        `NEXT_PUBLIC_${regra.nome} não pode existir: ${regra.nome} é de servidor e iria para o navegador.`,
+      );
   // Usuário e senha do SMTP vêm juntos (Resend) ou nenhum dos dois (Mailpit).
   if (!env.SMTP_USER?.trim() !== !env.SMTP_PASS?.trim())
     problemas.push(
