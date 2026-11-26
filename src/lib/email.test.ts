@@ -119,7 +119,29 @@ describe("mensagemDeConvite", () => {
   });
 });
 
+// Paleta dos e-mails do app e dos modelos do Supabase.
+const CORES = [
+  "#f4f4f5",
+  "#ffffff",
+  "#e4e4e7",
+  "#18181b",
+  "#71717a",
+  "#6e1a2d",
+];
+const CORES_ANTIGAS = ["#fbf5ea", "#fffdf8", "#ebddc8", "#2e1a1c", "#6e5558"];
+
 describe("html dos e-mails", () => {
+  it("usa a paleta neutra com a faixa e o botão no vinho", () => {
+    const { html } = mensagemDePedidoNovo(
+      { nome: "Ana Souza", email: "ana@exemplo.com" },
+      "https://ava.exemplo.com/professor/alunos?pedidos=abrir",
+    );
+    for (const cor of CORES) expect(html).toContain(cor);
+    for (const cor of CORES_ANTIGAS) expect(html).not.toContain(cor);
+    expect(html).toContain("background-color:#6e1a2d;padding:10px 20px");
+    expect(html).toMatch(/background-color:#6e1a2d;[^"]*color:#ffffff/);
+  });
+
   it("escapa < e & no nome e no e-mail do aluno", () => {
     const { html } = mensagemDePedidoNovo(
       { nome: "Ana <b>& Cia", email: "a&b@<x>.com" },
@@ -166,5 +188,7 @@ describe("modelos do Supabase", () => {
     expect(html).not.toContain("<h1");
     expect(html).not.toContain("Se o botão não abrir");
     expect(html).toContain("Escola de Música John Meyer");
+    for (const cor of CORES) expect(html).toContain(cor);
+    for (const cor of CORES_ANTIGAS) expect(html).not.toContain(cor);
   });
 });

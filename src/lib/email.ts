@@ -40,15 +40,15 @@ export function configuracaoSmtp(
   };
 }
 
-// Cores do tema (globals.css). E-mail não lê variáveis CSS, então vão por extenso.
+// Cores dos e-mails: fundo e cartão neutros, com a faixa e o botão no vinho da\n// escola. E-mail não lê variáveis CSS, então vão por extenso; os modelos de\n// supabase/templates usam as mesmas.
 const COR = {
-  fundo: "#fbf5ea",
-  superficie: "#fffdf8",
-  linha: "#ebddc8",
-  texto: "#2e1a1c",
-  textoSecundario: "#6e5558",
+  fundo: "#f4f4f5",
+  superficie: "#ffffff",
+  linha: "#e4e4e7",
+  texto: "#18181b",
+  textoSecundario: "#71717a",
   bordo: "#6e1a2d",
-  sobreBordo: "#fffdf8",
+  sobreBordo: "#ffffff",
 };
 const FONTE = "Arial, Helvetica, sans-serif";
 
