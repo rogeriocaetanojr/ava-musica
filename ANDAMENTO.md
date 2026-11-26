@@ -16,6 +16,7 @@
 - [x] Autorização do responsável no visual novo
 - [ ] Botões de voltar padronizados e progresso do aluno dentro da ficha
 - [ ] Páginas de erro, página não encontrada e carregamento no visual novo
+  - Todos os e-mails no mesmo layout enxuto (`montarHtml` em `src/lib/email.ts` e os modelos de `supabase/templates`): faixa do topo baixa só com "Escola John Meyer", uma frase, um botão, uma linha pequena opcional e o rodapé "Escola de Música John Meyer" em letra pequena, até 480 px de largura, sem título no corpo e sem o link por extenso (que fica só no texto puro dos e-mails do app). Pedido de acesso: assunto "Novo pedido de acesso: <nome>", "<nome> (<e-mail>) pediu acesso à escola." e "Ver pedido", que abre `/professor/alunos?pedidos=abrir` a partir de `NEXT_PUBLIC_SITE_URL`. Convite: "<nome>, o professor criou seu acesso à Escola John Meyer.", "Criar minha senha" e a validade em letra pequena. Confirmação de conta: "Confirmar e-mail"; nova senha: "Criar nova senha" com "Se não foi você, ignore este e-mail."; os links dos modelos não mudaram e os assuntos novos estão no `config.toml` e no `guias/deploy.md`
 - [ ] E-mails com a cara da escola
 - [ ] Botões e campos usando os componentes padrão
 - [ ] Arquivos e provas abrindo em nova guia

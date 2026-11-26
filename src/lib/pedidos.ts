@@ -51,7 +51,7 @@ export async function confirmarPedido(aluno: {
   if (!marcado?.length) return true;
 
   const enviado = await enviarAoProfessor(
-    mensagemDePedidoNovo(aluno, urlDoSite("/professor")),
+    mensagemDePedidoNovo(aluno, urlDoSite("/professor/alunos?pedidos=abrir")),
   );
   if (!enviado) {
     const { error: erroDesfazer } = await admin

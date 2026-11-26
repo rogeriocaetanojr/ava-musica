@@ -61,18 +61,22 @@ export function escaparHtml(valor: string): string {
     .replace(/'/g, "&#39;");
 }
 
-// Modelo único dos e-mails da escola: cabeçalho bordô com o nome, corpo creme,
-// botão bordô e o link por extenso. Layout em tabela e CSS inline, que é o que
-// os leitores de e-mail aceitam. Os parágrafos já vêm escapados.
+// Modelo único e enxuto dos e-mails da escola: faixa bordô baixa com o nome
+// curto, uma frase, um botão, uma linha pequena opcional e o rodapé com o nome
+// completo. Sem título no corpo e sem o link por extenso, que fica só no texto
+// puro. Layout em tabela e CSS inline, largura máxima de 480 px, que é o que os
+// leitores de e-mail aceitam. A frase já vem escapada. Os modelos do Supabase
+// (supabase/templates) repetem este mesmo HTML.
 export function montarHtml(conteudo: {
   titulo: string;
-  paragrafos: string[];
+  frase: string;
   botao: { texto: string; link: string };
-  depoisDoBotao?: string[];
+  nota?: string;
 }): string {
-  const p = (html: string) =>
-    `<p style="margin:0 0 16px;font-family:${FONTE};font-size:16px;line-height:24px;color:${COR.texto};">${html}</p>`;
   const link = escaparHtml(conteudo.botao.link);
+  const nota = conteudo.nota
+    ? `\n<p style="margin:16px 0 0;font-family:${FONTE};font-size:13px;line-height:20px;color:${COR.textoSecundario};">${conteudo.nota}</p>`
+    : "";
   return `<!doctype html>
 <html lang="pt-BR">
 <head>
@@ -83,21 +87,18 @@ export function montarHtml(conteudo: {
 </head>
 <body style="margin:0;padding:0;background-color:${COR.fundo};">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:${COR.fundo};">
-<tr><td align="center" style="padding:24px 12px;">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;border-collapse:separate;">
-<tr><td style="background-color:${COR.bordo};padding:20px 24px;border-radius:12px 12px 0 0;font-family:${FONTE};font-size:22px;line-height:28px;font-weight:bold;color:${COR.sobreBordo};">${escaparHtml(NOME_CURTO_DO_AVA)}</td></tr>
-<tr><td style="background-color:${COR.superficie};padding:28px 24px;border:1px solid ${COR.linha};border-top:0;border-radius:0 0 12px 12px;">
-<h1 style="margin:0 0 16px;font-family:${FONTE};font-size:22px;line-height:28px;color:${COR.texto};">${escaparHtml(conteudo.titulo)}</h1>
-${conteudo.paragrafos.map(p).join("\n")}
-<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:8px 0 24px;">
+<tr><td align="center" style="padding:16px 12px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:480px;border-collapse:separate;">
+<tr><td style="background-color:${COR.bordo};padding:10px 20px;border-radius:12px 12px 0 0;font-family:${FONTE};font-size:16px;line-height:22px;font-weight:bold;color:${COR.sobreBordo};">${escaparHtml(NOME_CURTO_DO_AVA)}</td></tr>
+<tr><td style="background-color:${COR.superficie};padding:24px 20px;border:1px solid ${COR.linha};border-top:0;border-radius:0 0 12px 12px;">
+<p style="margin:0 0 20px;font-family:${FONTE};font-size:16px;line-height:24px;color:${COR.texto};">${conteudo.frase}</p>
+<table role="presentation" cellpadding="0" cellspacing="0" border="0">
 <tr><td style="background-color:${COR.bordo};border-radius:8px;">
-<a href="${link}" style="display:inline-block;padding:14px 28px;font-family:${FONTE};font-size:16px;line-height:20px;font-weight:bold;color:${COR.sobreBordo};text-decoration:none;border-radius:8px;">${escaparHtml(conteudo.botao.texto)}</a>
+<a href="${link}" style="display:inline-block;padding:12px 24px;font-family:${FONTE};font-size:16px;line-height:20px;font-weight:bold;color:${COR.sobreBordo};text-decoration:none;border-radius:8px;">${escaparHtml(conteudo.botao.texto)}</a>
 </td></tr>
-</table>
-${(conteudo.depoisDoBotao ?? []).map(p).join("\n")}
-<p style="margin:16px 0 0;font-family:${FONTE};font-size:13px;line-height:20px;color:${COR.textoSecundario};">Se o botão não abrir, copie este endereço no navegador:<br><a href="${link}" style="color:${COR.bordo};word-break:break-all;">${link}</a></p>
+</table>${nota}
 </td></tr>
-<tr><td style="padding:16px 24px;font-family:${FONTE};font-size:13px;line-height:20px;color:${COR.textoSecundario};text-align:center;">${escaparHtml(NOME_DO_AVA)}</td></tr>
+<tr><td style="padding:12px 20px;font-family:${FONTE};font-size:11px;line-height:16px;color:${COR.textoSecundario};text-align:center;">${escaparHtml(NOME_DO_AVA)}</td></tr>
 </table>
 </td></tr>
 </table>
@@ -105,31 +106,23 @@ ${(conteudo.depoisDoBotao ?? []).map(p).join("\n")}
 </html>`;
 }
 
-// Aviso ao professor de que alguém pediu acesso (pelo Google ou pelo e-mail)
-// e espera liberação. Leva só nome e e-mail.
+// Aviso ao professor de que alguém pediu acesso e espera liberação. Leva só
+// nome e e-mail; o botão abre os pedidos no painel do professor.
 export function mensagemDePedidoNovo(
   aluno: { nome: string; email: string },
-  linkDoPainel: string,
+  linkDosPedidos: string,
 ): Mensagem {
   return {
-    assunto: `Novo pedido de acesso na ${NOME_DO_AVA}`,
+    assunto: `Novo pedido de acesso: ${aluno.nome}`,
     texto: [
-      `${aluno.nome} (${aluno.email}) entrou na ${NOME_DO_AVA} e está aguardando a sua liberação.`,
+      `${aluno.nome} (${aluno.email}) pediu acesso à escola.`,
       "",
-      `Para liberar ou recusar, abra o painel: ${linkDoPainel}`,
-      "",
-      "Se você não conhece essa pessoa, recuse o pedido: a conta é apagada e o e-mail não consegue pedir de novo por 7 dias.",
+      `Ver pedido: ${linkDosPedidos}`,
     ].join("\n"),
     html: montarHtml({
-      titulo: "Novo pedido de acesso",
-      paragrafos: [
-        `<strong>${escaparHtml(aluno.nome)}</strong> (${escaparHtml(aluno.email)}) entrou na ${escaparHtml(NOME_DO_AVA)} e está aguardando a sua liberação.`,
-        "Para liberar ou recusar, abra o painel:",
-      ],
-      botao: { texto: "Abrir o painel", link: linkDoPainel },
-      depoisDoBotao: [
-        "Se você não conhece essa pessoa, recuse o pedido: a conta é apagada e o e-mail não consegue pedir de novo por 7 dias.",
-      ],
+      titulo: `Novo pedido de acesso: ${aluno.nome}`,
+      frase: `<strong>${escaparHtml(aluno.nome)}</strong> (${escaparHtml(aluno.email)}) pediu acesso à escola.`,
+      botao: { texto: "Ver pedido", link: linkDosPedidos },
     }),
   };
 }
@@ -142,29 +135,21 @@ export function mensagemDeConvite(
   validadeEmDias: number,
 ): Mensagem {
   const primeiro = aluno.nome.trim().split(/\s+/)[0] ?? "";
+  const validade = `O link vale por ${validadeEmDias} dias e funciona uma vez só.`;
   return {
-    assunto: `Seu convite para a ${NOME_DO_AVA}`,
+    assunto: `Seu convite para a ${NOME_CURTO_DO_AVA}`,
     texto: [
-      `Olá, ${primeiro}!`,
+      `${primeiro}, o professor criou seu acesso à ${NOME_CURTO_DO_AVA}.`,
       "",
-      `O professor criou o seu acesso na ${NOME_DO_AVA}. Para entrar pela primeira vez, abra o link abaixo e escolha a sua senha:`,
+      `Criar minha senha: ${linkDoConvite}`,
       "",
-      linkDoConvite,
-      "",
-      `O link vale por ${validadeEmDias} dias e funciona uma vez só. Depois, entre com o seu e-mail e a senha que você escolheu.`,
-      "",
-      "Se você não esperava este convite, ignore este e-mail.",
+      validade,
     ].join("\n"),
     html: montarHtml({
-      titulo: `Olá, ${primeiro}!`,
-      paragrafos: [
-        `O professor criou o seu acesso na ${escaparHtml(NOME_DO_AVA)}. Para entrar pela primeira vez, abra o link abaixo e escolha a sua senha:`,
-      ],
+      titulo: `Seu convite para a ${NOME_CURTO_DO_AVA}`,
+      frase: `${escaparHtml(primeiro)}, o professor criou seu acesso à ${escaparHtml(NOME_CURTO_DO_AVA)}.`,
       botao: { texto: "Criar minha senha", link: linkDoConvite },
-      depoisDoBotao: [
-        `O link vale por ${validadeEmDias} dias e funciona uma vez só. Depois, entre com o seu e-mail e a senha que você escolheu.`,
-        "Se você não esperava este convite, ignore este e-mail.",
-      ],
+      nota: validade,
     }),
   };
 }

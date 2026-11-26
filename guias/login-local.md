@@ -39,7 +39,7 @@ O Supabase local limita o envio de e-mails por hora (`email_sent` em `supabase/c
 ## Convite de aluno
 
 1. Entre como `professor@teste.local` e abra **Alunos e matrículas → Convidar aluno**.
-2. Cadastre um aluno com o e-mail dele. O convite chega na caixa de teste (http://localhost:54324) com o assunto "Seu convite para a Escola de Música John Meyer" e o link `/convite/<código>`. Sem o SMTP no `.env.local`, a tela mostra o link com o botão Copiar.
+2. Cadastre um aluno com o e-mail dele. O convite chega na caixa de teste (http://localhost:54324) com o assunto "Seu convite para a Escola John Meyer" e o link `/convite/<código>`. Sem o SMTP no `.env.local`, a tela mostra o link com o botão Copiar.
 3. Abra o link: a página mostra o nome do aluno e pede a senha. Depois de salvar, o aluno entra liberado e matriculado, em `/cursos`.
 4. O link vale 7 dias e uma vez só. Na ficha do aluno, enquanto ele não definir a senha, **Reenviar convite** manda um link novo, e o anterior deixa de valer.
 

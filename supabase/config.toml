@@ -261,13 +261,13 @@ otp_expiry = 86400
 # Link de confirmação de Criar conta ({{ .TokenHash }}), aberto em /auth/confirmar. O convite do
 # aluno sai pelo SMTP do próprio site, com o link /convite/<código>.
 [auth.email.template.confirmation]
-subject = "Confirme o seu e-mail na Escola de Música John Meyer"
+subject = "Confirme seu e-mail na Escola John Meyer"
 content_path = "./supabase/templates/confirmacao.html"
 
 # Link de "Esqueci minha senha" ({{ .TokenHash }}), aberto em /auth/callback, que leva a
 # /nova-senha. Vale as mesmas 24 horas do otp_expiry acima.
 [auth.email.template.recovery]
-subject = "Crie uma senha nova na Escola de Música John Meyer"
+subject = "Crie uma nova senha na Escola John Meyer"
 content_path = "./supabase/templates/nova-senha.html"
 
 # Uncomment to customize notification email template

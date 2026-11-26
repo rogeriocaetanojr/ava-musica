@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   configuracaoSmtp,
@@ -48,29 +50,72 @@ describe("configuracaoSmtp", () => {
 });
 
 describe("mensagemDePedidoNovo", () => {
-  it("traz nome, e-mail e o link do painel", () => {
-    const { assunto, texto } = mensagemDePedidoNovo(
-      { nome: "Ana Souza", email: "ana@exemplo.com" },
-      "https://ava.exemplo.com/professor",
+  const link = "https://ava.exemplo.com/professor/alunos?pedidos=abrir";
+  const pedido = () =>
+    mensagemDePedidoNovo({ nome: "Ana Souza", email: "ana@exemplo.com" }, link);
+
+  it("põe o nome no assunto e a frase com nome e e-mail", () => {
+    const { assunto, texto, html } = pedido();
+    expect(assunto).toBe("Novo pedido de acesso: Ana Souza");
+    expect(texto).toContain(
+      "Ana Souza (ana@exemplo.com) pediu acesso à escola.",
     );
-    expect(assunto).toContain("Novo pedido de acesso");
-    expect(texto).toContain("Ana Souza (ana@exemplo.com)");
-    expect(texto).toContain("https://ava.exemplo.com/professor");
+    expect(html).toContain("pediu acesso à escola.");
+  });
+
+  it("leva o botão Ver pedido aos pedidos do painel", () => {
+    const { html } = pedido();
+    expect(html).toContain("Ver pedido</a>");
+    expect(html).toContain(`href="${link}"`);
+  });
+
+  it("deixa o link por extenso só no texto puro", () => {
+    const { texto, html } = pedido();
+    expect(texto).toContain(link);
+    expect(html.split(link)).toHaveLength(2);
+    expect(html).not.toContain("Se o botão não abrir");
+  });
+
+  it("tira o título repetido, a frase de liberar e o aviso dos 7 dias", () => {
+    const { texto, html } = pedido();
+    for (const parte of [texto, html]) {
+      expect(parte).not.toContain("Para liberar ou recusar");
+      expect(parte).not.toContain("7 dias");
+    }
+    expect(html).not.toContain("<h1");
+  });
+
+  it("usa faixa mais baixa com Escola John Meyer e rodapé pequeno", () => {
+    const { html } = pedido();
+    expect(html).toContain("padding:10px 20px");
+    expect(html).toContain("Escola John Meyer</td>");
+    expect(html).toMatch(/font-size:11px[^>]*>Escola de Música John Meyer</);
+    expect(html).toContain("max-width:480px");
   });
 });
 
 describe("mensagemDeConvite", () => {
-  it("traz o primeiro nome, o link e a validade, sem o e-mail", () => {
-    const { assunto, texto } = mensagemDeConvite(
-      { nome: "Ana Souza" },
-      "https://ava.exemplo.com/convite/abc",
-      7,
-    );
-    expect(assunto).toContain("convite");
-    expect(texto).toContain("Olá, Ana!");
+  const link = "https://ava.exemplo.com/convite/abc";
+  const convite = () => mensagemDeConvite({ nome: "Ana Souza" }, link, 7);
+
+  it("traz o primeiro nome, o link e a validade, sem o sobrenome", () => {
+    const { assunto, texto, html } = convite();
+    expect(assunto).toBe("Seu convite para a Escola John Meyer");
+    expect(texto).toContain("Ana, o professor criou seu acesso");
     expect(texto).not.toContain("Souza");
-    expect(texto).toContain("https://ava.exemplo.com/convite/abc");
+    expect(html).not.toContain("Souza");
+    expect(texto).toContain(link);
     expect(texto).toContain("7 dias");
+  });
+
+  it("segue o layout enxuto: uma frase, o botão e a validade em letra pequena", () => {
+    const { html } = convite();
+    expect(html).toContain(`href="${link}"`);
+    expect(html).toContain("Criar minha senha</a>");
+    expect(html.split(link)).toHaveLength(2);
+    expect(html).not.toContain("<h1");
+    expect(html).not.toContain("Se o botão não abrir");
+    expect(html).toMatch(/font-size:13px[^>]*>O link vale por 7 dias/);
   });
 });
 
@@ -94,5 +139,32 @@ describe("html dos e-mails", () => {
     );
     expect(html).toContain("&lt;Ana&gt;&amp;");
     expect(html).not.toContain("<Ana>");
+  });
+});
+
+// Os modelos do Supabase repetem o layout do app e precisam manter o link.
+describe("modelos do Supabase", () => {
+  const ler = (nome: string) =>
+    readFileSync(join(process.cwd(), "supabase", "templates", nome), "utf8");
+
+  it.each([
+    [
+      "confirmacao.html",
+      "{{ .SiteURL }}/auth/confirmar?token_hash={{ .TokenHash }}&type=email",
+      "Confirmar e-mail",
+    ],
+    [
+      "nova-senha.html",
+      "{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=recovery",
+      "Criar nova senha",
+    ],
+  ])("%s mantém o link e segue o layout enxuto", (nome, link, botao) => {
+    const html = ler(nome);
+    expect(html.split(`href="${link}"`)).toHaveLength(2);
+    expect(html).toContain(botao);
+    expect(html).toContain("max-width: 480px");
+    expect(html).not.toContain("<h1");
+    expect(html).not.toContain("Se o botão não abrir");
+    expect(html).toContain("Escola de Música John Meyer");
   });
 });
