@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { opcoesDoCaptcha } from "@/lib/captcha";
 import { ehCodigoDeConvite, hashDoConvite } from "@/lib/convites";
 import { recusarOutraOrigem } from "@/lib/seguranca";
 import { erroDaSenha } from "@/lib/senha";
@@ -64,9 +65,7 @@ export async function POST(
   const { error: erroLogin } = await supabase.auth.signInWithPassword({
     email,
     password: senha,
-    options: {
-      captchaToken: typeof captcha === "string" ? captcha : undefined,
-    },
+    options: opcoesDoCaptcha(typeof captcha === "string" ? captcha : null),
   });
   if (ehBloqueado(erroLogin)) return voltar("/bloqueado");
   // A senha já está salva: falta só entrar pela tela de login.

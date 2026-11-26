@@ -215,11 +215,12 @@ token_verifications = 15
 web3 = 30
 
 # Configure one of the supported captcha providers: `hcaptcha`, `turnstile`.
-# Cloudflare Turnstile no login por senha e em Criar conta. Aqui fica a chave secreta pública de teste da
-# Cloudflare, que sempre aprova (computador e testes); a real fica só no painel da nuvem
+# Captcha (Cloudflare Turnstile) desligado nesta versão, como no site (NEXT_PUBLIC_CAPTCHA_LIGADO).
+# Para religar, ponha enabled = true junto com a variável do site. A chave abaixo é a secreta pública
+# de teste da Cloudflare, que sempre aprova (computador e testes); a real fica só no painel da nuvem
 # (guias/deploy.md).
 [auth.captcha]
-enabled = true
+enabled = false
 provider = "turnstile"
 secret = "1x0000000000000000000000000000000AA"
 

@@ -7,6 +7,7 @@ import {
   useState,
   type Ref,
 } from "react";
+import { CAPTCHA_LIGADO } from "@/lib/captcha";
 
 // Widget do Cloudflare Turnstile, carregado direto do script oficial (sem
 // pacote), em modo invisível: só aparece quando a Cloudflare pede uma
@@ -57,13 +58,18 @@ function carregarScript(): Promise<void> {
 
 export type ControleDoCaptcha = { reiniciar: () => void };
 
-export function Captcha({
-  aoMudarToken,
-  ref,
-}: {
+type PropsDoCaptcha = {
   aoMudarToken: (token: string | null) => void;
   ref?: Ref<ControleDoCaptcha>;
-}) {
+};
+
+// Com o captcha desligado (src/lib/captcha.ts), não desenha nada nem carrega
+// o script da Cloudflare.
+export function Captcha(props: PropsDoCaptcha) {
+  return CAPTCHA_LIGADO ? <WidgetTurnstile {...props} /> : null;
+}
+
+function WidgetTurnstile({ aoMudarToken, ref }: PropsDoCaptcha) {
   const chave = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
   const elemento = useRef<HTMLDivElement>(null);
   const widget = useRef<string | null>(null);

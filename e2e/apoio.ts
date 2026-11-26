@@ -84,9 +84,15 @@ export async function apagarEmailsDe(email: string): Promise<void> {
 // Senha do professor e do aluno de teste (scripts/seed-dev.ts).
 export const SENHA_DE_TESTE = "senha-local-123";
 
-// O captcha usa a chave de teste da Cloudflare, que aprova sozinha; o botão
-// só é clicado depois que o token chega.
+// Mesmo valor que o playwright.config.ts passa ao site.
+export const CAPTCHA_LIGADO =
+  process.env.NEXT_PUBLIC_CAPTCHA_LIGADO?.trim() === "true";
+
+// Com o captcha ligado, ele usa a chave de teste da Cloudflare, que aprova
+// sozinha, e o botão só é clicado depois que o token chega. Desligado (o
+// padrão desta versão), não há o que esperar.
 export async function esperarCaptcha(page: Page): Promise<void> {
+  if (!CAPTCHA_LIGADO) return;
   await expect(page.locator('input[name="cf-turnstile-response"]')).toHaveValue(
     /.+/,
   );

@@ -10,7 +10,7 @@ import {
 
 // Acessibilidade automática (axe-core, regras WCAG 2.1 A e AA) nas telas
 // principais, no computador e no celular, e title em todo iframe (o vídeo
-// do YouTube, a prova do Google Forms e o captcha da Cloudflare).
+// do YouTube, a prova do Google Forms e, se ligado, o captcha da Cloudflare).
 
 const admin = clienteAdmin();
 const REGRAS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"];
@@ -24,8 +24,8 @@ async function conferir(page: Page, caminho: string) {
     .withTags(REGRAS)
     // O selo de desenvolvimento do Next não é parte do site.
     .exclude("nextjs-portal")
-    // O conteúdo dos iframes de terceiros (YouTube, Google Forms e
-    // Cloudflare) não é do site; o title deles é conferido logo abaixo.
+    // O conteúdo dos iframes de terceiros (YouTube, Google Forms e, com o
+    // captcha ligado, Cloudflare) não é do site; o title deles é conferido logo abaixo.
     .exclude("iframe")
     .analyze();
   const resumo = violations.map(

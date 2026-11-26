@@ -14,6 +14,7 @@ const MENSAGEM_DO_HOOK = "Não foi possível pedir acesso agora.";
 export const MENSAGEM_PEDIDO_NAO_REGISTRADO =
   "Não foi possível registrar o seu pedido de acesso. Entre de novo para tentar outra vez.";
 
+// Só aparece com o captcha ligado (src/lib/captcha.ts).
 export const MENSAGEM_CAPTCHA =
   "Não foi possível confirmar que você não é um robô. Espere a verificação terminar e tente de novo.";
 

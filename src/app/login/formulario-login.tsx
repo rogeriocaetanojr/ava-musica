@@ -6,6 +6,7 @@ import { Aviso } from "@/components/aviso";
 import { Botao, classesDoBotao } from "@/components/botao";
 import { Campo } from "@/components/campo";
 import { CampoSenha } from "@/components/campo-senha";
+import { CAPTCHA_LIGADO, opcoesDoCaptcha } from "@/lib/captcha";
 import { criarClienteNavegador } from "@/lib/supabase/navegador";
 import { Captcha, type ControleDoCaptcha } from "./captcha";
 import {
@@ -34,7 +35,7 @@ export function FormularioLogin() {
     const { error } = await supabase.auth.signInWithPassword({
       email: email.trim(),
       password: senha,
-      options: { captchaToken: tokenCaptcha ?? undefined },
+      options: opcoesDoCaptcha(tokenCaptcha),
     });
     // O token do captcha vale uma vez só.
     captcha.current?.reiniciar();
@@ -52,7 +53,7 @@ export function FormularioLogin() {
       window.location.assign("/bloqueado");
     } else if (ehLimiteDeTentativas(error)) {
       setErro(MENSAGEM_MUITAS_TENTATIVAS);
-    } else if (ehFalhaDoCaptcha(error)) {
+    } else if (CAPTCHA_LIGADO && ehFalhaDoCaptcha(error)) {
       setErro(MENSAGEM_CAPTCHA);
     } else if (ehCredenciaisInvalidas(error)) {
       setErro(MENSAGEM_CREDENCIAIS_INVALIDAS);

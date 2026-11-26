@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Aviso } from "@/components/aviso";
 import { Botao } from "@/components/botao";
 import { Campo } from "@/components/campo";
+import { CAPTCHA_LIGADO, opcoesDoCaptcha } from "@/lib/captcha";
 import { criarClienteNavegador } from "@/lib/supabase/navegador";
 import { Captcha, type ControleDoCaptcha } from "../login/captcha";
 import {
@@ -44,7 +45,7 @@ export function FormularioEsqueciSenha() {
     // o retorno vai junto para o caso de o modelo usar o endereço do Auth.
     const { error } = await supabase.auth.resetPasswordForEmail(endereco, {
       redirectTo: `${window.location.origin}/auth/callback`,
-      captchaToken: tokenCaptcha ?? undefined,
+      ...opcoesDoCaptcha(tokenCaptcha),
     });
     // O token do captcha vale uma vez só.
     captcha.current?.reiniciar();
@@ -52,7 +53,7 @@ export function FormularioEsqueciSenha() {
 
     if (!error) {
       setEnviado(true);
-    } else if (ehFalhaDoCaptcha(error)) {
+    } else if (CAPTCHA_LIGADO && ehFalhaDoCaptcha(error)) {
       setErro(MENSAGEM_CAPTCHA);
     } else if (error.code === "over_request_rate_limit") {
       // Limite por endereço de rede: vale igual para qualquer e-mail.

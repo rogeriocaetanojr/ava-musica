@@ -3,11 +3,12 @@
 import { useState } from "react";
 import { Botao } from "@/components/botao";
 import { CampoSenha } from "@/components/campo-senha";
+import { CAPTCHA_LIGADO } from "@/lib/captcha";
 import { SENHA_MINIMA } from "@/lib/senha";
 import { Captcha } from "../../login/captcha";
 
 // Envia a senha para /convite/<código>/definir, que grava a senha e já abre
-// a sessão (por isso o captcha, exigido no login por senha).
+// a sessão (com o captcha ligado, o token vai junto para esse login).
 export function FormularioSenha({
   codigo,
   email,
@@ -43,7 +44,9 @@ export function FormularioSenha({
         minLength={SENHA_MINIMA}
         autoComplete="new-password"
       />
-      <input type="hidden" name="captcha" value={tokenCaptcha ?? ""} />
+      {CAPTCHA_LIGADO && (
+        <input type="hidden" name="captcha" value={tokenCaptcha ?? ""} />
+      )}
       <Captcha aoMudarToken={setTokenCaptcha} />
       <Botao type="submit" disabled={enviando}>
         {enviando ? "Salvando…" : "Salvar senha e entrar"}

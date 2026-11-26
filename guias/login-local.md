@@ -3,7 +3,7 @@
 ## Preparar
 
 1. Suba o Supabase local: `npx supabase start`.
-2. Crie o `.env.local` com os valores de `npx supabase status` (API_URL, ANON_KEY e SERVICE_ROLE_KEY), `NEXT_PUBLIC_SITE_URL=http://localhost:3000` e a chave de teste do captcha, `NEXT_PUBLIC_TURNSTILE_SITE_KEY=1x00000000000000000000AA`. Sem ela, o login por senha e Criar conta são recusados pelo captcha.
+2. Crie o `.env.local` com os valores de `npx supabase status` (API_URL, ANON_KEY e SERVICE_ROLE_KEY) e `NEXT_PUBLIC_SITE_URL=http://localhost:3000`. O captcha está desligado nesta versão, então não precisa de `NEXT_PUBLIC_CAPTCHA_LIGADO` nem de `NEXT_PUBLIC_TURNSTILE_SITE_KEY` (para religar, veja `guias/deploy.md`).
 3. Para o convite do aluno e o aviso ao professor chegarem à caixa de teste, acrescente o SMTP do Mailpit local: `SMTP_HOST=127.0.0.1`, `SMTP_PORT=54325`, `SMTP_REMETENTE=avisos@teste.local` e `EMAIL_PROFESSOR=professor@teste.local`. Sem eles, a tela Convidar mostra o link do convite com o botão Copiar.
 4. Crie os usuários de teste: `npm run seed:dev`.
 5. Suba o site: `npm run dev`.
@@ -18,7 +18,7 @@ Usuários de teste (a senha só existe no Supabase local):
 
 ## Entrar com e-mail e senha
 
-1. Abra http://localhost:3000/login, digite o e-mail e a senha, espere o captcha marcar a caixa sozinho e clique em **Entrar**.
+1. Abra http://localhost:3000/login, digite o e-mail e a senha e clique em **Entrar**.
 2. O site abre a área do papel do usuário.
 3. Com a senha errada, ou com um e-mail sem conta, a tela mostra a mesma mensagem: "E-mail ou senha incorretos…".
 

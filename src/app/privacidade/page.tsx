@@ -191,12 +191,7 @@ export default function Privacidade() {
                   <strong>Google:</strong> o login com a conta Google, para quem
                   escolhe entrar assim.
                 </li>
-                <li>
-                  <strong>Cloudflare (Turnstile):</strong> a verificação que
-                  impede robôs de testar senhas e de criar contas em massa. Ela
-                  analisa sinais do navegador, como o endereço IP, sem cookies
-                  de propaganda.
-                </li>
+
                 <li>
                   <strong>Resend:</strong> envio dos e-mails do site, como o
                   convite do aluno, a confirmação de Criar conta e o aviso de
@@ -217,12 +212,12 @@ export default function Privacidade() {
               Alguns desses serviços guardam ou processam dados em servidores
               fora do Brasil, principalmente nos Estados Unidos. É o caso do
               envio de e-mails, que passa pelo nome e pelo e-mail do
-              destinatário, do login com o Google e da verificação contra robôs
-              da Cloudflare. Essas transferências são feitas só para prestar o
-              serviço do site e com as garantias exigidas pela Lei Geral de
-              Proteção de Dados (LGPD), como cláusulas contratuais de proteção
-              de dados com cada empresa. Você pode pedir ao professor mais
-              informações sobre onde cada serviço guarda os dados.
+              destinatário, e do login com o Google. Essas transferências são
+              feitas só para prestar o serviço do site e com as garantias
+              exigidas pela Lei Geral de Proteção de Dados (LGPD), como
+              cláusulas contratuais de proteção de dados com cada empresa. Você
+              pode pedir ao professor mais informações sobre onde cada serviço
+              guarda os dados.
             </p>
           ),
         },

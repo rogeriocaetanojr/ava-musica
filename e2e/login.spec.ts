@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 import {
   ALUNO,
+  CAPTCHA_LIGADO,
   entrar,
   esperarCaptcha,
   NOME_DO_ALUNO,
@@ -8,6 +9,23 @@ import {
 } from "./apoio";
 
 const CREDENCIAIS_INVALIDAS = "E-mail ou senha incorretos.";
+
+test("com o captcha desligado, as telas não carregam nada da Cloudflare", async ({
+  page,
+}) => {
+  test.skip(CAPTCHA_LIGADO, "só vale com o captcha desligado");
+  const daCloudflare: string[] = [];
+  page.on("request", (pedido) => {
+    if (pedido.url().includes("challenges.cloudflare.com"))
+      daCloudflare.push(pedido.url());
+  });
+  for (const caminho of ["/login", "/criar-conta", "/esqueci-senha"]) {
+    await page.goto(caminho);
+    await page.waitForLoadState("load");
+    await expect(page.locator("iframe")).toHaveCount(0);
+  }
+  expect(daCloudflare).toEqual([]);
+});
 
 test("aluno convidado entra com e-mail e senha", async ({ page }) => {
   await entrar(page, ALUNO);

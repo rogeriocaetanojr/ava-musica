@@ -1,3 +1,5 @@
+import { captchaLigadoEm } from "./captcha";
+
 // Variáveis de ambiente do site, conferidas no build de produção
 // (next.config.ts). Sem uma delas, o build para dizendo qual falta, em vez de
 // o site subir e quebrar só quando alguém usa a parte que depende dela.
@@ -27,9 +29,13 @@ export const PUBLICAS: readonly Regra[] = [
     para: "os links dos convites e do aceite",
     formato: "url",
   },
+];
+
+// Só exigida com o captcha ligado (NEXT_PUBLIC_CAPTCHA_LIGADO=true).
+export const DO_CAPTCHA: readonly Regra[] = [
   {
     nome: "NEXT_PUBLIC_TURNSTILE_SITE_KEY",
-    para: "o captcha do login, de Criar conta e do convite",
+    para: "o captcha do login, de Criar conta, de Esqueci minha senha e do convite",
   },
 ];
 
@@ -97,7 +103,16 @@ export function problemasDoAmbiente(
   const problemas = [
     ...conferir(PUBLICAS, "pública", env),
     ...conferir(DE_SERVIDOR, "de servidor", env),
+    ...(captchaLigadoEm(env.NEXT_PUBLIC_CAPTCHA_LIGADO)
+      ? conferir(DO_CAPTCHA, "pública, com o captcha ligado", env)
+      : []),
   ];
+  // Só "true" liga; outro valor escrito por engano avisa em vez de desligar calado.
+  const ligado = env.NEXT_PUBLIC_CAPTCHA_LIGADO?.trim();
+  if (ligado && ligado !== "true" && ligado !== "false")
+    problemas.push(
+      "NEXT_PUBLIC_CAPTCHA_LIGADO precisa ser true, false ou ficar vazia.",
+    );
   // Nenhuma de servidor pode ter ido parar numa NEXT_PUBLIC_ por engano.
   for (const regra of DE_SERVIDOR)
     if (env[`NEXT_PUBLIC_${regra.nome}`]?.trim())

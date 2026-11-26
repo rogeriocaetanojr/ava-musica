@@ -23,15 +23,22 @@ const base = {
   hashes: ["sha256-xyz"],
   supabaseUrl: "https://projeto.supabase.co",
   desenvolvimento: false,
+  captcha: false,
 };
 
 describe("montarCsp", () => {
-  it("libera script só pelo site, pelo nonce, pelos hashes e pelo captcha", () => {
+  it("libera script só pelo site, pelo nonce e pelos hashes", () => {
     const script = diretivas(montarCsp(base)).get("script-src");
-    expect(script).toEqual([
-      "'self'",
-      "'nonce-abc123'",
-      "'sha256-xyz'",
+    expect(script).toEqual(["'self'", "'nonce-abc123'", "'sha256-xyz'"]);
+  });
+
+  it("com o captcha ligado, libera o script e o iframe da Cloudflare", () => {
+    const csp = diretivas(montarCsp({ ...base, captcha: true }));
+    expect(csp.get("script-src")).toContain(
+      "https://challenges.cloudflare.com",
+    );
+    expect(csp.get("frame-src")).toEqual([
+      "https://www.youtube-nocookie.com",
       "https://challenges.cloudflare.com",
     ]);
   });
@@ -56,10 +63,9 @@ describe("montarCsp", () => {
     ).toContain("'unsafe-eval'");
   });
 
-  it("libera os iframes do YouTube sem cookies e do captcha", () => {
+  it("libera só o iframe do YouTube sem cookies com o captcha desligado", () => {
     expect(diretivas(montarCsp(base)).get("frame-src")).toEqual([
       "https://www.youtube-nocookie.com",
-      "https://challenges.cloudflare.com",
     ]);
   });
 

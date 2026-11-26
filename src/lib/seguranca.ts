@@ -2,14 +2,11 @@
 // das rotas POST (S7). Funções puras, usadas pelo next.config.ts, pelo
 // proxy.ts e pelas rotas.
 
-// Onde o site incorpora conteúdo de fora: o vídeo do YouTube (sem cookies) e o
-// captcha da Cloudflare, que roda num iframe próprio.
-const FRAMES = [
-  "https://www.youtube-nocookie.com",
-  "https://challenges.cloudflare.com",
-];
-// O script do captcha, carregado pelo código do site.
-const SCRIPTS_DE_FORA = ["https://challenges.cloudflare.com"];
+// Onde o site incorpora conteúdo de fora: o vídeo do YouTube (sem cookies) e,
+// com o captcha ligado (src/lib/captcha.ts), a Cloudflare, cujo script o site
+// carrega e cujo widget roda num iframe próprio.
+const YOUTUBE = "https://www.youtube-nocookie.com";
+const CLOUDFLARE = "https://challenges.cloudflare.com";
 
 // Origem (protocolo, host e porta) de um endereço, como o do Supabase (de onde
 // o navegador lê os dados e toca o áudio do Storage) ou o do site.
@@ -29,6 +26,8 @@ export type OpcoesDaCsp = {
   supabaseUrl?: string;
   // O React usa eval só no modo de desenvolvimento.
   desenvolvimento: boolean;
+  // Libera a Cloudflare só com o captcha ligado.
+  captcha: boolean;
 };
 
 // Trecho fixo que o React escreve no esqueleto estático da página (PPR), que
@@ -48,14 +47,16 @@ export const SCRIPT_FIXO_DO_REACT =
 // Não dá para usar 'strict-dynamic': ele ignora o 'self', e os arquivos do
 // esqueleto estático não têm nonce.
 // O estilo inline continua liberado: o React grava style="" (a largura das
-// barras de progresso) e o captcha injeta o próprio CSS; CSS não executa
+// barras de progresso) e o captcha, quando ligado, injeta o próprio CSS; CSS não executa
 // código.
 export function montarCsp({
   nonce,
   hashes,
   supabaseUrl,
   desenvolvimento,
+  captcha,
 }: OpcoesDaCsp): string {
+  const daCloudflare = captcha ? [CLOUDFLARE] : [];
   const supabase = origemDaUrl(supabaseUrl);
   const deSupabase = supabase ? [supabase] : [];
   const https = supabase?.startsWith("https:") ?? false;
@@ -68,7 +69,7 @@ export function montarCsp({
         "'self'",
         `'nonce-${nonce}'`,
         ...hashes.map((hash) => `'${hash}'`),
-        ...SCRIPTS_DE_FORA,
+        ...daCloudflare,
         ...(desenvolvimento ? ["'unsafe-eval'"] : []),
       ],
     ],
@@ -77,7 +78,7 @@ export function montarCsp({
     ["font-src", ["'self'"]],
     ["connect-src", ["'self'", ...deSupabase]],
     ["media-src", ["'self'", ...deSupabase]],
-    ["frame-src", FRAMES],
+    ["frame-src", [YOUTUBE, ...daCloudflare]],
     ["worker-src", ["'self'", "blob:"]],
     ["manifest-src", ["'self'"]],
     ["object-src", ["'none'"]],

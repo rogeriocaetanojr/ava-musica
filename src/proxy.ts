@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { ehBloqueado } from "./app/login/mensagens";
+import { CAPTCHA_LIGADO } from "./lib/captcha";
 import {
   gerarNonce,
   hashDoScript,
@@ -64,6 +65,7 @@ export async function proxy(request: NextRequest) {
     hashes: await hashesFixos,
     supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
     desenvolvimento: process.env.NODE_ENV === "development",
+    captcha: CAPTCHA_LIGADO,
   });
   request.headers.set("content-security-policy", csp);
   const resposta = await tratarSessao(request);

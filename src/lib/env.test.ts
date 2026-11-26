@@ -6,7 +6,6 @@ const completo = {
   NEXT_PUBLIC_SUPABASE_ANON_KEY: "anon",
   SUPABASE_SERVICE_ROLE_KEY: "service",
   NEXT_PUBLIC_SITE_URL: "https://escola.example",
-  NEXT_PUBLIC_TURNSTILE_SITE_KEY: "1x00000000000000000000AA",
   SMTP_HOST: "smtp.resend.com",
   SMTP_PORT: "465",
   SMTP_USER: "resend",
@@ -57,6 +56,34 @@ describe("problemasDoAmbiente", () => {
       }),
     ).toEqual([
       "NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY não pode existir: SUPABASE_SERVICE_ROLE_KEY é de servidor e iria para o navegador.",
+    ]);
+  });
+
+  it("não exige a chave do Turnstile com o captcha desligado", () => {
+    expect(problemasDoAmbiente(completo)).toEqual([]);
+    expect(
+      problemasDoAmbiente({ ...completo, NEXT_PUBLIC_CAPTCHA_LIGADO: "false" }),
+    ).toEqual([]);
+  });
+
+  it("exige a chave do Turnstile com o captcha ligado", () => {
+    const ligado = { ...completo, NEXT_PUBLIC_CAPTCHA_LIGADO: "true" };
+    expect(problemasDoAmbiente(ligado)).toEqual([
+      "NEXT_PUBLIC_TURNSTILE_SITE_KEY não está definida (pública, com o captcha ligado, para o captcha do login, de Criar conta, de Esqueci minha senha e do convite).",
+    ]);
+    expect(
+      problemasDoAmbiente({
+        ...ligado,
+        NEXT_PUBLIC_TURNSTILE_SITE_KEY: "1x00000000000000000000AA",
+      }),
+    ).toEqual([]);
+  });
+
+  it("avisa quando NEXT_PUBLIC_CAPTCHA_LIGADO tem outro valor", () => {
+    expect(
+      problemasDoAmbiente({ ...completo, NEXT_PUBLIC_CAPTCHA_LIGADO: "sim" }),
+    ).toEqual([
+      "NEXT_PUBLIC_CAPTCHA_LIGADO precisa ser true, false ou ficar vazia.",
     ]);
   });
 

@@ -141,7 +141,7 @@ test.afterEach(async () => {
   }
 });
 
-test("com a CSP ativa: login com captcha, tema escuro, YouTube, áudio e Forms", async ({
+test("com a CSP ativa: login, tema escuro, YouTube, áudio e Forms", async ({
   page,
   context,
   baseURL,
@@ -231,7 +231,7 @@ test("com a CSP ativa: login com captcha, tema escuro, YouTube, áudio e Forms",
     { name: "tema", value: "escuro", url: new URL(baseURL!).origin },
   ]);
 
-  // Login por senha com o captcha da Cloudflare carregado.
+  // Login por senha (com o captcha da Cloudflare, se ligado).
   await entrar(page, ALUNO);
   await expect(page.locator("html")).toHaveAttribute("data-tema", "escuro");
 

@@ -6,6 +6,7 @@ import { Aviso } from "@/components/aviso";
 import { Botao } from "@/components/botao";
 import { Campo } from "@/components/campo";
 import { CampoSenha } from "@/components/campo-senha";
+import { CAPTCHA_LIGADO, opcoesDoCaptcha } from "@/lib/captcha";
 import { SENHA_MINIMA } from "@/lib/senha";
 import { criarClienteNavegador } from "@/lib/supabase/navegador";
 import { Captcha, type ControleDoCaptcha } from "../login/captcha";
@@ -50,7 +51,7 @@ export function FormularioCriarConta() {
       password: resultado.dados.senha,
       options: {
         data: { nome: resultado.dados.nome },
-        captchaToken: tokenCaptcha ?? undefined,
+        ...opcoesDoCaptcha(tokenCaptcha),
       },
     });
     // O token do captcha vale uma vez só.
@@ -65,7 +66,7 @@ export function FormularioCriarConta() {
       setErro(MENSAGEM_MUITAS_TENTATIVAS);
     } else if (ehPedidoBarrado(error)) {
       setErro(MENSAGEM_PEDIDO_BARRADO);
-    } else if (ehFalhaDoCaptcha(error)) {
+    } else if (CAPTCHA_LIGADO && ehFalhaDoCaptcha(error)) {
       setErro(MENSAGEM_CAPTCHA);
     } else if (error.code === "weak_password") {
       setErro(`A senha precisa ter pelo menos ${SENHA_MINIMA} caracteres.`);

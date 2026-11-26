@@ -47,7 +47,11 @@ export default defineConfig({
       SMTP_PORT: "54325",
       SMTP_REMETENTE: "Escola de Música John Meyer <avisos@teste.local>",
       EMAIL_PROFESSOR: "professor@teste.local",
-      // Chave de site de teste da Cloudflare: o captcha aprova sozinho.
+      // Captcha desligado nesta versão; com NEXT_PUBLIC_CAPTCHA_LIGADO=true no
+      // terminal, os testes rodam com ele e a chave de teste da Cloudflare,
+      // que aprova sozinha (ligue também o [auth.captcha] do config.toml).
+      NEXT_PUBLIC_CAPTCHA_LIGADO:
+        process.env.NEXT_PUBLIC_CAPTCHA_LIGADO ?? "false",
       NEXT_PUBLIC_TURNSTILE_SITE_KEY: "1x00000000000000000000AA",
     },
     timeout: PRODUCAO ? 600_000 : 180_000,

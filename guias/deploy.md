@@ -49,23 +49,22 @@ O trabalho é feito direto na `main`, sem pull requests. São dois ambientes, ca
 
 **Variáveis por contexto** (**Project configuration → Environment variables**, com valores diferentes em _Production_ e em _Branch deploys_; nunca no `netlify.toml` nem no repositório):
 
-| Variável                         | Production (`ava-prod`)                                                     | Branch deploys (`ava-staging`)            | De onde copiar                                                             | Secreta |
-| -------------------------------- | --------------------------------------------------------------------------- | ----------------------------------------- | -------------------------------------------------------------------------- | ------- |
-| `NEXT_PUBLIC_SUPABASE_URL`       | Project URL do `ava-prod`                                                   | Project URL do `ava-staging`              | Supabase → **Project Settings → Data API** (ou **Connect**)                | Não     |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY`  | publishable (ou anon) do `ava-prod`                                         | publishable (ou anon) do `ava-staging`    | Supabase → **Project Settings → API Keys**                                 | Não     |
-| `NEXT_PUBLIC_SITE_URL`           | `https://johnmeyerescolademusica.com.br`                                    | `https://main--<site>.netlify.app`        | Netlify → **Domain management**                                            | Não     |
-| `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | site key do widget de produção                                              | site key do widget de homologação         | Cloudflare → **Turnstile** → widget → **Site Key**                         | Não     |
-| `SUPABASE_SERVICE_ROLE_KEY`      | secret (ou service_role) do `ava-prod`                                      | secret (ou service_role) do `ava-staging` | Supabase → **Project Settings → API Keys**                                 | Sim     |
-| `SMTP_HOST`                      | `smtp.resend.com`                                                           | `smtp.resend.com`                         | Resend → **Settings → SMTP**                                               | Não     |
-| `SMTP_PORT`                      | `465`                                                                       | `465`                                     | Resend → **Settings → SMTP**                                               | Não     |
-| `SMTP_USER`                      | `resend`                                                                    | `resend`                                  | Resend → **Settings → SMTP**                                               | Não     |
-| `SMTP_PASS`                      | chave de API de produção                                                    | chave de API de homologação               | Resend → **API Keys** → _Create API key_ (Sending access, só esse domínio) | Sim     |
-| `SMTP_REMETENTE`                 | `Escola de Música John Meyer <nao-responda@johnmeyerescolademusica.com.br>` | o mesmo                                   | domínio verificado no Resend → **Domains**                                 | Não     |
-| `EMAIL_PROFESSOR`                | e-mail do professor                                                         | e-mail de quem testa                      | —                                                                          | Não     |
-| `SENTRY_DSN` (opcional)          | DSN do projeto no Sentry                                                    | o mesmo                                   | Sentry → **Settings → Projects → Client Keys (DSN)**                       | Sim     |
-| `SENTRY_AMBIENTE` (opcional)     | `producao`                                                                  | `homologacao`                             | —                                                                          | Não     |
+| Variável                        | Production (`ava-prod`)                                                     | Branch deploys (`ava-staging`)            | De onde copiar                                                             | Secreta |
+| ------------------------------- | --------------------------------------------------------------------------- | ----------------------------------------- | -------------------------------------------------------------------------- | ------- |
+| `NEXT_PUBLIC_SUPABASE_URL`      | Project URL do `ava-prod`                                                   | Project URL do `ava-staging`              | Supabase → **Project Settings → Data API** (ou **Connect**)                | Não     |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | publishable (ou anon) do `ava-prod`                                         | publishable (ou anon) do `ava-staging`    | Supabase → **Project Settings → API Keys**                                 | Não     |
+| `NEXT_PUBLIC_SITE_URL`          | `https://johnmeyerescolademusica.com.br`                                    | `https://main--<site>.netlify.app`        | Netlify → **Domain management**                                            | Não     |
+| `SUPABASE_SERVICE_ROLE_KEY`     | secret (ou service_role) do `ava-prod`                                      | secret (ou service_role) do `ava-staging` | Supabase → **Project Settings → API Keys**                                 | Sim     |
+| `SMTP_HOST`                     | `smtp.resend.com`                                                           | `smtp.resend.com`                         | Resend → **Settings → SMTP**                                               | Não     |
+| `SMTP_PORT`                     | `465`                                                                       | `465`                                     | Resend → **Settings → SMTP**                                               | Não     |
+| `SMTP_USER`                     | `resend`                                                                    | `resend`                                  | Resend → **Settings → SMTP**                                               | Não     |
+| `SMTP_PASS`                     | chave de API de produção                                                    | chave de API de homologação               | Resend → **API Keys** → _Create API key_ (Sending access, só esse domínio) | Sim     |
+| `SMTP_REMETENTE`                | `Escola de Música John Meyer <nao-responda@johnmeyerescolademusica.com.br>` | o mesmo                                   | domínio verificado no Resend → **Domains**                                 | Não     |
+| `EMAIL_PROFESSOR`               | e-mail do professor                                                         | e-mail de quem testa                      | —                                                                          | Não     |
+| `SENTRY_DSN` (opcional)         | DSN do projeto no Sentry                                                    | o mesmo                                   | Sentry → **Settings → Projects → Client Keys (DSN)**                       | Sim     |
+| `SENTRY_AMBIENTE` (opcional)    | `producao`                                                                  | `homologacao`                             | —                                                                          | Não     |
 
-Marque as secretas como **Contains secret values**. As `NEXT_PUBLIC_` entram no build: depois de mudar uma, publique de novo. A chave secreta do Turnstile e a senha do SMTP do Supabase não vão para a Netlify: ficam no painel do Supabase.
+Marque as secretas como **Contains secret values**. As `NEXT_PUBLIC_` entram no build: depois de mudar uma, publique de novo. A senha do SMTP do Supabase não vai para a Netlify: fica no painel do Supabase. O captcha está desligado nesta versão, então `NEXT_PUBLIC_CAPTCHA_LIGADO` e `NEXT_PUBLIC_TURNSTILE_SITE_KEY` ficam fora da tabela; para religar, veja "Captcha (Cloudflare Turnstile): desligado nesta versão".
 
 ## Senha e confirmação do e-mail
 
@@ -111,16 +110,21 @@ Nos dois projetos do Supabase (homologação e produção):
 4. **Modelos que não são usados:** o convite do aluno sai pelo SMTP do próprio site (Resend), com o link `/convite/<código>`, e o login não usa código por e-mail. Os modelos **Invite user** e **Magic Link** do painel não são usados; se tiverem o texto antigo da escola, volte ao padrão para não confundir.
 5. **Hook dos recusados:** em **Authentication → Hooks**, adicione o hook **Before User Created** do tipo **Postgres**, com o schema `public` e a função `antes_de_criar_usuario`. Ele barra por 7 dias o cadastro de quem foi recusado. A função vem da migração `20261023000000_pedido_por_email_e_recusas.sql`; o painel não liga o hook sozinho.
 
-## Captcha do login (Cloudflare Turnstile)
+## Captcha (Cloudflare Turnstile): desligado nesta versão
 
-O login por senha, Criar conta e a página do convite passam por um captcha, para ninguém testar senhas em massa, disparar e-mails de confirmação nem criar contas com e-mails de terceiros. O Supabase exige o captcha em todo login por senha, inclusive no que o servidor faz depois de o aluno definir a senha pelo convite. No computador e nos testes são usadas as chaves de teste da Cloudflare, que aprovam sozinhas (a secreta está no `supabase/config.toml` e a do site vai no `.env.local`).
+O captcha fica desligado nesta versão; a proteção vem da liberação do professor e do limite de tentativas (veja "Limites de tentativas do login" acima). Desligado, as telas de entrar, criar conta, esqueci minha senha e convite não carregam o script da Cloudflare, não mostram o widget e não mandam token ao Supabase, e a política de segurança do navegador (CSP) não libera a Cloudflare.
+
+Na nuvem, deixe **Authentication → Attack Protection → Enable Captcha protection** desligado nos dois projetos e não crie `NEXT_PUBLIC_CAPTCHA_LIGADO` na Netlify (ou crie com `false`). `NEXT_PUBLIC_TURNSTILE_SITE_KEY` também não é necessária.
+
+**Para religar depois**, faça tudo junto, em cada ambiente:
 
 1. Na Cloudflare (conta gratuita), abra **Turnstile → Add widget**. Um widget por ambiente, com o domínio do site (homologação ou produção), no modo **Managed**.
-2. Copie a **chave do site** para a Netlify, na variável `NEXT_PUBLIC_TURNSTILE_SITE_KEY` do ambiente. Ela vai para o navegador, então não é secreta. Depois de mudar, publique de novo (a variável entra no build).
+2. Na Netlify, no contexto do ambiente (Production ou Branch deploys), crie `NEXT_PUBLIC_CAPTCHA_LIGADO=true` e `NEXT_PUBLIC_TURNSTILE_SITE_KEY` com a **chave do site** do widget. As duas vão para o navegador, então não são secretas; com o captcha ligado, o build para se faltar a chave. Depois de mudar, publique de novo (elas entram no build).
 3. Copie a **chave secreta** para o Supabase, em **Authentication → Attack Protection → Enable Captcha protection**, com o provedor **Turnstile**. Ela fica só no painel, nunca no repositório nem na Netlify.
-4. Ligue as duas coisas juntas: com o captcha ligado no Supabase e sem a chave do site na Netlify, ninguém consegue entrar com senha nem criar conta (a tela avisa que não foi possível confirmar que não é um robô).
-5. O captcha não vale para o Google, que tem a própria proteção, nem para o que o servidor faz com a chave de serviço (cadastro do aluno pelo professor e gravação da senha do convite).
-6. Quando a política de segurança do navegador (CSP) for criada, ela precisa liberar `https://challenges.cloudflare.com` em `script-src` e `frame-src`.
+4. Ligue o site e o Supabase juntos: com o captcha ligado no Supabase e desligado no site, ninguém consegue entrar com senha nem criar conta.
+5. No computador, ponha `NEXT_PUBLIC_CAPTCHA_LIGADO=true` e a chave de teste `NEXT_PUBLIC_TURNSTILE_SITE_KEY=1x00000000000000000000AA` no `.env.local` e `enabled = true` em `[auth.captcha]` do `supabase/config.toml` (que já tem a chave secreta de teste), e reinicie o Supabase local.
+6. O captcha não vale para o Google, que tem a própria proteção, nem para o que o servidor faz com a chave de serviço (cadastro do aluno pelo professor e gravação da senha do convite).
+7. Volte a citar a Cloudflare na política de privacidade (fornecedores e transferência internacional) e mude a `VERSAO_DOS_TERMOS` em `src/lib/site.ts`.
 
 ## Sessão sem validade e fim por falta de uso
 
@@ -152,7 +156,7 @@ O site manda um e-mail ao professor a cada pedido novo e o convite ao aluno cada
 **Cota do Resend:** o plano gratuito permite 100 e-mails por dia e 3.000 por mês, **somando** os do site e os do Supabase (convites, confirmações de Criar conta e avisos de pedido). Com 20 a 30 alunos isso sobra, mas:
 
 - o limite de 30 e-mails por hora do Supabase vale para as confirmações de Criar conta; os avisos de pedido e os convites saem pelo site, fora desse limite (os convites têm o limite de 20 por hora do site);
-- com o cadastro aberto, alguém pode criar muitas contas pelo Google ou em Criar conta para gastar a cota. Cada conta gera um e-mail de confirmação e só um aviso, e o aviso só sai depois de a pessoa abrir o link; o captcha, o limite de 30 e-mails por hora e o limite do Supabase de 15 cadastros a cada 5 minutos por IP seguram o ritmo. Se isso acontecer, recuse os pedidos e considere desligar o cadastro por um tempo;
+- com o cadastro aberto, alguém pode criar muitas contas pelo Google ou em Criar conta para gastar a cota. Cada conta gera um e-mail de confirmação e só um aviso, e o aviso só sai depois de a pessoa abrir o link; a confirmação pelo e-mail, o limite de 30 e-mails por hora e o limite do Supabase de 15 cadastros a cada 5 minutos por IP seguram o ritmo. Se isso acontecer, recuse os pedidos e considere desligar o cadastro por um tempo;
 - acompanhe o uso no painel do Resend. Se passar de 100 por dia, os e-mails do dia param, inclusive as confirmações de conta e os convites.
 
 ## Migrações pelo computador (`db:push:staging` e `db:push:prod`)
