@@ -286,7 +286,7 @@ export function TabelaDeAlunos({
         <div
           role="group"
           aria-label="Filtrar por situação"
-          className="flex flex-wrap gap-1 rounded-full border border-linha bg-superficie p-1"
+          className="flex max-w-full gap-1 self-start overflow-x-auto rounded-full border border-linha bg-superficie p-1 [scrollbar-width:none] md:self-auto [&::-webkit-scrollbar]:hidden"
         >
           {FILTROS.map(({ valor, rotulo }) => (
             <button
@@ -294,7 +294,7 @@ export function TabelaDeAlunos({
               type="button"
               aria-pressed={filtro === valor}
               onClick={() => setFiltro(valor)}
-              className={`min-h-10 cursor-pointer rounded-full px-4 text-sm font-bold ${
+              className={`min-h-10 shrink-0 cursor-pointer whitespace-nowrap rounded-full px-3 text-sm font-bold sm:px-4 ${
                 filtro === valor
                   ? "bg-bloco text-texto-sobre-bloco"
                   : "text-texto-secundario hover:text-texto"
