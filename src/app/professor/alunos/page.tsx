@@ -57,23 +57,26 @@ async function ListaDeAlunos({ recusados }: { recusados: React.ReactNode }) {
   await exigirProfessor();
 
   const supabase = await criarClienteServidor();
-  const [{ data: alunos }, acessos, painel, pedidos] = await Promise.all([
-    supabase
-      .from("perfis")
-      .select(
-        "id, nome, email, menor_de_12, bloqueado_em, liberado_em, responsaveis (aceito_em), matriculas (curso_id, criado_em)",
-      )
-      .eq("papel", "aluno")
-      // A conta criada em Criar conta e nunca confirmada não é de ninguém.
-      .or("liberado_em.not.is.null,pedido_em.not.is.null")
-      .order("nome"),
+  // As fotos dependem só da lista de alunos: saem assim que ela chega, sem
+  // esperar as outras leituras.
+  const leituraDosAlunos = supabase
+    .from("perfis")
+    .select(
+      "id, nome, email, menor_de_12, bloqueado_em, liberado_em, responsaveis (aceito_em), matriculas (curso_id, criado_em)",
+    )
+    .eq("papel", "aluno")
+    // A conta criada em Criar conta e nunca confirmada não é de ninguém.
+    .or("liberado_em.not.is.null,pedido_em.not.is.null")
+    .order("nome")
+    .then(({ data }) => (data ?? []) as unknown as Aluno[]);
+  const [lista, fotos, acessos, painel, pedidos] = await Promise.all([
+    leituraDosAlunos,
+    leituraDosAlunos.then((alunos) => fotosDe(alunos.map((a) => a.id))),
     ultimosAcessos(),
     // Só leitura, para o progresso de cada matrícula.
     dadosDoPainel(),
     pedidosDeAcesso(),
   ]);
-  const lista = (alunos ?? []) as unknown as Aluno[];
-  const fotos = await fotosDe(lista.map((aluno) => aluno.id));
   const cursos = new Map((painel?.cursos ?? []).map((c) => [c.id, c]));
 
   // Quem está pendente já aparece em Pedidos de acesso, então fica fora da turma.

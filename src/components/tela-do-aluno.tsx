@@ -13,8 +13,13 @@ import { exigirAlunoOuProfessor } from "@/lib/auth";
 import { recadosDoAluno } from "@/app/(aluno)/dados";
 
 async function CabecalhoComSessao({ atual }: { atual?: SecaoDoAluno }) {
-  const sessao = await exigirAlunoOuProfessor();
-  const recados = await recadosDoAluno();
+  // Os recados saem junto com a conferência da sessão (uma ida em vez de
+  // duas). A RLS limita os avisos ao que o usuário pode ver, e nada é
+  // mostrado antes de a sessão ser confirmada.
+  const [sessao, recados] = await Promise.all([
+    exigirAlunoOuProfessor(),
+    recadosDoAluno(),
+  ]);
   return (
     <CabecalhoDoAluno
       nome={sessao.nome}

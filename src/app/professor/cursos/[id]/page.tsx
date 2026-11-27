@@ -299,24 +299,25 @@ async function EditorDoCurso({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   if (!ehUuid(id)) notFound();
 
+  // O curso e o resumo das exclusões saem juntos, numa ida só ao banco.
   const supabase = await criarClienteServidor();
-  const { data } = await supabase
-    .from("cursos")
-    .select(
-      "id, titulo, instrumento, nivel, descricao, publicado, modulos (id, titulo, ordem, aulas (id, titulo, ordem, publicada))",
-    )
-    .eq("id", id)
-    .maybeSingle();
+  const [{ data }, { data: listaDeResumos }] = await Promise.all([
+    supabase
+      .from("cursos")
+      .select(
+        "id, titulo, instrumento, nivel, descricao, publicado, modulos (id, titulo, ordem, aulas (id, titulo, ordem, publicada))",
+      )
+      .eq("id", id)
+      .maybeSingle(),
+    // O que vai junto em cada exclusão, para a confirmação. Sem o resumo, a
+    // confirmação avisa que vai tudo junto, sem os números.
+    supabase.rpc("resumo_da_exclusao", { curso: id }),
+  ]);
   if (!data) notFound();
 
   const curso = data as Curso;
   const modulos = ordenar(curso.modulos);
 
-  // O que vai junto em cada exclusão, para a confirmação. Sem o resumo, a
-  // confirmação avisa que vai tudo junto, sem os números.
-  const { data: listaDeResumos } = await supabase.rpc("resumo_da_exclusao", {
-    curso: curso.id,
-  });
   const resumos: Resumos = new Map(
     ((listaDeResumos ?? []) as ResumoDaExclusao[]).map((r) => [r.id, r]),
   );

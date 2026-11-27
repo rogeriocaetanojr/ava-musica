@@ -38,28 +38,53 @@ function comNome(sessao: Sessao): SessaoComNome {
   return sessao as SessaoComNome;
 }
 
+type ClienteServidor = Awaited<ReturnType<typeof criarClienteServidor>>;
+
+function lerPerfil(supabase: ClienteServidor, id: string) {
+  return supabase
+    .from("perfis")
+    .select("nome, email, papel, bloqueado_em, liberado_em")
+    .eq("id", id)
+    .maybeSingle();
+}
+
 // Usuário logado com o perfil lido do banco (o papel nunca vem dos metadados).
 // Só roda na hora da requisição: o Supabase compara a validade da sessão com
 // o relógio (Date.now()), o que não pode acontecer na pré-renderização.
 // Memoizada por requisição (React.cache): o layout, a página e os componentes
 // que pedem a sessão dividem uma ida só ao Auth e uma leitura do perfil.
+//
+// Velocidade: o servidor fica longe do banco, então cada ida conta. O id do
+// token (getClaims, conferido localmente com a chave pública, sem rede) serve
+// só para já pedir o perfil junto com o getUser, numa ida em vez de duas.
+// Quem confirma o usuário continua sendo o getUser: se ele falhar ou trouxer
+// outro id, o perfil adiantado é descartado. A RLS do perfil vale do mesmo
+// jeito, pois a leitura usa o mesmo token.
 export const obterSessao = cache(async (): Promise<Sessao | null> => {
   await connection();
   const supabase = await criarClienteServidor();
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser();
+  const { data: doToken } = await supabase.auth.getClaims();
+  const idDoToken = doToken?.claims.sub;
+
+  const [
+    {
+      data: { user },
+      error,
+    },
+    adiantado,
+  ] = await Promise.all([
+    supabase.auth.getUser(),
+    idDoToken ? lerPerfil(supabase, idDoToken) : null,
+  ]);
   // Conta bloqueada com o JWT ainda válido: o proxy (getClaims) não vê o ban,
   // mas o Auth recusa aqui. O login com o aviso apaga os cookies (proxy).
   if (ehBloqueado(error)) redirect("/login?erro=bloqueado");
   if (!user) return null;
 
-  const { data: perfil } = await supabase
-    .from("perfis")
-    .select("nome, email, papel, bloqueado_em, liberado_em")
-    .eq("id", user.id)
-    .single();
+  const { data: perfil } =
+    adiantado && user.id === idDoToken
+      ? adiantado
+      : await lerPerfil(supabase, user.id);
   if (!perfil) return null;
 
   return {
@@ -98,7 +123,12 @@ export const alunoLiberado = cache(async (): Promise<boolean> => {
 export async function exigirAluno(): Promise<SessaoComNome>;
 export async function exigirAluno(opcoes: { semNome: true }): Promise<Sessao>;
 export async function exigirAluno(opcoes?: { semNome: true }): Promise<Sessao> {
-  const sessao = await obterSessao();
+  // A pergunta da liberação sai junto com a da sessão (uma ida em vez de
+  // duas); a resposta só é usada depois que a sessão foi confirmada.
+  const [sessao, liberado] = await Promise.all([
+    obterSessao(),
+    opcoes?.semNome ? true : alunoLiberado(),
+  ]);
   if (!sessao) redirect("/login");
   if (opcoes?.semNome) {
     if (sessao.bloqueado) redirect("/bloqueado");
@@ -108,17 +138,21 @@ export async function exigirAluno(opcoes?: { semNome: true }): Promise<Sessao> {
   if (sessao.papel !== "aluno") redirect(destinoDaSessao(sessao));
   if (sessao.bloqueado) redirect("/bloqueado");
   const comONome = comNome(sessao);
-  if (!(await alunoLiberado())) redirect("/aguardando");
+  if (!liberado) redirect("/aguardando");
   return comONome;
 }
 
 // Telas do aluno: o aluno liberado estuda e o professor pré-visualiza.
+// Como em exigirAluno, a liberação é perguntada junto com a sessão; para o
+// professor a resposta é ignorada.
 export async function exigirAlunoOuProfessor(): Promise<SessaoComNome> {
-  const sessao = await obterSessao();
+  const [sessao, liberado] = await Promise.all([
+    obterSessao(),
+    alunoLiberado(),
+  ]);
   if (!sessao) redirect("/login");
   if (sessao.papel === "aluno" && sessao.bloqueado) redirect("/bloqueado");
   const comONome = comNome(sessao);
-  if (sessao.papel === "aluno" && !(await alunoLiberado()))
-    redirect("/aguardando");
+  if (sessao.papel === "aluno" && !liberado) redirect("/aguardando");
   return comONome;
 }

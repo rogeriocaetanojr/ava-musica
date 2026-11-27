@@ -41,7 +41,7 @@ type Aula = {
     id: string;
     titulo: string;
     curso_id: string;
-    cursos: { titulo: string; publicado: boolean };
+    cursos: { titulo: string; publicado: boolean; modulos: Modulo[] };
   };
   conteudos: Conteudo[];
 };
@@ -90,35 +90,30 @@ async function PaginaDaAula({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   if (!ehUuid(id)) notFound();
 
+  // Tudo numa ida só: a aula já traz o curso com os módulos e aulas (para a
+  // sequência e a lista do módulo), e o progresso sai junto, pelo id da aula.
   const supabase = await criarClienteServidor();
-  const { data } = await supabase
-    .from("aulas")
-    .select(
-      "id, titulo, publicada, modulos (id, titulo, curso_id, cursos (titulo, publicado)), conteudos (id, tipo, ordem, titulo, texto, url)",
-    )
-    .eq("id", id)
-    .eq("publicada", true)
-    .maybeSingle();
+  const [{ data }, { data: progresso }, concluidasNoCurso] = await Promise.all([
+    supabase
+      .from("aulas")
+      .select(
+        "id, titulo, publicada, modulos (id, titulo, curso_id, cursos (titulo, publicado, modulos (id, titulo, ordem, aulas (id, titulo, ordem, publicada, conteudos (tipo))))), conteudos (id, tipo, ordem, titulo, texto, url)",
+      )
+      .eq("id", id)
+      .eq("publicada", true)
+      .maybeSingle(),
+    supabase
+      .from("progresso")
+      .select("conteudo_id")
+      .eq("aluno_id", sessao.id)
+      .eq("aula_id", id),
+    aulasConcluidas(sessao.id),
+  ]);
   const aula = data as unknown as Aula | null;
   // Para o aluno a RLS já esconde o curso não publicado; o professor
   // pré-visualiza só o que o aluno veria.
   if (!aula || !aula.modulos.cursos.publicado) notFound();
-
-  const [{ data: modulos }, { data: progresso }, concluidasNoCurso] =
-    await Promise.all([
-      supabase
-        .from("modulos")
-        .select(
-          "id, titulo, ordem, aulas (id, titulo, ordem, publicada, conteudos (tipo))",
-        )
-        .eq("curso_id", aula.modulos.curso_id),
-      supabase
-        .from("progresso")
-        .select("conteudo_id")
-        .eq("aluno_id", sessao.id)
-        .eq("aula_id", aula.id),
-      aulasConcluidas(sessao.id),
-    ]);
+  const modulos = aula.modulos.cursos.modulos;
 
   const listaDeModulos = (modulos ?? []) as unknown as Modulo[];
   const sequencia = aulasEmOrdem(listaDeModulos);
